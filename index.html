@@ -7,29 +7,31 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
     <style>
-        body { background-color: #0b0e11; color: #eaecef; font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { background-color: #0b0e11; color: #eaecef; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         .bg-card { background-color: #1e2329; }
         .text-yellow-ax { color: #f3ba2f; }
         .bg-yellow-ax { background-color: #f3ba2f; color: #000; }
         .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .tab-content.active { display: block; animation: fadeIn 0.2s ease-in; }
         .nav-btn.active { color: #f3ba2f; }
-        .active-tab-border { border-bottom: 2px solid #f3ba2f; color: #f3ba2f; }
+        .active-market-tab { border-bottom: 3px solid #f3ba2f; color: #f3ba2f; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        input, select { background: #0b0e11 !important; border: 1px solid #2b2f36 !important; }
     </style>
 </head>
 <body class="pb-24">
 
     <header class="p-4 flex justify-between items-center border-b border-gray-800 sticky top-0 bg-[#0b0e11] z-50">
         <div class="flex items-center gap-2">
-            <div class="bg-yellow-ax w-8 h-8 rounded flex items-center justify-center font-black italic text-sm">AX</div>
-            <h1 class="text-md font-bold uppercase tracking-widest">AtomX Pro</h1>
+            <div class="bg-yellow-ax w-7 h-7 rounded flex items-center justify-center font-black italic text-xs">AX</div>
+            <h1 class="text-sm font-bold tracking-widest">ATOMX PRO</h1>
         </div>
-        <div id="header-status" class="bg-gray-800 text-[10px] px-2 py-1 rounded font-bold border border-gray-700">CONNECTING...</div>
+        <div id="kyc-badge" class="text-[9px] px-2 py-0.5 rounded-full font-bold border border-gray-700 text-gray-500 uppercase">Connecting...</div>
     </header>
 
     <main class="p-4">
@@ -37,73 +39,97 @@
         <section id="market-view" class="tab-content active space-y-4">
             <div class="flex justify-between items-center">
                 <div class="flex gap-6 text-sm font-bold">
-                    <button onclick="toggleMarket('buy')" id="tab-buy" class="pb-1 active-tab-border">Buy</button>
-                    <button onclick="toggleMarket('sell')" id="tab-sell" class="pb-1 text-gray-500">Sell</button>
+                    <button onclick="setMarket('buy')" id="m-buy" class="pb-1 active-market-tab">Buy</button>
+                    <button onclick="setMarket('sell')" id="m-sell" class="pb-1 text-gray-500">Sell</button>
                 </div>
-                <button onclick="openOrderModal()" class="bg-gray-800 px-3 py-1.5 rounded-lg text-[10px] font-bold border border-gray-700">
-                    <i class="fa-solid fa-plus text-yellow-ax mr-1"></i> POST AD
-                </button>
+                <div class="flex gap-2">
+                    <button onclick="openModal('post-modal')" class="bg-card px-3 py-1.5 rounded-lg text-[10px] font-bold border border-gray-700">
+                        <i class="fa-solid fa-plus text-yellow-ax mr-1"></i> POST AD
+                    </button>
+                </div>
             </div>
-
-            <div id="ad-container" class="space-y-3">
-                <p class="text-center text-gray-500 text-xs py-10">No active ads found...</p>
+            <div id="ad-list" class="space-y-3">
+                <p class="text-center text-gray-500 text-[10px] py-10 italic">Scanning market for orders...</p>
             </div>
         </section>
 
-        <section id="profile-view" class="tab-content space-y-4">
+        <section id="orders-view" class="tab-content space-y-4">
+            <h2 class="text-sm font-bold text-gray-400 uppercase">My Active Ads</h2>
+            <div id="my-ads-list" class="space-y-3 text-center py-10 text-xs text-gray-600">
+                You haven't posted any ads yet.
+            </div>
+        </section>
+
+        <section id="profile-view" class="tab-content space-y-5">
             <div class="bg-card p-5 rounded-2xl border border-gray-800 flex items-center gap-4">
-                <div class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center font-bold" id="p-icon">U</div>
+                <div class="w-14 h-14 bg-gray-700 rounded-full flex items-center justify-center text-xl font-bold" id="user-icon">U</div>
                 <div>
-                    <h2 class="font-bold" id="p-name">Username</h2>
-                    <p id="p-status" class="text-[10px] text-gray-400 mt-1 uppercase tracking-tighter">Status: Loading...</p>
+                    <h2 class="font-bold text-lg" id="user-name">Username</h2>
+                    <p id="user-status-text" class="text-[10px] text-gray-400 uppercase tracking-widest">Unverified Account</p>
                 </div>
             </div>
-            
-            <div class="bg-card p-4 rounded-xl border border-gray-800">
-                <h3 class="text-xs font-bold mb-2">Verification</h3>
-                <div id="kyc-area">
-                     <button onclick="db.ref('users/'+user.id).update({status:'pending'}); tg.showAlert('Submitted!')" class="w-full bg-blue-600 py-2 rounded text-xs font-bold">Request Verification</button>
+
+            <div class="bg-card p-5 rounded-2xl border border-gray-800">
+                <h3 class="text-xs font-bold mb-3 uppercase text-gray-400">Identity Verification</h3>
+                <div id="kyc-ui">
+                    <p class="text-[10px] text-gray-500 mb-4 font-medium">Verify your ID to start trading on AtomX Pro.</p>
+                    <button onclick="submitKYC()" class="w-full bg-blue-600 py-3 rounded-xl text-xs font-bold shadow-lg">Verify Identity</button>
+                </div>
+            </div>
+
+            <div class="bg-card p-5 rounded-2xl border border-gray-800">
+                <h3 class="text-xs font-bold mb-4 uppercase text-gray-400">Payment Settings</h3>
+                <div class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-bold text-blue-400 uppercase">Telebirr Info</label>
+                        <input type="number" id="pay-tele-phone" placeholder="Phone Number" class="w-full p-3 rounded-xl text-xs outline-none">
+                        <input type="text" id="pay-tele-name" placeholder="Account Full Name" class="w-full p-3 rounded-xl text-xs outline-none">
+                    </div>
+                    <div class="space-y-2 pt-2">
+                        <label class="text-[9px] font-bold text-green-400 uppercase">Bank Transfer (Optional)</label>
+                        <input type="text" id="pay-bank-name" placeholder="Bank Name (CBE, Abyssinia...)" class="w-full p-3 rounded-xl text-xs outline-none">
+                        <input type="number" id="pay-bank-acc" placeholder="Account Number" class="w-full p-3 rounded-xl text-xs outline-none">
+                    </div>
+                    <button onclick="savePayments()" class="w-full bg-yellow-ax py-3 rounded-xl text-xs font-bold text-black mt-2">Save All Methods</button>
                 </div>
             </div>
         </section>
 
         <section id="admin-view" class="tab-content space-y-4">
-            <h2 class="text-red-500 font-black">Admin Panel</h2>
-            <div id="admin-queue" class="space-y-2"></div>
+            <h2 class="text-red-500 font-black italic">ROOT ADMIN</h2>
+            <div id="admin-kyc-list" class="space-y-2"></div>
         </section>
     </main>
 
-    <div id="order-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-6">
-        <div class="bg-card w-full max-w-sm rounded-2xl p-6 border border-gray-700">
-            <h2 class="text-lg font-bold mb-4">Post New Ad</h2>
+    <div id="post-modal" class="fixed inset-0 bg-black/90 z-[100] hidden flex items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-card w-full max-w-sm rounded-3xl p-6 border border-gray-700 shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-bold">Create P2P Ad</h2>
+                <button onclick="closeModal('post-modal')"><i class="fa-solid fa-xmark text-gray-500"></i></button>
+            </div>
             <div class="space-y-4">
+                <select id="ad-type" class="w-full p-3 rounded-xl text-xs outline-none">
+                    <option value="buy">I want to BUY (Users see this as Sell)</option>
+                    <option value="sell">I want to SELL (Users see this as Buy)</option>
+                </select>
                 <div>
-                    <label class="text-[10px] text-gray-400 block mb-1">Ad Type</label>
-                    <select id="ad-type" class="w-full bg-[#0b0e11] border border-gray-700 p-2 rounded text-sm outline-none">
-                        <option value="buy">I want to Buy (P2P Buy)</option>
-                        <option value="sell">I want to Sell (P2P Sell)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-[10px] text-gray-400 block mb-1">Price per USDT (ETB)</label>
-                    <input type="number" id="ad-price" placeholder="e.g. 124.50" class="w-full bg-[#0b0e11] border border-gray-700 p-2 rounded text-sm outline-none">
+                    <label class="text-[10px] text-gray-500 ml-1">Price per 1 USDT (ETB)</label>
+                    <input type="number" id="ad-price" placeholder="124.50" class="w-full p-3 rounded-xl text-xs outline-none mt-1">
                 </div>
                 <div>
-                    <label class="text-[10px] text-gray-400 block mb-1">Total Amount (USDT)</label>
-                    <input type="number" id="ad-amount" placeholder="e.g. 100" class="w-full bg-[#0b0e11] border border-gray-700 p-2 rounded text-sm outline-none">
+                    <label class="text-[10px] text-gray-500 ml-1">Total USDT Amount</label>
+                    <input type="number" id="ad-amount" placeholder="100" class="w-full p-3 rounded-xl text-xs outline-none mt-1">
                 </div>
-                <div class="flex gap-2 pt-2">
-                    <button onclick="closeOrderModal()" class="flex-1 bg-gray-700 py-2 rounded font-bold text-xs">Cancel</button>
-                    <button onclick="submitAd()" class="flex-1 bg-yellow-ax py-2 rounded font-bold text-xs text-black">Confirm</button>
-                </div>
+                <button onclick="publishAd()" class="w-full bg-yellow-ax py-4 rounded-2xl font-bold text-xs text-black shadow-lg">Confirm & Post</button>
             </div>
         </div>
     </div>
 
-    <footer class="fixed bottom-0 left-0 right-0 bg-card border-t border-gray-800 flex justify-around p-3 pb-6">
-        <button onclick="switchTab('market')" id="nav-market" class="nav-btn active flex flex-col items-center"><i class="fa-solid fa-house"></i><span class="text-[10px] mt-1">Market</span></button>
-        <button onclick="switchTab('profile')" id="nav-profile" class="nav-btn flex flex-col items-center"><i class="fa-solid fa-user"></i><span class="text-[10px] mt-1">Profile</span></button>
-        <button onclick="switchTab('admin')" id="nav-admin" class="nav-btn hidden flex flex-col items-center text-red-400"><i class="fa-solid fa-crown"></i><span class="text-[10px] mt-1">Admin</span></button>
+    <footer class="fixed bottom-0 left-0 right-0 bg-[#1e2329] border-t border-gray-800 flex justify-around p-2 pb-6 z-50">
+        <button onclick="switchTab('market')" id="n-market" class="nav-btn active flex flex-col items-center w-1/5"><i class="fa-solid fa-chart-simple text-lg"></i><span class="text-[9px] mt-1 font-bold">Market</span></button>
+        <button onclick="switchTab('orders')" id="n-orders" class="nav-btn flex flex-col items-center w-1/5"><i class="fa-solid fa-list-check text-lg"></i><span class="text-[9px] mt-1 font-bold">My Ads</span></button>
+        <button onclick="switchTab('profile')" id="n-profile" class="nav-btn flex flex-col items-center w-1/5"><i class="fa-solid fa-user-gear text-lg"></i><span class="text-[9px] mt-1 font-bold">Profile</span></button>
+        <button onclick="switchTab('admin')" id="n-admin" class="nav-btn hidden flex flex-col items-center w-1/5 text-red-500"><i class="fa-solid fa-crown text-lg"></i><span class="text-[9px] mt-1 font-bold">Admin</span></button>
     </footer>
 
     <script>
@@ -119,114 +145,140 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
-        const user = tg.initDataUnsafe?.user || { id: 1234, first_name: "Test" };
-        const ADMIN_ID = 7798504269; // የአንተን ID እዚህ አስገባ
+        const user = tg.initDataUnsafe?.user || { id: 123, first_name: "Local" };
+        const ADMIN_ID = 7798504269; // <-- ቀይረው
 
-        let currentMarketMode = 'buy'; 
+        let currentMarket = 'buy';
 
         window.onload = () => {
             tg.expand();
-            if(user.id === ADMIN_ID) document.getElementById('nav-admin').classList.remove('hidden');
-            document.getElementById('p-name').innerText = user.first_name;
-            document.getElementById('p-icon').innerText = user.first_name.charAt(0);
+            if(user.id === ADMIN_ID) document.getElementById('n-admin').classList.remove('hidden');
+            document.getElementById('user-name').innerText = user.first_name;
+            document.getElementById('user-icon').innerText = user.first_name.charAt(0);
             
-            // Listen for data
-            loadUserData();
+            initUser();
             loadAds();
         };
 
-        function loadUserData() {
+        function initUser() {
             db.ref('users/' + user.id).on('value', (s) => {
                 const d = s.val() || {};
                 const status = d.status || 'unverified';
-                const h = document.getElementById('header-status');
-                h.innerText = status.toUpperCase();
-                h.className = status === 'verified' ? "text-[10px] px-2 py-1 rounded font-bold border border-green-800 text-green-500" : "text-[10px] px-2 py-1 rounded font-bold border border-yellow-800 text-yellow-500";
-                document.getElementById('p-status').innerText = "Status: " + status;
+                
+                // Update KYC Badge
+                const b = document.getElementById('kyc-badge');
+                b.innerText = status;
+                b.className = `text-[9px] px-2 py-0.5 rounded-full font-bold border ${status==='verified'?'border-green-600 text-green-500':'border-yellow-600 text-yellow-500'} uppercase`;
+                
+                document.getElementById('user-status-text').innerText = status + " Account";
+                
+                // Update KYC UI
+                const kycUI = document.getElementById('kyc-ui');
+                if(status === 'verified') kycUI.innerHTML = '<div class="text-green-500 text-xs font-bold text-center py-2"><i class="fa-solid fa-circle-check mr-1"></i> YOU ARE VERIFIED</div>';
+                else if(status === 'pending') kycUI.innerHTML = '<div class="text-yellow-500 text-xs font-bold text-center py-2 animate-pulse">REVIEW IN PROGRESS...</div>';
+
+                // Fill Payment Inputs
+                if(d.telePhone) document.getElementById('pay-tele-phone').value = d.telePhone;
+                if(d.teleName) document.getElementById('pay-tele-name').value = d.teleName;
+                if(d.bankName) document.getElementById('pay-bank-name').value = d.bankName;
+                if(d.bankAcc) document.getElementById('pay-bank-acc').value = d.bankAcc;
             });
         }
 
-        function toggleMarket(mode) {
-            currentMarketMode = mode;
-            document.getElementById('tab-buy').className = mode === 'buy' ? 'pb-1 active-tab-border' : 'pb-1 text-gray-500';
-            document.getElementById('tab-sell').className = mode === 'sell' ? 'pb-1 active-tab-border' : 'pb-1 text-gray-500';
-            loadAds();
+        function savePayments() {
+            db.ref('users/' + user.id).update({
+                telePhone: document.getElementById('pay-tele-phone').value,
+                teleName: document.getElementById('pay-tele-name').value,
+                bankName: document.getElementById('pay-bank-name').value,
+                bankAcc: document.getElementById('pay-bank-acc').value
+            }).then(() => tg.showAlert("Payment methods saved!"));
+        }
+
+        function submitKYC() {
+            db.ref('users/' + user.id).update({ status: 'pending' });
         }
 
         function loadAds() {
             db.ref('ads').on('value', (s) => {
                 const ads = s.val();
-                const container = document.getElementById('ad-container');
-                container.innerHTML = '';
-                let count = 0;
+                const list = document.getElementById('ad-list');
+                const myAdsList = document.getElementById('my-ads-list');
+                list.innerHTML = '';
+                myAdsList.innerHTML = '';
+                let marketCount = 0;
+                let myCount = 0;
 
                 for(let id in ads) {
                     const ad = ads[id];
-                    if(ad.type === currentMarketMode) {
-                        count++;
-                        container.innerHTML += `
-                        <div class="bg-card p-4 rounded-xl border border-gray-800 flex justify-between items-center shadow-md">
-                            <div>
-                                <div class="flex items-center gap-1 mb-1">
-                                    <span class="text-xs font-bold">${ad.userName}</span>
-                                    <i class="fa-solid fa-circle-check text-green-500 text-[8px]"></i>
-                                </div>
-                                <p class="text-[10px] text-gray-500">Amount: <span class="text-white">${ad.amount} USDT</span></p>
+                    // Global Market List
+                    if(ad.type === currentMarket) {
+                        marketCount++;
+                        list.innerHTML += `
+                        <div class="bg-card p-4 rounded-2xl border border-gray-800 flex justify-between items-center shadow-sm">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-1"><span class="text-xs font-bold">${ad.userName}</span><i class="fa-solid fa-certificate text-blue-500 text-[8px]"></i></div>
+                                <p class="text-[10px] text-gray-500 uppercase">Limit: <span class="text-white font-bold">${ad.amount} USDT</span></p>
+                                <div class="flex gap-1 pt-1"><span class="bg-blue-900/30 text-[8px] px-1 text-blue-400 font-bold rounded">TELEBIRR</span></div>
                             </div>
                             <div class="text-right">
-                                <p class="text-lg font-black text-yellow-ax">${ad.price} <span class="text-[8px] text-gray-400 uppercase">ETB</span></p>
-                                <button onclick="tg.showAlert('Order request sent to ${ad.userName}')" class="${currentMarketMode === 'buy' ? 'bg-yellow-ax' : 'bg-red-500 text-white'} px-6 py-1.5 rounded-lg text-[10px] font-bold mt-1 uppercase">${currentMarketMode.toUpperCase()}</button>
+                                <p class="text-xl font-black text-yellow-ax">${ad.price} <span class="text-[8px] text-gray-400">ETB</span></p>
+                                <button onclick="tg.showAlert('Contacting ${ad.userName}...')" class="${currentMarket==='buy'?'bg-yellow-ax':'bg-red-500 text-white'} px-6 py-2 rounded-xl text-[10px] font-black uppercase mt-1 shadow-md">${currentMarket.toUpperCase()}</button>
                             </div>
                         </div>`;
                     }
+                    // Personal Ads List
+                    if(ad.userId == user.id) {
+                        myCount++;
+                        myAdsList.innerHTML += `<div class="bg-card p-3 rounded-xl border border-gray-800 flex justify-between items-center mb-2">
+                            <span class="text-[10px] font-bold uppercase">${ad.type} | ${ad.amount} USDT @ ${ad.price}</span>
+                            <button onclick="db.ref('ads/${id}').remove()" class="text-red-500 text-xs px-2"><i class="fa-solid fa-trash"></i></button>
+                        </div>`;
+                    }
                 }
-                if(count === 0) container.innerHTML = '<p class="text-center text-gray-500 text-xs py-10 italic">No ' + currentMarketMode + ' orders yet.</p>';
+                if(marketCount === 0) list.innerHTML = '<p class="text-center text-gray-500 text-[10px] py-10 italic">No orders found.</p>';
             });
         }
 
-        function openOrderModal() { document.getElementById('order-modal').classList.remove('hidden'); }
-        function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
+        function setMarket(m) {
+            currentMarket = m;
+            document.getElementById('m-buy').className = m === 'buy' ? 'pb-1 active-market-tab' : 'pb-1 text-gray-500';
+            document.getElementById('m-sell').className = m === 'sell' ? 'pb-1 active-market-tab' : 'pb-1 text-gray-500';
+            loadAds();
+        }
 
-        function submitAd() {
-            const price = document.getElementById('ad-price').value;
-            const amount = document.getElementById('ad-amount').value;
-            const type = document.getElementById('ad-type').value;
-
-            if(!price || !amount) return tg.showAlert("Please fill all fields!");
-
+        function publishAd() {
+            const p = document.getElementById('ad-price').value;
+            const a = document.getElementById('ad-amount').value;
+            if(!p || !a) return tg.showAlert("Fill all fields!");
             db.ref('ads').push({
-                userId: user.id,
-                userName: user.first_name,
-                price: price,
-                amount: amount,
-                type: type,
-                timestamp: Date.now()
-            }).then(() => {
-                tg.showAlert("Ad posted successfully!");
-                closeOrderModal();
-            });
+                userId: user.id, userName: user.first_name,
+                price: p, amount: a, type: document.getElementById('ad-type').value
+            }).then(() => { closeModal('post-modal'); tg.showAlert("Ad Live! ✅"); });
         }
 
-        function switchTab(id) {
+        function switchTab(t) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id + '-view').classList.add('active');
-            document.getElementById('nav-' + id).classList.add('active');
-            if(id === 'admin') loadAdmin();
+            document.getElementById(t + '-view').classList.add('active');
+            document.getElementById('n-' + t).classList.add('active');
+            if(t === 'admin') loadAdmin();
         }
+
+        function openModal(m) { document.getElementById(m).classList.remove('hidden'); }
+        function closeModal(m) { document.getElementById(m).classList.add('hidden'); }
 
         function loadAdmin() {
             db.ref('users').on('value', (s) => {
-                const users = s.val();
-                const q = document.getElementById('admin-queue');
-                q.innerHTML = '';
-                for(let id in users) {
-                    if(users[id].status === 'pending') {
-                        q.innerHTML += `<div class="bg-card p-3 rounded border border-gray-700 flex justify-between items-center text-xs">
-                            <span>${users[id].name}</span>
+                const u = s.val();
+                const list = document.getElementById('admin-kyc-list');
+                list.innerHTML = '';
+                for(let id in u) {
+                    if(u[id].status === 'pending') {
+                        list.innerHTML += `<div class="bg-card p-3 rounded-xl border border-gray-700 flex justify-between items-center text-[10px]">
+                            <span>${u[id].name}</span>
                             <div class="flex gap-2">
-                                <button onclick="db.ref('users/${id}').update({status:'verified'})" class="bg-green-600 px-2 py-1 rounded">Approve</button>
-                                <button onclick="db.ref('users/${id}').update({status:'unverified'})" class="bg-red-600 px-2 py-1 rounded">Reject</button>
+                                <button onclick="db.ref('users/${id}').update({status:'verified'})" class="bg-green-600 px-3 py-1 rounded-full">APPROVE</button>
+                                <button onclick="db.ref('users/${id}').update({status:'unverified'})" class="bg-red-600 px-3 py-1 rounded-full">REJECT</button>
                             </div>
                         </div>`;
                     }
@@ -236,4 +288,3 @@
     </script>
 </body>
 </html>
-
