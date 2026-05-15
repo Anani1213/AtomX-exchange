@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AtomX Pro Exchange</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <style>
+        body { background-color: #0b0e11; color: #eaecef; font-family: 'Inter', sans-serif; user-select: none; }
+        .bg-card { background-color: #1e2329; }
+        .text-yellow-ax { color: #f3ba2f; }
+        .bg-yellow-ax { background-color: #f3ba2f; color: #000; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        .nav-btn.active { color: #f3ba2f; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-hover:active { transform: scale(0.96); }
+    </style>
+</head>
+<body class="pb-24">
+
+    <header class="p-4 flex justify-between items-center border-b border-gray-800 sticky top-0 bg-[#0b0e11] z-50">
+        <div class="flex items-center gap-2">
+            <div class="bg-yellow-ax w-8 h-8 rounded flex items-center justify-center font-black italic">AX</div>
+            <h1 class="text-lg font-bold uppercase tracking-wider">AtomX</h1>
+        </div>
+        <div id="header-status" class="bg-gray-800 text-gray-400 text-[10px] px-2 py-1 rounded font-bold uppercase border border-gray-700">
+            Connecting...
+        </div>
+    </header>
+
+    <main class="p-4">
+        
+        <section id="market-view" class="tab-content active space-y-4">
+            <div class="flex justify-between items-center">
+                <div class="flex gap-4 text-sm font-bold">
+                    <span class="text-yellow-ax border-b-2 border-[#f3ba2f] pb-1 cursor-pointer">Buy</span>
+                    <span class="text-gray-500 cursor-pointer">Sell</span>
+                </div>
+                <span class="text-xs text-gray-400 bg-gray-800 px-2 py-1 rounded">USDT / ETB <i class="fa-solid fa-caret-down ml-1"></i></span>
+            </div>
+
+            <div class="bg-card p-5 rounded-2xl border border-gray-800 shadow-lg">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-xs font-bold">S</div>
+                        <div>
+                            <p class="text-sm font-bold">Sami_Trade <i class="fa-solid fa-circle-check text-green-500 text-[10px]"></i></p>
+                            <p class="text-[10px] text-gray-400">100% Completion</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-gray-500">Price</p>
+                        <p class="text-xl font-black text-yellow-ax">124.50 <span class="text-[10px] text-gray-400">ETB</span></p>
+                    </div>
+                </div>
+                <div class="flex justify-between items-end border-t border-gray-800 pt-3">
+                    <div class="text-[10px] text-gray-400 space-y-1">
+                        <p>Available: <span class="text-white font-medium">850.00 USDT</span></p>
+                        <p>Limit: <span class="text-white font-medium">1,000 - 50,000 ETB</span></p>
+                        <div class="flex gap-1 mt-1">
+                            <span class="bg-blue-900/30 text-blue-400 px-2 py-0.5 rounded">Telebirr</span>
+                        </div>
+                    </div>
+                    <button onclick="attemptBuy()" class="bg-yellow-ax px-8 py-2.5 rounded-xl font-bold text-sm btn-hover shadow-[0_0_15px_rgba(243,186,47,0.2)]">
+                        BUY
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="profile-view" class="tab-content space-y-5">
+            <div class="bg-card p-5 rounded-2xl border border-gray-800 flex items-center gap-4">
+                <div class="w-14 h-14 bg-gray-700 rounded-full flex items-center justify-center text-2xl font-bold" id="profile-icon">U</div>
+                <div>
+                    <h2 class="text-lg font-bold" id="profile-name">User Name</h2>
+                    <p id="profile-status-text" class="text-xs text-gray-400 mt-1">Loading...</p>
+                </div>
+            </div>
+
+            <div class="bg-card p-5 rounded-2xl border border-gray-800">
+                <h3 class="font-bold text-sm mb-3"><i class="fa-solid fa-shield-halved text-yellow-ax mr-2"></i> Identity Verification</h3>
+                
+                <div id="kyc-unverified" class="hidden">
+                    <p class="text-xs text-gray-400 mb-4">Upload a clear photo of your National ID or Passport to unlock trading.</p>
+                    <input type="file" id="id-upload" class="hidden" accept="image/*" onchange="updateFileName()">
+                    <button onclick="document.getElementById('id-upload').click()" class="w-full border-2 border-dashed border-gray-600 py-3 rounded-xl text-sm text-gray-400 mb-3 hover:border-[#f3ba2f] transition">
+                        <i class="fa-solid fa-camera mr-2"></i> <span id="file-label">Choose ID Photo</span>
+                    </button>
+                    <button onclick="submitID()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm btn-hover">Submit for Review</button>
+                </div>
+
+                <div id="kyc-pending" class="hidden text-center py-4">
+                    <i class="fa-solid fa-clock-rotate-left text-4xl text-yellow-500 mb-3 animate-pulse"></i>
+                    <p class="text-sm font-bold text-yellow-500 mb-1">Review in Progress</p>
+                    <p class="text-[10px] text-gray-400">Your ID is currently being reviewed by an admin. Please wait.</p>
+                </div>
+
+                <div id="kyc-verified" class="hidden text-center py-4">
+                    <i class="fa-solid fa-circle-check text-4xl text-green-500 mb-3"></i>
+                    <p class="text-sm font-bold text-green-500 mb-1">Account Verified</p>
+                    <p class="text-[10px] text-gray-400">You are fully approved to trade on AtomX.</p>
+                </div>
+            </div>
+
+            <div class="bg-card p-5 rounded-2xl border border-gray-800">
+                <h3 class="font-bold text-sm mb-4"><i class="fa-solid fa-wallet text-yellow-ax mr-2"></i> Payment Methods</h3>
+                
+                <div class="space-y-4">
+                    <div class="bg-[#0b0e11] p-3 rounded-xl border border-gray-800">
+                        <label class="text-[10px] font-bold text-blue-400 uppercase tracking-wider block mb-2">Telebirr Details (For Sellers)</label>
+                        <input type="number" id="tb-phone" placeholder="Phone Number (e.g. 09...)" class="w-full bg-transparent border-b border-gray-700 py-2 text-sm outline-none focus:border-[#f3ba2f] mb-2 text-white">
+                        <input type="text" id="tb-name" placeholder="Full Account Name" class="w-full bg-transparent border-b border-gray-700 py-2 text-sm outline-none focus:border-[#f3ba2f] text-white">
+                    </div>
+
+                    <div class="bg-[#0b0e11] p-3 rounded-xl border border-gray-800">
+                        <label class="text-[10px] font-bold text-yellow-ax uppercase tracking-wider block mb-2">Binance Details (For Buyers)</label>
+                        <input type="number" id="bn-id" placeholder="Binance Pay ID" class="w-full bg-transparent border-b border-gray-700 py-2 text-sm outline-none focus:border-[#f3ba2f] mb-2 text-white">
+                        <input type="text" id="bn-user" placeholder="Binance Username" class="w-full bg-transparent border-b border-gray-700 py-2 text-sm outline-none focus:border-[#f3ba2f] text-white">
+                    </div>
+
+                    <button onclick="savePaymentInfo()" class="w-full bg-yellow-ax py-3 rounded-xl font-bold text-sm btn-hover text-black">Save Settings</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="admin-view" class="tab-content space-y-4">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-xl font-black text-red-500">Admin Dashboard</h2>
+                <span class="bg-red-500/20 text-red-500 px-2 py-1 rounded text-[10px] font-bold border border-red-500">ROOT</span>
+            </div>
+            
+            <div class="bg-card p-5 rounded-2xl border border-gray-800">
+                <h3 class="font-bold text-sm mb-3">Pending ID Verifications</h3>
+                <div id="admin-queue-list" class="space-y-3">
+                    <p class="text-xs text-gray-500 text-center py-4">Loading queue...</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="fixed bottom-0 left-0 right-0 bg-card border-t border-gray-800 flex justify-around p-2 pb-4 z-50">
+        <button onclick="switchTab('market')" id="nav-market" class="nav-btn active flex flex-col items-center p-2 w-20 transition">
+            <i class="fa-solid fa-chart-line text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Market</span>
+        </button>
+        <button onclick="switchTab('profile')" id="nav-profile" class="nav-btn flex flex-col items-center p-2 w-20 transition">
+            <i class="fa-solid fa-user text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Profile</span>
+        </button>
+        <button onclick="switchTab('admin')" id="nav-admin" class="hidden nav-btn flex flex-col items-center p-2 w-20 text-red-400 transition">
+            <i class="fa-solid fa-shield-halved text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Admin</span>
+        </button>
+    </footer>
+
+    <script>
+        // --- 1. FIREBASE CONFIGURATION (የሰጠኸኝ ዳታ) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyD3getH9kSW2oHuOI9AZR8t4yZ34_jPZG0",
+            authDomain: "atomx-exchange.firebaseapp.com",
+            databaseURL: "https://atomx-exchange-default-rtdb.firebaseio.com",
+            projectId: "atomx-exchange",
+            storageBucket: "atomx-exchange.firebasestorage.app",
+            messagingSenderId: "228796594910",
+            appId: "1:228796594910:web:c51b4fc1158e30fb3ea04f"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // --- 2. TELEGRAM SETTINGS ---
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.headerColor = '#0b0e11';
+        tg.backgroundColor = '#0b0e11';
+
+        const user = tg.initDataUnsafe?.user;
+        const ADMIN_ID = 7798504269; // <--- 🔴 የአንተን የቴሌግራም ID እዚህ አስገባ 🔴
+
+        // Global User State
+        let currentUserStatus = 'unverified';
+
+        // --- 3. ON LOAD LOGIC ---
+        window.onload = () => {
+            if (user) {
+                // Set Profile Info
+                document.getElementById('profile-name').innerText = user.first_name || 'User';
+                document.getElementById('profile-icon').innerText = (user.first_name || 'U').charAt(0).toUpperCase();
+
+                // Show Admin Tab if applicable
+                if (user.id === ADMIN_ID) {
+                    document.getElementById('nav-admin').classList.remove('hidden');
+                }
+
+                // Listen to Realtime Database for THIS user
+                db.ref('users/' + user.id).on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        currentUserStatus = data.status || 'unverified';
+                        updateUIBasedOnStatus(currentUserStatus);
+                        
+                        // Populate inputs if data exists
+                        if(data.tbPhone) document.getElementById('tb-phone').value = data.tbPhone;
+                        if(data.tbName) document.getElementById('tb-name').value = data.tbName;
+                        if(data.bnId) document.getElementById('bn-id').value = data.bnId;
+                        if(data.bnUser) document.getElementById('bn-user').value = data.bnUser;
+                    } else {
+                        // User is opening the app for the first time
+                        db.ref('users/' + user.id).set({
+                            name: user.first_name,
+                            username: user.username || 'unknown',
+                            status: 'unverified'
+                        });
+                        updateUIBasedOnStatus('unverified');
+                    }
+                });
+            } else {
+                tg.showAlert("Please open this app inside Telegram.");
+            }
+        };
+
+        // --- 4. NAVIGATION ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(tabId + '-view').classList.add('active');
+            document.getElementById('nav-' + tabId).classList.add('active');
+            
+            // Load admin data only when clicking Admin tab
+            if(tabId === 'admin') loadAdminDashboard();
+        }
+
+        // --- 5. UI UPDATES ---
+        function updateUIBasedOnStatus(status) {
+            const hStatus = document.getElementById('header-status');
+            const pStatusText = document.getElementById('profile-status-text');
+            
+            document.getElementById('kyc-unverified').classList.add('hidden');
+            document.getElementById('kyc-pending').classList.add('hidden');
+            document.getElementById('kyc-verified').classList.add('hidden');
+
+            if (status === 'verified') {
+                hStatus.innerText = 'Verified ✅';
+                hStatus.className = 'bg-green-900/40 text-green-400 text-[10px] px-2 py-1 rounded font-bold uppercase border border-green-800';
+                pStatusText.innerHTML = '<i class="fa-solid fa-circle-check text-green-500 mr-1"></i> Account Verified';
+                document.getElementById('kyc-verified').classList.remove('hidden');
+            } else if (status === 'pending') {
+                hStatus.innerText = 'Pending ⏳';
+                hStatus.className = 'bg-yellow-900/40 text-yellow-500 text-[10px] px-2 py-1 rounded font-bold uppercase border border-yellow-800';
+                pStatusText.innerHTML = '<i class="fa-solid fa-clock text-yellow-500 mr-1"></i> Review Pending';
+                document.getElementById('kyc-pending').classList.remove('hidden');
+            } else {
+                hStatus.innerText = 'Unverified';
+                hStatus.className = 'bg-gray-800 text-gray-400 text-[10px] px-2 py-1 rounded font-bold uppercase border border-gray-700';
+                pStatusText.innerHTML = '<i class="fa-solid fa-circle-xmark text-red-500 mr-1"></i> Not Verified';
+                document.getElementById('kyc-unverified').classList.remove('hidden');
+            }
+        }
+
+        // --- 6. USER ACTIONS ---
+        function attemptBuy() {
+            if (currentUserStatus === 'verified') {
+                tg.showPopup({ title: 'Trade Details', message: 'You can now proceed to buy USDT. Seller info will be provided.', buttons: [{type: 'ok'}] });
+            } else if (currentUserStatus === 'pending') {
+                tg.showAlert("Your account verification is still pending. Please wait for admin approval.");
+            } else {
+                tg.showAlert("Action Denied! You must verify your ID in the Profile section before trading.");
+                switchTab('profile');
+            }
+        }
+
+        function updateFileName() {
+            const file = document.getElementById('id-upload').files[0];
+            if(file) document.getElementById('file-label').innerText = file.name;
+        }
+
+        function submitID() {
+            const file = document.getElementById('id-upload').files[0];
+            if(!file) {
+                tg.showAlert("Please select an image first.");
+                return;
+            }
+            tg.showConfirm("Submit this ID for verification?", (confirm) => {
+                if(confirm && user) {
+                    // Update database to pending
+                    db.ref('users/' + user.id).update({ status: 'pending' });
+                    tg.showAlert("ID submitted successfully! Waiting for Admin review.");
+                }
+            });
+        }
+
+        function savePaymentInfo() {
+            if(!user) return;
+            const data = {
+                tbPhone: document.getElementById('tb-phone').value,
+                tbName: document.getElementById('tb-name').value,
+                bnId: document.getElementById('bn-id').value,
+                bnUser: document.getElementById('bn-user').value
+            };
+            db.ref('users/' + user.id).update(data);
+            tg.showAlert("Payment methods saved successfully! ✅");
+        }
+
+        // --- 7. ADMIN FUNCTIONS ---
+        function loadAdminDashboard() {
+            db.ref('users').on('value', (snapshot) => {
+                const users = snapshot.val();
+                let html = '';
+                
+                for (let uid in users) {
+                    if (users[uid].status === 'pending') {
+                        html += `
+                        <div class="bg-[#0b0e11] p-4 rounded-xl border border-gray-700">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-sm font-bold">@${users[uid].username} (${users[uid].name})</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="adminAction('${uid}', 'verified')" class="flex-1 bg-green-600 text-white py-2 rounded-lg font-bold text-xs btn-hover">Approve</button>
+                                <button onclick="adminAction('${uid}', 'unverified')" class="flex-1 bg-red-600 text-white py-2 rounded-lg font-bold text-xs btn-hover">Reject</button>
+                            </div>
+                        </div>`;
+                    }
+                }
+                
+                document.getElementById('admin-queue-list').innerHTML = html || '<p class="text-xs text-gray-500 text-center py-4">No pending requests.</p>';
+            });
+        }
+
+        function adminAction(uid, newStatus) {
+            db.ref('users/' + uid).update({ status: newStatus });
+            tg.showAlert(newStatus === 'verified' ? "User Approved!" : "User Rejected!");
+        }
+    </script>
+</body>
+</html>
