@@ -167,10 +167,10 @@
                 <div class="text-xs bg-[#2b3139] px-2 py-1 rounded text-white font-bold">Total Users: <span id="admin-user-count" class="text-[#FCD535]">0</span></div>
             </div>
             
-            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide text-xs font-bold">
-                <button onclick="switchAdminTab('admin-users')" class="bg-[#FCD535] text-black px-3 py-1.5 rounded-lg shadow-lg">Users</button>
-                <button onclick="switchAdminTab('admin-kyc')" class="bg-[#1e2329] text-white px-3 py-1.5 rounded-lg border border-[#2b3139]">KYC</button>
-                <button onclick="switchAdminTab('admin-disputes')" class="relative bg-[#1e2329] text-white px-3 py-1.5 rounded-lg border border-[#2b3139]">
+            <div class="flex gap-2 overflow-x-auto pb-2 text-xs font-bold">
+                <button onclick="switchAdminTab('admin-users', this)" class="admin-tab-btn bg-[#FCD535] text-black px-3 py-1.5 rounded-lg shadow-lg">Users</button>
+                <button onclick="switchAdminTab('admin-kyc', this)" class="admin-tab-btn bg-[#1e2329] text-white px-3 py-1.5 rounded-lg border border-[#2b3139]">KYC</button>
+                <button onclick="switchAdminTab('admin-disputes', this)" class="admin-tab-btn relative bg-[#1e2329] text-white px-3 py-1.5 rounded-lg border border-[#2b3139]">
                     Disputes <span id="dispute-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
                 </button>
             </div>
@@ -278,15 +278,13 @@
         };
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.database();
-        const storage = firebase.storage();
 
         // 2. TELEGRAM DATA & ADMIN SETUP
         const tg = window.Telegram.WebApp;
         tg.expand();
-        const user = tg.initDataUnsafe?.user || { id: 7798504269, first_name: "Admin" }; // Default to Admin for testing
+        const user = tg.initDataUnsafe?.user || { id: 7798504269, first_name: "Admin" }; 
         const ADMIN_ID = 7798504269; 
 
-        // Global Variables
         let myData = {};
         let currentMarketType = 'buy';
         let activeTradeId = null;
@@ -320,7 +318,6 @@
             const initLetter = myData.name.charAt(0).toUpperCase();
             document.getElementById('prof-avatar').innerText = initLetter;
             
-            // Set Header Avatar
             if(user.photo_url) {
                 document.getElementById('header-avatar').innerHTML = `<img src="${user.photo_url}" class="w-full h-full object-cover">`;
             } else {
@@ -328,12 +325,20 @@
             }
             
             const sText = document.getElementById('prof-status-text');
+            const kycArea = document.getElementById('kyc-action-area');
+
             if(myData.status === 'verified') {
                 sText.innerText = 'STATUS: VERIFIED'; sText.className = "text-[10px] text-[#0ECB81] mt-1 uppercase font-bold";
-                document.getElementById('kyc-action-area').innerHTML = `<div class="text-center text-[#0ECB81] font-bold text-xs"><i class="fa-solid fa-circle-check text-lg mb-1"></i><br>Verified</div>`;
+                kycArea.innerHTML = `<div class="text-center text-[#0ECB81] font-bold text-xs"><i class="fa-solid fa-circle-check text-lg mb-1"></i><br>Verified</div>`;
+            } else if(myData.status === 'pending') {
+                sText.innerText = 'STATUS: PENDING'; sText.className = "text-[10px] text-[#FCD535] mt-1 uppercase font-bold";
+                kycArea.innerHTML = `<button disabled class="w-full bg-[#1e2329] border border-[#2b3139] text-[#FCD535] py-2.5 rounded-lg text-sm font-bold animate-pulse">Pending Review...</button>`;
+            } else if(myData.status === 'declined') {
+                sText.innerText = 'STATUS: DECLINED'; sText.className = "text-[10px] text-[#F6465D] mt-1 uppercase font-bold";
+                kycArea.innerHTML = `<div class="text-center mb-2 text-xs text-red-400 font-medium">Verification Failed. Try again.</div><button onclick="document.getElementById('kyc-file').click()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold">Try Again</button><input type="file" id="kyc-file" class="hidden" accept="image/*" onchange="uploadKYC(this)">`;
             } else {
-                sText.innerText = myData.status === 'pending' ? 'STATUS: PENDING' : 'STATUS: UNVERIFIED';
-                sText.className = myData.status === 'pending' ? "text-[10px] text-[#FCD535] mt-1 uppercase font-bold" : "text-[10px] text-[#848E9C] mt-1 uppercase font-bold";
+                sText.innerText = 'STATUS: UNVERIFIED'; sText.className = "text-[10px] text-[#848E9C] mt-1 uppercase font-bold";
+                kycArea.innerHTML = `<button onclick="document.getElementById('kyc-file').click()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold">Upload ID to Verify</button><input type="file" id="kyc-file" class="hidden" accept="image/*" onchange="uploadKYC(this)">`;
             }
 
             if(myData.telePhone) document.getElementById('pm-tele-phone').value = myData.telePhone;
@@ -347,21 +352,50 @@
                 teleName: document.getElementById('pm-tele-name').value,
                 binanceId: document.getElementById('pm-binance-id').value
             });
-            showToast("Profile Updated!");
+            showToast("Profile Settings Saved!");
         }
 
         function uploadKYC(input) {
             if(input.files && input.files[0]) {
                 const reader = new FileReader();
+                // Local temporary change to 'Pending' visually before firebase sync triggers
+                document.getElementById('kyc-action-area').innerHTML = `<button disabled class="w-full bg-[#1e2329] border border-[#2b3139] text-[#FCD535] py-2.5 rounded-lg text-sm font-bold">Pending Review...</button>`;
+                
                 reader.onload = e => {
                     db.ref('users/' + user.id).update({ status: 'pending', idPhoto: e.target.result });
-                    showToast("KYC Sent to Admin!");
+                    showToast("ID Uploaded! Status is now Pending.");
                 };
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        // 5. MARKET & ADS
+        // 5. MARKET & ADS LOCK SYSTEM
+        function checkRequirements() {
+            if(!myData.telePhone || !myData.teleName || !myData.binanceId || myData.status !== 'verified') {
+                showToast("🔒 Complete Payment Info & Get Verified First!");
+                switchMainTab('profile');
+                return false;
+            }
+            return true;
+        }
+
+        function publishAd() {
+            if(!checkRequirements()) return;
+            
+            const price = parseFloat(document.getElementById('ad-price').value);
+            const amount = parseFloat(document.getElementById('ad-amount').value);
+            const min = parseFloat(document.getElementById('ad-min').value);
+            const max = parseFloat(document.getElementById('ad-max').value);
+            const terms = document.getElementById('ad-terms').value || "No special terms.";
+
+            if(!price || !amount || !min || !max) return showToast("Fill all fields!");
+
+            db.ref('ads').push({
+                uid: user.id, userName: user.first_name, type: document.getElementById('ad-form-type').value,
+                price: price, amount: amount, min: min, max: max, terms: terms, timestamp: Date.now()
+            }).then(() => { showToast("Ad Posted Successfully!"); switchMainTab('market'); });
+        }
+
         function setMarket(type) {
             currentMarketType = type;
             document.getElementById('btn-market-buy').className = type === 'buy' ? 'text-white border-b-2 border-[#FCD535] pb-1' : 'text-[#848E9C] pb-1';
@@ -375,38 +409,19 @@
             document.getElementById('form-tab-sell').className = type === 'sell' ? "flex-1 py-2 text-sm font-bold bg-[#F6465D] text-white rounded-md" : "flex-1 py-2 text-sm font-bold text-[#848E9C] rounded-md";
         }
 
-        function publishAd() {
-            if(myData.status !== 'verified') return showToast("Verify account to post ads!");
-            if(!myData.telePhone || !myData.binanceId) return showToast("Add Telebirr & Binance ID first!");
-            
-            const price = parseFloat(document.getElementById('ad-price').value);
-            const amount = parseFloat(document.getElementById('ad-amount').value);
-            const min = parseFloat(document.getElementById('ad-min').value);
-            const max = parseFloat(document.getElementById('ad-max').value);
-            const terms = document.getElementById('ad-terms').value || "No special terms.";
-
-            if(!price || !amount || !min || !max) return showToast("Fill all fields!");
-
-            db.ref('ads').push({
-                uid: user.id, userName: user.first_name, type: document.getElementById('ad-form-type').value,
-                price: price, amount: amount, min: min, max: max, terms: terms, timestamp: Date.now()
-            }).then(() => { showToast("Ad Posted!"); switchMainTab('market'); });
-        }
-
         function loadMarketAds() {
             db.ref('ads').on('value', snap => {
                 const list = document.getElementById('market-list'); list.innerHTML = '';
                 let adsArray = [];
                 snap.forEach(child => { adsArray.push({ id: child.key, ...child.val() }); });
 
-                // Binance Sorting Logic: Buy = Lowest Price First. Sell = Highest Price First.
                 adsArray = adsArray.filter(a => a.type === (currentMarketType === 'buy' ? 'sell' : 'buy'));
                 adsArray.sort((a, b) => currentMarketType === 'buy' ? a.price - b.price : b.price - a.price);
 
                 adsArray.forEach(ad => {
                     const btnLabel = currentMarketType === 'buy' ? 'BUY' : 'SELL';
                     const btnClr = currentMarketType === 'buy' ? 'bg-[#0ECB81]' : 'bg-[#F6465D]';
-                    const myAdHidden = ad.uid == user.id ? 'hidden' : ''; // Hide own ads from market
+                    const myAdHidden = ad.uid == user.id ? 'hidden' : ''; 
                     
                     list.innerHTML += `
                     <div class="bg-[#1e2329] p-3 rounded-xl mb-2 flex justify-between items-center border border-[#2b3139] ${myAdHidden}">
@@ -426,9 +441,9 @@
             });
         }
 
-        // 6. TRADING SYSTEM
+        // 6. TRADING LOCKS
         function openPurchaseModal(adId, creatorId, price, min, max, terms) {
-            if(myData.status !== 'verified') return showToast("Verify account to trade!");
+            if(!checkRequirements()) return; // Lock order taking if unverified
             selectedAd = { adId, creatorId, price, min, max };
             document.getElementById('pm-title').innerText = `${currentMarketType === 'buy' ? 'Buy' : 'Sell'} USDT`;
             document.getElementById('pm-limit').innerText = `${min} - ${max} USDT`;
@@ -451,9 +466,7 @@
                 status: 'pending', buyerAccepted: false, sellerAccepted: false, 
                 startTime: Date.now(), dispute: false
             }).then(() => {
-                db.ref('chats/' + ref.key).push({ sender: 'system', text: 'Order started. You have 15 minutes to complete the trade. Upload payment screenshots here.' });
-                // Simulate Bot notification trigger here
-                notifyTelegramBot(selectedAd.creatorId, `New P2P Order: ${amt} USDT! Check the app.`);
+                db.ref('chats/' + ref.key).push({ sender: 'system', text: 'Order started. 15 minutes remaining.' });
                 closeModal('purchaseModal');
                 openTradeRoom(ref.key);
             });
@@ -475,7 +488,6 @@
                     if(o.dispute) hasDispute = true;
                 });
 
-                // Update Admin badge if user is admin
                 if(user.id == ADMIN_ID) {
                     const badge = document.getElementById('dispute-badge');
                     const dot = document.getElementById('nav-dispute-dot');
@@ -495,7 +507,6 @@
                 document.getElementById('tr-etb').innerText = o.amountEtb.toFixed(2) + " ETB";
                 document.getElementById('tr-usdt').innerText = o.amountUsdt.toFixed(2) + " USDT";
                 
-                // Timer Logic
                 clearInterval(tradeInterval);
                 tradeInterval = setInterval(() => {
                     const diff = 15 * 60 - Math.floor((Date.now() - o.startTime) / 1000);
@@ -518,7 +529,6 @@
                     `;
                 });
 
-                // Double Acceptance Logic
                 const btn = document.getElementById('btn-tr-accept');
                 const iAmBuyer = o.buyerId == user.id;
                 const myAcceptStatus = iAmBuyer ? o.buyerAccepted : o.sellerAccepted;
@@ -553,7 +563,7 @@
                     });
                 } else {
                     db.ref('orders/' + activeTradeId).update(updates);
-                    db.ref('chats/' + activeTradeId).push({ sender: 'system', text: `${user.first_name} has accepted/paid. Waiting for partner.` });
+                    db.ref('chats/' + activeTradeId).push({ sender: 'system', text: `${user.first_name} confirmed.` });
                 }
             });
         }
@@ -565,16 +575,16 @@
 
         function reportDispute() {
             db.ref('orders/' + activeTradeId).update({ dispute: true });
-            db.ref('chats/' + activeTradeId).push({ sender: 'system', text: `⚠️ DISPUTE RAISED. Admin has been notified.` });
+            db.ref('chats/' + activeTradeId).push({ sender: 'system', text: `⚠️ DISPUTE RAISED. Admin notified.` });
             showToast("Dispute reported to Admin.");
         }
 
         function submitRating(type) {
             closeModal('ratingModal');
-            showToast(`Thank you! Rated ${type}.`);
+            showToast(`Rated ${type}.`);
         }
 
-        // 7. CHAT & SCREENSHOTS
+        // 7. CHAT SYSTEM
         function loadChat(orderId) {
             db.ref('chats/' + orderId).on('value', s => {
                 const box = document.getElementById('chat-messages'); box.innerHTML = '';
@@ -610,7 +620,17 @@
             }
         }
 
-        // 8. ADMIN SYSTEM
+        // 8. WORKING ADMIN SYSTEM + DISPUTE POWERS
+        function switchAdminTab(id, btn) {
+            document.querySelectorAll('.admin-panel').forEach(e => e.classList.add('hidden'));
+            document.querySelectorAll('.admin-tab-btn').forEach(e => {
+                e.className = "admin-tab-btn bg-[#1e2329] text-white px-3 py-1.5 rounded-lg border border-[#2b3139]";
+            });
+            
+            document.getElementById(id).classList.remove('hidden');
+            btn.className = "admin-tab-btn bg-[#FCD535] text-black px-3 py-1.5 rounded-lg shadow-lg";
+        }
+
         function loadAdminData() {
             db.ref('users').on('value', s => {
                 const users = s.val() || {};
@@ -622,40 +642,64 @@
                 Object.keys(users).forEach(id => {
                     const u = users[id];
                     const bBtn = u.isBanned ? `<button onclick="toggleBan('${id}', false)" class="bg-gray-600 px-2 py-1 rounded text-[10px]">UNBAN</button>` : `<button onclick="toggleBan('${id}', true)" class="bg-[#F6465D] px-2 py-1 rounded text-[10px]">BAN</button>`;
-                    uList.innerHTML += `<div class="bg-[#1e2329] p-2 rounded border border-[#2b3139] flex justify-between items-center text-xs"><span class="text-white">${u.name}</span>${id!=ADMIN_ID?bBtn:''}</div>`;
+                    uList.innerHTML += `<div class="bg-[#1e2329] p-2 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-1"><span class="text-white font-medium">${u.name}</span>${id!=ADMIN_ID?bBtn:''}</div>`;
                     
                     if(u.status === 'pending') {
-                        kList.innerHTML += `<div class="bg-[#1e2329] p-3 rounded border border-yellow-800 text-xs mb-2"><img src="${u.idPhoto}" class="w-full h-32 object-cover mb-2 rounded"><div class="flex gap-2"><button onclick="adminKYC('${id}','verified')" class="flex-1 bg-[#0ECB81] py-1.5 rounded font-bold">Approve</button><button onclick="adminKYC('${id}','unverified')" class="flex-1 bg-[#F6465D] py-1.5 rounded font-bold">Reject</button></div></div>`;
+                        kList.innerHTML += `
+                        <div class="bg-[#1e2329] p-3 rounded border border-yellow-600 text-xs mb-2 space-y-2">
+                            <div class="text-white font-bold">User Name: <span class="text-[#FCD535]">${u.name}</span></div>
+                            <img src="${u.idPhoto}" class="w-full max-h-48 object-contain bg-black/50 border border-[#2b3139] rounded">
+                            <div class="flex gap-2">
+                                <button onclick="adminKYC('${id}','verified')" class="flex-1 bg-[#0ECB81] py-1.5 rounded font-black text-white">Accept</button>
+                                <button onclick="adminKYC('${id}','declined')" class="flex-1 bg-[#F6465D] py-1.5 rounded font-black text-white">Decline</button>
+                            </div>
+                        </div>`;
                     }
                 });
+                if(kList.innerHTML === '') kList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No pending National IDs</div>`;
             });
 
             db.ref('orders').on('value', s => {
                 const dList = document.getElementById('admin-disputes'); dList.innerHTML = '';
                 const orders = s.val() || {};
+                let count = 0;
+
                 Object.keys(orders).forEach(id => {
-                    if(orders[id].dispute && orders[id].status !== 'completed' && orders[id].status !== 'cancelled') {
-                        dList.innerHTML += `<div class="bg-red-900/30 p-3 rounded border border-red-500 text-xs mb-2">
-                            <strong class="text-red-500">Dispute #${id.substring(1,6)}</strong><br>
-                            <span class="text-white">${orders[id].amountUsdt} USDT / ${orders[id].amountEtb} ETB</span>
-                            <button onclick="resolveDispute('${id}')" class="mt-2 w-full bg-red-600 text-white py-1 rounded">Force Cancel & Resolve</button>
+                    const o = orders[id];
+                    if(o.dispute && o.status !== 'completed' && o.status !== 'cancelled') {
+                        count++;
+                        dList.innerHTML += `
+                        <div class="bg-red-950/40 p-3 rounded border border-red-500 text-xs mb-2 space-y-2">
+                            <div class="flex justify-between"><strong class="text-red-400">Dispute Order #${id.substring(1,6)}</strong> <span class="text-[#FCD535] font-bold">${o.amountUsdt} USDT</span></div>
+                            <p class="text-[11px] text-gray-300">Buyer ID: ${o.buyerId} | Seller ID: ${o.sellerId}</p>
+                            <div class="flex gap-2 pt-1">
+                                <button onclick="resolveDisputeAdmin('${id}', 'completed')" class="flex-1 bg-[#0ECB81] text-white py-1 rounded font-bold text-[10px]">Release to Buyer</button>
+                                <button onclick="resolveDisputeAdmin('${id}', 'cancelled')" class="flex-1 bg-[#F6465D] text-white py-1 rounded font-bold text-[10px]">Refund / Cancel</button>
+                            </div>
                         </div>`;
                     }
                 });
+                document.getElementById('dispute-badge').innerText = count;
+                if(dList.innerHTML === '') dList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No active disputes</div>`;
             });
         }
 
-        function toggleBan(uid, val) { db.ref('users/'+uid).update({isBanned: val}); showToast("User status updated."); }
-        function adminKYC(uid, status) { db.ref('users/'+uid).update({status: status}); showToast("KYC Processed."); }
-        function resolveDispute(orderId) { db.ref('orders/'+orderId).update({ status: 'cancelled', dispute: false }); showToast("Dispute resolved."); }
+        function toggleBan(uid, val) { db.ref('users/'+uid).update({isBanned: val}); showToast("User restriction updated."); }
+        function adminKYC(uid, status) { db.ref('users/'+uid).update({status: status}); showToast(`KYC successfully ${status}!`); }
+        
+        // Admin Force Dispute Resolution Power
+        function resolveDisputeAdmin(orderId, finalStatus) { 
+            db.ref('orders/'+orderId).update({ status: finalStatus, dispute: false }); 
+            db.ref('chats/' + orderId).push({ sender: 'system', text: `⚖️ Admin resolved this order as: ${finalStatus.toUpperCase()}` });
+            showToast(`Order status forced to: ${finalStatus}`); 
+        }
 
-        // UTILS
+        // NAVIGATION & UTILS
         function switchMainTab(id) {
             document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
             document.getElementById(`${id}-view`).classList.add('active');
             
-            // Handle active state for bottom nav (post doesn't have a bottom nav item)
             const navItem = document.getElementById(`nav-${id}`);
             if(navItem) navItem.classList.add('active');
         }
@@ -667,10 +711,6 @@
             t.innerText = msg;
             document.getElementById('toast-container').appendChild(t);
             setTimeout(() => t.remove(), 3000);
-        }
-        function notifyTelegramBot(userId, message) {
-            // Placeholder for backend/Bot API call.
-            console.log(`Sending to Bot -> User: ${userId}, Msg: ${message}`);
         }
     </script>
 </body>
