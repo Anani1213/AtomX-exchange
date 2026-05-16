@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <title>ATOM X P2P</title>
 
@@ -16,6 +16,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <style>
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root{
@@ -46,6 +47,7 @@ overflow-x:hidden;
 .tab-content{
 display:none;
 animation:fade .25s ease;
+padding-bottom:110px;
 }
 
 .tab-content.active{
@@ -64,10 +66,10 @@ transform:translateY(0);
 }
 
 input,select{
-background:var(--bg)!important;
+background:#11161c!important;
 border:1px solid var(--border)!important;
 color:white!important;
-outline:none;
+outline:none!important;
 }
 
 input:focus,
@@ -76,11 +78,18 @@ border-color:var(--yellow)!important;
 }
 
 .nav-item{
-color:var(--muted);
+color:#777;
+transition:.2s;
 }
 
 .nav-item.active{
 color:white;
+}
+
+.card{
+background:var(--card);
+border:1px solid var(--border);
+border-radius:20px;
 }
 
 ::-webkit-scrollbar{
@@ -94,77 +103,160 @@ background:#333;
 </style>
 </head>
 
-<body class="pb-24">
+<body>
 
 <!-- TOAST -->
 <div id="toastBox"
-class="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] space-y-2">
+class="fixed top-4 left-1/2 -translate-x-1/2 z-[99999] space-y-2">
 </div>
 
 <!-- BANNED -->
 <div id="bannedScreen"
-class="hidden fixed inset-0 bg-black z-[99999] flex flex-col items-center justify-center p-5 text-center">
+class="hidden fixed inset-0 bg-black z-[999999] flex flex-col items-center justify-center text-center p-6">
 
 <i class="fa-solid fa-ban text-6xl text-red-500 mb-4"></i>
 
-<h1 class="text-2xl font-bold">
+<h1 class="text-3xl font-black">
 Account Suspended
 </h1>
 
-<p class="text-gray-400 text-sm mt-2">
-You are banned by administrator.
+<p class="text-gray-400 mt-3">
+Your account has been banned.
 </p>
 
 </div>
 
 <!-- HEADER -->
-<header class="sticky top-0 z-50 bg-[#0b0e11] border-b border-[#2b3139] p-4 flex justify-between items-center">
+<header class="sticky top-0 z-50 bg-[#0b0e11] border-b border-[#2b3139] px-4 py-4 flex justify-between items-center">
 
-<div class="flex items-center gap-2">
-<div class="bg-[#FCD535] text-black font-black px-2 py-1 rounded text-xs">
+<div class="flex items-center gap-3">
+
+<div class="bg-[#FCD535] text-black font-black px-2 py-1 rounded-lg">
 AX
 </div>
 
-<h1 class="font-bold">
-P2P
+<div>
+
+<h1 class="font-black text-lg">
+ATOM X
 </h1>
+
+<p class="text-[10px] text-gray-400">
+P2P Exchange
+</p>
+
 </div>
 
-<div class="flex gap-3 items-center">
+</div>
 
-<div class="bg-[#1e2329] px-3 py-1 rounded-lg text-sm border border-[#2b3139]">
+<div class="flex items-center gap-3">
+
+<div class="bg-[#1e2329] border border-[#2b3139] px-3 py-2 rounded-xl text-sm">
 ETB
 </div>
 
-<button onclick="openModal('notificationModal')">
-<i class="fa-regular fa-bell text-lg text-[#848E9C]"></i>
+<button>
+<i class="fa-regular fa-bell text-xl text-[#848E9C]"></i>
 </button>
 
 </div>
+
 </header>
 
-<!-- MARKET -->
-<section id="market-view"
-class="tab-content active p-3">
+<!-- HOME -->
+<section id="home-view"
+class="tab-content active p-4 space-y-5">
 
-<div class="flex gap-4 mb-4 text-lg font-bold">
+<!-- BALANCE -->
+<div class="card p-5">
+
+<div class="flex justify-between items-start">
+
+<div>
+
+<p class="text-sm text-gray-400">
+Estimated Balance
+</p>
+
+<h1 class="text-4xl font-black mt-2">
+0.00
+<span class="text-xl">
+USDT
+</span>
+</h1>
+
+</div>
+
+<div class="bg-[#0ECB81]/10 text-[#0ECB81] px-3 py-2 rounded-xl text-sm font-bold">
+P2P ACTIVE
+</div>
+
+</div>
+
+<div class="grid grid-cols-3 gap-3 mt-6">
+
+<div class="bg-[#11161c] rounded-xl p-3 text-center">
+<p class="text-xs text-gray-400">
+Trades
+</p>
+<h2 class="font-black text-lg mt-1">
+0
+</h2>
+</div>
+
+<div class="bg-[#11161c] rounded-xl p-3 text-center">
+<p class="text-xs text-gray-400">
+Orders
+</p>
+<h2 class="font-black text-lg mt-1">
+0
+</h2>
+</div>
+
+<div class="bg-[#11161c] rounded-xl p-3 text-center">
+<p class="text-xs text-gray-400">
+Rate
+</p>
+<h2 class="font-black text-lg mt-1 text-[#0ECB81]">
+100%
+</h2>
+</div>
+
+</div>
+
+</div>
+
+<!-- MARKET -->
+<div>
+
+<div class="flex justify-between items-center mb-4">
+
+<h1 class="text-2xl font-black">
+P2P Market
+</h1>
+
+<div class="flex bg-[#1e2329] rounded-xl p-1">
 
 <button onclick="setMarket('buy')"
-id="btn-buy"
-class="border-b-2 border-[#FCD535] pb-1">
+id="btnBuy"
+class="px-4 py-2 rounded-lg bg-[#0ECB81] text-white text-sm font-bold">
 Buy
 </button>
 
 <button onclick="setMarket('sell')"
-id="btn-sell"
-class="text-gray-500 pb-1">
+id="btnSell"
+class="px-4 py-2 rounded-lg text-gray-400 text-sm font-bold">
 Sell
 </button>
 
 </div>
 
-<div id="market-list"
+</div>
+
+<div id="marketList"
 class="space-y-3">
+</div>
+
 </div>
 
 </section>
@@ -173,11 +265,11 @@ class="space-y-3">
 <section id="orders-view"
 class="tab-content p-4">
 
-<h1 class="text-xl font-bold mb-4">
-Orders
+<h1 class="text-2xl font-black mb-5">
+My Orders
 </h1>
 
-<div id="orders-list"
+<div id="ordersList"
 class="space-y-3">
 </div>
 
@@ -185,60 +277,60 @@ class="space-y-3">
 
 <!-- POST -->
 <section id="post-view"
-class="tab-content p-4 space-y-5">
+class="tab-content p-4">
 
-<h1 class="text-xl font-bold">
-Post Ad
+<h1 class="text-2xl font-black mb-5">
+Post Advertisement
 </h1>
 
-<div class="bg-[#1e2329] p-5 rounded-xl border border-[#2b3139] space-y-4">
+<div class="card p-5 space-y-5">
 
-<div class="flex bg-black rounded-lg p-1">
+<div class="flex bg-[#11161c] p-1 rounded-xl">
 
 <button onclick="setForm('buy')"
-id="f-buy"
-class="flex-1 py-2 rounded bg-[#0ECB81] text-white font-bold">
+id="formBuy"
+class="flex-1 py-3 rounded-lg bg-[#0ECB81] font-black">
 Buy
 </button>
 
 <button onclick="setForm('sell')"
-id="f-sell"
-class="flex-1 py-2 rounded text-gray-400 font-bold">
+id="formSell"
+class="flex-1 py-3 rounded-lg text-gray-400 font-black">
 Sell
 </button>
 
 </div>
 
-<input type="hidden" id="ad-type" value="buy"/>
+<input type="hidden" id="adType" value="buy">
 
 <div>
 
-<label class="text-xs text-gray-400 block mb-1">
-Price
+<label class="text-sm text-gray-400 block mb-2">
+Price (ETB)
 </label>
 
 <input type="number"
-id="ad-price"
+id="price"
 placeholder="125.50"
-class="w-full p-3 rounded-lg"/>
+class="w-full p-4 rounded-xl">
 
 </div>
 
 <div>
 
-<label class="text-xs text-gray-400 block mb-1">
-Amount USDT
+<label class="text-sm text-gray-400 block mb-2">
+Amount (USDT)
 </label>
 
 <input type="number"
-id="ad-amount"
+id="amount"
 placeholder="100"
-class="w-full p-3 rounded-lg"/>
+class="w-full p-4 rounded-xl">
 
 </div>
 
 <button onclick="publishAd()"
-class="w-full bg-[#FCD535] text-black py-3 rounded-lg font-black">
+class="w-full bg-[#FCD535] text-black py-4 rounded-xl font-black text-lg">
 POST AD
 </button>
 
@@ -253,27 +345,27 @@ class="tab-content p-4 space-y-5">
 <div class="flex items-center gap-4">
 
 <div id="avatar"
-class="w-14 h-14 rounded-full bg-[#2b3139] flex items-center justify-center font-black text-xl border-2 border-[#FCD535]">
+class="w-20 h-20 rounded-full bg-[#2b3139] border-2 border-[#FCD535] flex items-center justify-center text-3xl font-black">
 A
 </div>
 
 <div>
 
-<h1 id="name"
-class="font-bold text-lg">
+<h1 id="username"
+class="text-2xl font-black">
 Loading...
 </h1>
 
-<div class="flex gap-2 mt-1">
+<div class="flex gap-2 mt-2">
 
-<span id="status"
-class="text-[10px] bg-[#2b3139] px-2 py-1 rounded">
+<span id="userStatus"
+class="bg-[#2b3139] px-3 py-1 rounded-lg text-xs font-bold">
 UNVERIFIED
 </span>
 
-<span class="text-[10px] bg-[#1e2329] border border-[#2b3139] px-2 py-1 rounded">
+<span class="bg-[#1e2329] border border-[#2b3139] px-3 py-1 rounded-lg text-xs">
 ID:
-<span id="uid"></span>
+<span id="userId"></span>
 </span>
 
 </div>
@@ -282,35 +374,66 @@ ID:
 
 </div>
 
-<div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139]">
+<!-- VERIFY -->
+<div class="card p-5">
 
-<h2 class="font-bold mb-3">
-Payment Method
-</h2>
+<div class="flex justify-between items-center mb-4">
 
-<div class="space-y-3">
+<h1 class="text-xl font-black">
+Identity Verification
+</h1>
 
-<input type="text"
-id="telePhone"
-placeholder="Telebirr Phone"
-class="w-full p-3 rounded-lg"/>
-
-<input type="text"
-id="teleName"
-placeholder="Telebirr Name"
-class="w-full p-3 rounded-lg"/>
-
-<input type="text"
-id="binanceId"
-placeholder="Binance Pay ID"
-class="w-full p-3 rounded-lg"/>
-
-<button onclick="saveProfile()"
-class="w-full bg-[#FCD535] text-black py-3 rounded-lg font-bold">
-SAVE
-</button>
+<i class="fa-solid fa-shield-halved text-[#FCD535] text-2xl"></i>
 
 </div>
+
+<div id="verifyArea">
+
+<button onclick="document.getElementById('kycInput').click()"
+class="w-full bg-[#FCD535] text-black py-4 rounded-xl font-black">
+
+VERIFY ACCOUNT
+
+</button>
+
+<input type="file"
+id="kycInput"
+class="hidden"
+accept="image/*"
+onchange="uploadKYC(this)">
+
+</div>
+
+</div>
+
+<!-- PAYMENT -->
+<div class="card p-5 space-y-4">
+
+<h1 class="text-xl font-black">
+Payment Methods
+</h1>
+
+<input type="text"
+id="telebirrPhone"
+placeholder="Telebirr Phone"
+class="w-full p-4 rounded-xl">
+
+<input type="text"
+id="telebirrName"
+placeholder="Telebirr Name"
+class="w-full p-4 rounded-xl">
+
+<input type="text"
+id="binancePay"
+placeholder="Binance Pay ID"
+class="w-full p-4 rounded-xl">
+
+<button onclick="saveProfile()"
+class="w-full bg-[#FCD535] text-black py-4 rounded-xl font-black">
+
+SAVE SETTINGS
+
+</button>
 
 </div>
 
@@ -320,98 +443,88 @@ SAVE
 <section id="admin-view"
 class="tab-content p-4">
 
-<h1 class="text-red-500 font-black text-xl mb-4">
+<div class="flex items-center gap-2 mb-5">
+
+<i class="fa-solid fa-crown text-red-500 text-2xl"></i>
+
+<h1 class="text-2xl font-black text-red-500">
 SUPER ADMIN
 </h1>
 
-<div id="admin-users"
+</div>
+
+<div id="adminUsers"
 class="space-y-3">
 </div>
 
 </section>
 
-<!-- NAV -->
+<!-- NAVIGATION -->
 <nav class="fixed bottom-0 left-0 w-full bg-[#0b0e11] border-t border-[#2b3139] flex justify-around py-3 z-50">
 
-<button onclick="switchTab('market')"
-id="nav-market"
-class="nav-item active flex flex-col items-center text-xs">
+<button onclick="switchTab('home')"
+id="nav-home"
+class="nav-item active flex flex-col items-center">
 
-<i class="fa-solid fa-chart-line text-lg"></i>
+<i class="fa-solid fa-chart-line text-xl"></i>
 
+<span class="text-xs mt-1">
 Home
+</span>
 
 </button>
 
 <button onclick="switchTab('orders')"
 id="nav-orders"
-class="nav-item flex flex-col items-center text-xs">
+class="nav-item flex flex-col items-center">
 
-<i class="fa-solid fa-file text-lg"></i>
+<i class="fa-solid fa-file-invoice text-xl"></i>
 
+<span class="text-xs mt-1">
 Orders
+</span>
 
 </button>
 
 <button onclick="switchTab('post')"
 id="nav-post"
-class="nav-item flex flex-col items-center text-xs">
+class="nav-item flex flex-col items-center">
 
-<div class="w-10 h-10 rounded-full bg-[#FCD535] text-black flex items-center justify-center -mt-5">
-<i class="fa-solid fa-plus"></i>
+<div class="w-14 h-14 rounded-full bg-[#FCD535] text-black flex items-center justify-center -mt-8 shadow-lg">
+<i class="fa-solid fa-plus text-xl"></i>
 </div>
 
+<span class="text-xs mt-1">
 Post
+</span>
 
 </button>
 
 <button onclick="switchTab('profile')"
 id="nav-profile"
-class="nav-item flex flex-col items-center text-xs">
+class="nav-item flex flex-col items-center">
 
-<i class="fa-regular fa-user text-lg"></i>
+<i class="fa-regular fa-user text-xl"></i>
 
+<span class="text-xs mt-1">
 Profile
+</span>
 
 </button>
 
 <button onclick="switchTab('admin')"
 id="nav-admin"
-class="hidden nav-item flex-col items-center text-xs text-red-500">
+class="hidden nav-item flex-col items-center text-red-500">
 
-<i class="fa-solid fa-shield-halved text-lg"></i>
+<i class="fa-solid fa-shield-halved text-xl"></i>
 
+<span class="text-xs mt-1">
 Admin
+</span>
 
 </button>
 
 </nav>
-
-<!-- NOTIFICATION MODAL -->
-<div id="notificationModal"
-class="hidden fixed inset-0 bg-black/70 z-[100] items-center justify-center p-5">
-
-<div class="bg-[#1e2329] w-full max-w-sm rounded-2xl p-5 border border-[#2b3139]">
-
-<div class="flex justify-between items-center mb-4">
-
-<h2 class="font-bold text-lg">
-Notifications
-</h2>
-
-<button onclick="closeModal('notificationModal')">
-<i class="fa-solid fa-xmark"></i>
-</button>
-
-</div>
-
-<p class="text-sm text-gray-400">
-No new notifications.
-</p>
-
-</div>
-
-</div>
 
 <script>
 
@@ -431,7 +544,7 @@ storageBucket: "atomx-pro.appspot.com",
 
 messagingSenderId: "123456789",
 
-appId: "1:123456789:web:abc123"
+appId: "1:123456:web:abc"
 
 };
 
@@ -446,8 +559,11 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 
 const user = tg.initDataUnsafe?.user || {
-id: "11223344",
-first_name: "Guest"
+
+id:"7798504269",
+
+first_name:"Admin"
+
 };
 
 const ADMIN_ID = "7798504269";
@@ -464,9 +580,9 @@ const ordersRef = db.ref("orders");
 
 /* START */
 
-window.onload = () => {
+window.onload = ()=>{
 
-document.getElementById("uid").innerText = user.id;
+document.getElementById("userId").innerText = user.id;
 
 if(String(user.id) === ADMIN_ID){
 
@@ -480,7 +596,7 @@ document.getElementById("nav-admin")
 
 initUser();
 
-loadAds();
+loadMarket();
 
 listenOrders();
 
@@ -490,25 +606,25 @@ listenOrders();
 
 function toast(msg){
 
-const div = document.createElement("div");
+const t = document.createElement("div");
 
-div.className =
-"bg-[#1e2329] border border-[#2b3139] px-4 py-3 rounded-lg text-sm font-bold";
+t.className =
+"bg-[#1e2329] border border-[#2b3139] px-4 py-3 rounded-xl text-sm font-bold";
 
-div.innerText = msg;
+t.innerText = msg;
 
 document.getElementById("toastBox")
-.appendChild(div);
+.appendChild(t);
 
 setTimeout(()=>{
 
-div.remove();
+t.remove();
 
 },3000);
 
 }
 
-/* NAV */
+/* TABS */
 
 function switchTab(tab){
 
@@ -532,28 +648,6 @@ loadAdmin();
 
 }
 
-/* MODAL */
-
-function openModal(id){
-
-const el = document.getElementById(id);
-
-el.classList.remove("hidden");
-
-el.classList.add("flex");
-
-}
-
-function closeModal(id){
-
-const el = document.getElementById(id);
-
-el.classList.add("hidden");
-
-el.classList.remove("flex");
-
-}
-
 /* USER */
 
 function initUser(){
@@ -572,7 +666,9 @@ name:user.first_name,
 
 status:"unverified",
 
-isBanned:false
+isBanned:false,
+
+createdAt:Date.now()
 
 });
 
@@ -597,23 +693,96 @@ updateProfile();
 
 function updateProfile(){
 
-document.getElementById("name")
-.innerText = myData.name;
+document.getElementById("username")
+.innerText = myData.name || "Unknown";
 
 document.getElementById("avatar")
-.innerText = myData.name.charAt(0);
+.innerText =
+(myData.name || "U")
+.charAt(0)
+.toUpperCase();
 
-document.getElementById("status")
-.innerText = myData.status.toUpperCase();
+const status =
+document.getElementById("userStatus");
 
-document.getElementById("telePhone")
-.value = myData.telePhone || "";
+const verifyArea =
+document.getElementById("verifyArea");
 
-document.getElementById("teleName")
-.value = myData.teleName || "";
+if(myData.status === "verified"){
 
-document.getElementById("binanceId")
-.value = myData.binanceId || "";
+status.innerText = "VERIFIED";
+
+status.className =
+"bg-[#0ECB81]/10 text-[#0ECB81] px-3 py-1 rounded-lg text-xs font-black";
+
+verifyArea.innerHTML = `
+
+<div class="bg-[#0ECB81]/10 border border-[#0ECB81] text-[#0ECB81] py-4 rounded-xl text-center font-black">
+
+<i class="fa-solid fa-circle-check mr-2"></i>
+
+ACCOUNT VERIFIED
+
+</div>
+
+`;
+
+}else if(myData.status === "pending"){
+
+status.innerText = "PENDING";
+
+status.className =
+"bg-yellow-500/10 text-yellow-400 px-3 py-1 rounded-lg text-xs font-black";
+
+verifyArea.innerHTML = `
+
+<div class="bg-yellow-500/10 border border-yellow-500 text-yellow-400 py-4 rounded-xl text-center font-black">
+
+<i class="fa-solid fa-clock mr-2"></i>
+
+VERIFICATION PENDING
+
+</div>
+
+`;
+
+}
+
+document.getElementById("telebirrPhone")
+.value = myData.telebirrPhone || "";
+
+document.getElementById("telebirrName")
+.value = myData.telebirrName || "";
+
+document.getElementById("binancePay")
+.value = myData.binancePay || "";
+
+}
+
+function uploadKYC(input){
+
+if(input.files && input.files[0]){
+
+const reader = new FileReader();
+
+reader.onload = e=>{
+
+db.ref("users/" + user.id)
+.update({
+
+status:"pending",
+
+kyc:e.target.result
+
+});
+
+toast("KYC Submitted");
+
+};
+
+reader.readAsDataURL(input.files[0]);
+
+}
 
 }
 
@@ -622,14 +791,14 @@ function saveProfile(){
 db.ref("users/" + user.id)
 .update({
 
-telePhone:
-document.getElementById("telePhone").value,
+telebirrPhone:
+document.getElementById("telebirrPhone").value,
 
-teleName:
-document.getElementById("teleName").value,
+telebirrName:
+document.getElementById("telebirrName").value,
 
-binanceId:
-document.getElementById("binanceId").value
+binancePay:
+document.getElementById("binancePay").value
 
 });
 
@@ -645,53 +814,53 @@ currentMarket = type;
 
 if(type === "buy"){
 
-document.getElementById("btn-buy")
+document.getElementById("btnBuy")
 .className =
-"border-b-2 border-[#FCD535] pb-1";
+"px-4 py-2 rounded-lg bg-[#0ECB81] text-white text-sm font-bold";
 
-document.getElementById("btn-sell")
+document.getElementById("btnSell")
 .className =
-"text-gray-500 pb-1";
+"px-4 py-2 rounded-lg text-gray-400 text-sm font-bold";
 
 }else{
 
-document.getElementById("btn-sell")
+document.getElementById("btnSell")
 .className =
-"border-b-2 border-[#FCD535] pb-1";
+"px-4 py-2 rounded-lg bg-[#F6465D] text-white text-sm font-bold";
 
-document.getElementById("btn-buy")
+document.getElementById("btnBuy")
 .className =
-"text-gray-500 pb-1";
+"px-4 py-2 rounded-lg text-gray-400 text-sm font-bold";
 
 }
 
-loadAds();
+loadMarket();
 
 }
 
 function setForm(type){
 
-document.getElementById("ad-type").value = type;
+document.getElementById("adType").value = type;
 
 if(type === "buy"){
 
-document.getElementById("f-buy")
+document.getElementById("formBuy")
 .className =
-"flex-1 py-2 rounded bg-[#0ECB81] text-white font-bold";
+"flex-1 py-3 rounded-lg bg-[#0ECB81] font-black";
 
-document.getElementById("f-sell")
+document.getElementById("formSell")
 .className =
-"flex-1 py-2 rounded text-gray-400 font-bold";
+"flex-1 py-3 rounded-lg text-gray-400 font-black";
 
 }else{
 
-document.getElementById("f-sell")
+document.getElementById("formSell")
 .className =
-"flex-1 py-2 rounded bg-[#F6465D] text-white font-bold";
+"flex-1 py-3 rounded-lg bg-[#F6465D] font-black";
 
-document.getElementById("f-buy")
+document.getElementById("formBuy")
 .className =
-"flex-1 py-2 rounded text-gray-400 font-bold";
+"flex-1 py-3 rounded-lg text-gray-400 font-black";
 
 }
 
@@ -700,13 +869,13 @@ document.getElementById("f-buy")
 function publishAd(){
 
 const price =
-document.getElementById("ad-price").value;
+document.getElementById("price").value;
 
 const amount =
-document.getElementById("ad-amount").value;
+document.getElementById("amount").value;
 
 const type =
-document.getElementById("ad-type").value;
+document.getElementById("adType").value;
 
 if(!price || !amount){
 
@@ -723,27 +892,29 @@ uid:user.id,
 
 name:myData.name,
 
-type:type,
-
 price:Number(price),
 
 amount:Number(amount),
 
-status:"active"
+type:type,
+
+status:"active",
+
+createdAt:Date.now()
 
 });
 
-toast("Ad Published");
+toast("Advertisement Published");
 
-document.getElementById("ad-price").value = "";
+document.getElementById("price").value = "";
 
-document.getElementById("ad-amount").value = "";
+document.getElementById("amount").value = "";
 
-switchTab("market");
+switchTab("home");
 
 }
 
-function loadAds(){
+function loadMarket(){
 
 adsRef.off();
 
@@ -752,9 +923,9 @@ adsRef.on("value",snap=>{
 const ads = snap.val() || {};
 
 const box =
-document.getElementById("market-list");
+document.getElementById("marketList");
 
-box.innerHTML = "";
+let html = "";
 
 Object.keys(ads).forEach(id=>{
 
@@ -766,39 +937,49 @@ if(ad.status !== "active") return;
 
 if(ad.type !== currentMarket){
 
+const btn =
+currentMarket === "buy"
+? "BUY"
+: "SELL";
+
 const color =
 currentMarket === "buy"
 ? "bg-[#0ECB81]"
 : "bg-[#F6465D]";
 
-const txt =
-currentMarket === "buy"
-? "BUY"
-: "SELL";
+html += `
 
-box.innerHTML += `
+<div class="card p-4">
 
-<div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139]">
+<div class="flex justify-between items-center mb-4">
 
-<div class="flex justify-between mb-3">
+<div class="flex items-center gap-3">
+
+<div class="w-12 h-12 rounded-full bg-[#2b3139] flex items-center justify-center font-black">
+
+${ad.name.charAt(0)}
+
+</div>
 
 <div>
 
-<h2 class="font-bold">
+<h1 class="font-black">
 ${ad.name}
-</h2>
+</h1>
 
 <p class="text-xs text-gray-400">
-${ad.amount} USDT
+Verified Merchant
 </p>
+
+</div>
 
 </div>
 
 <div class="text-right">
 
-<p class="text-xl font-black">
+<h1 class="text-2xl font-black">
 ${ad.price}
-</p>
+</h1>
 
 <p class="text-xs text-gray-400">
 ETB
@@ -808,12 +989,28 @@ ETB
 
 </div>
 
-<button onclick="createOrder('${id}','${ad.uid}',${ad.price},${ad.amount})"
-class="${color} w-full py-3 rounded-lg font-bold">
+<div class="flex justify-between items-center">
 
-${txt}
+<div>
+
+<p class="text-sm text-gray-400">
+Available
+</p>
+
+<h2 class="font-black">
+${ad.amount} USDT
+</h2>
+
+</div>
+
+<button onclick="createOrder('${id}','${ad.uid}',${ad.price},${ad.amount})"
+class="${color} px-6 py-3 rounded-xl font-black">
+
+${btn}
 
 </button>
+
+</div>
 
 </div>
 
@@ -823,17 +1020,25 @@ ${txt}
 
 });
 
+box.innerHTML = html;
+
 });
 
 }
 
-/* ORDERS */
+/* ORDER */
 
 function createOrder(adId,sellerId,price,amount){
 
-const ref = ordersRef.push();
+if(sellerId == user.id){
 
-ref.set({
+toast("You cannot trade yourself");
+
+return;
+
+}
+
+ordersRef.push({
 
 buyerId:user.id,
 
@@ -841,11 +1046,11 @@ sellerId:sellerId,
 
 amountUsdt:amount,
 
-amountEtb:amount*price,
+amountEtb:amount * price,
 
 status:"pending",
 
-timestamp:Date.now()
+createdAt:Date.now()
 
 });
 
@@ -867,7 +1072,7 @@ ordersRef.on("value",snap=>{
 const data = snap.val() || {};
 
 const box =
-document.getElementById("orders-list");
+document.getElementById("ordersList");
 
 let html = "";
 
@@ -882,25 +1087,27 @@ o.sellerId == user.id
 
 html += `
 
-<div class="bg-[#1e2329] border border-[#2b3139] p-4 rounded-xl">
+<div class="card p-4">
 
-<div class="flex justify-between">
+<div class="flex justify-between items-center">
 
 <div>
 
-<p class="font-bold">
+<h1 class="font-black text-lg">
 ${o.amountUsdt} USDT
-</p>
+</h1>
 
-<p class="text-xs text-gray-400">
+<p class="text-sm text-gray-400">
 ${o.amountEtb} ETB
 </p>
 
 </div>
 
-<span class="text-xs bg-[#2b3139] px-2 py-1 rounded uppercase">
+<div class="bg-[#11161c] px-3 py-2 rounded-xl text-sm uppercase">
+
 ${o.status}
-</span>
+
+</div>
 
 </div>
 
@@ -928,7 +1135,7 @@ db.ref("users")
 const users = snap.val() || {};
 
 const box =
-document.getElementById("admin-users");
+document.getElementById("adminUsers");
 
 let html = "";
 
@@ -939,32 +1146,32 @@ const u = users[id];
 const btn = u.isBanned
 
 ? `<button onclick="banUser('${id}',false)"
-class="bg-gray-600 px-3 py-1 rounded text-xs">
+class="bg-gray-600 px-3 py-2 rounded-xl text-xs font-black">
 UNBAN
 </button>`
 
 : `<button onclick="banUser('${id}',true)"
-class="bg-red-500 px-3 py-1 rounded text-xs">
+class="bg-red-500 px-3 py-2 rounded-xl text-xs font-black">
 BAN
 </button>`;
 
 html += `
 
-<div class="bg-[#1e2329] p-3 rounded-xl border border-[#2b3139] flex justify-between items-center">
+<div class="card p-4 flex justify-between items-center">
 
 <div>
 
-<h2 class="font-bold text-sm">
+<h1 class="font-black">
 ${u.name}
-</h2>
+</h1>
 
-<p class="text-[10px] text-gray-400">
+<p class="text-xs text-gray-400">
 ${id}
 </p>
 
 </div>
 
-${id !== ADMIN_ID ? btn : '<span class="text-yellow-500 text-xs">ROOT</span>'}
+${id !== ADMIN_ID ? btn : '<span class="text-yellow-400 text-xs">ROOT ADMIN</span>'}
 
 </div>
 
@@ -994,4 +1201,4 @@ toast(state ? "User Banned" : "User Unbanned");
 </script>
 
 </body>
-    </html>
+</html>
