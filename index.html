@@ -1,1269 +1,1779 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width,
-initial-scale=1.0,
-maximum-scale=1.0,
-user-scalable=no">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ATOM X PRO P2P</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-<title>ATOM X PRO P2P</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        :root {
+            --bg-dark: #0b0e11; --bg-card: #1e2329; --bg-hover: #2b3139;
+            --primary-yellow: #FCD535; --text-main: #EAECEF; --text-muted: #848E9C;
+            --buy-green: #0ECB81; --sell-red: #F6465D;
+        }
 
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+        body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        .nav-item { color: var(--text-muted); transition: all 0.2s; }
+        .nav-item.active { color: var(--text-main); font-weight: 700; }
+        
+        input, select, textarea { background-color: var(--bg-dark) !important; border: 1px solid #2b3139 !important; color: var(--text-main) !important; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary-yellow) !important; }
 
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
-<style>
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-:root{
---bg:#0b0e11;
---card:#1e2329;
---border:#2b3139;
---yellow:#FCD535;
---green:#0ECB81;
---red:#F6465D;
---text:#EAECEF;
---muted:#848E9C;
-}
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:'Inter',sans-serif;
-}
-
-body{
-background:var(--bg);
-color:var(--text);
-overflow-x:hidden;
--webkit-tap-highlight-color:transparent;
-}
-
-.tab-content{
-display:none;
-animation:fade .2s ease;
-}
-
-.tab-content.active{
-display:block;
-}
-
-@keyframes fade{
-from{
-opacity:0;
-transform:translateY(5px);
-}
-to{
-opacity:1;
-transform:translateY(0);
-}
-}
-
-input,textarea,select{
-background:#181a20!important;
-border:1px solid var(--border)!important;
-color:white!important;
-outline:none!important;
-}
-
-input:focus,
-textarea:focus,
-select:focus{
-border-color:var(--yellow)!important;
-}
-
-::-webkit-scrollbar{
-width:3px;
-}
-
-::-webkit-scrollbar-thumb{
-background:#333;
-border-radius:10px;
-}
-
-.nav-item{
-color:#848E9C;
-}
-
-.nav-item.active{
-color:white;
-}
-
-.chat-box{
-height:300px;
-overflow-y:auto;
-}
-
-</style>
-
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #2b3139; border-radius: 4px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        #toast-container { z-index: 9999; }
+        .banned-screen { background: var(--bg-dark); z-index: 10000; }
+        .chat-image { max-width: 200px; border-radius: 8px; margin-top: 5px; border: 1px solid #2b3139; cursor: pointer; }
+    </style>
 </head>
-
-<body class="pb-24">
-
-<!-- TOAST -->
-
-<div id="toast-container"
-class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] space-y-2">
-</div>
-
-<!-- HEADER -->
-
-<header class="sticky top-0 z-50
-bg-[#0b0e11]
-border-b border-[#2b3139]
-px-4 py-3
-flex justify-between items-center">
-
-<div class="flex items-center gap-3">
-
-<div id="header-avatar"
-class="w-10 h-10 rounded-full
-bg-[#2b3139]
-flex items-center justify-center
-font-black border-2 border-[#FCD535]">
-A
-</div>
-
-<div>
-
-<div class="flex items-center gap-2">
-
-<div class="bg-[#FCD535]
-text-black
-px-2 py-1
-rounded text-[10px]
-font-black">
-AX
-</div>
-
-<h1 class="font-black tracking-wide">
-ATOM X PRO
-</h1>
-
-</div>
-
-<p class="text-[10px] text-[#848E9C]">
-Professional P2P Exchange
-</p>
-
-</div>
-
-</div>
-
-<div class="bg-[#1e2329]
-border border-[#2b3139]
-px-2 py-1
-rounded
-text-xs
-font-bold">
-ETB
-</div>
-
-</header>
-
-<!-- MAIN -->
-
-<main>
-
-<!-- MARKET -->
-
-<section id="market-view"
-class="tab-content active">
-
-<div class="sticky top-[69px]
-bg-[#0b0e11]
-border-b border-[#2b3139]
-px-4 py-3 z-40">
-
-<div class="flex gap-6">
-
-<button
-onclick="setMarket('buy')"
-id="btn-market-buy"
-class="font-black border-b-2 border-[#FCD535] pb-1">
-BUY
-</button>
-
-<button
-onclick="setMarket('sell')"
-id="btn-market-sell"
-class="text-[#848E9C] font-black pb-1">
-SELL
-</button>
-
-</div>
-
-</div>
-
-<div id="market-list"
-class="p-3 space-y-3">
-</div>
-
-</section>
-
-<!-- MY ADS -->
-
-<section id="myads-view"
-class="tab-content p-4">
-
-<div class="flex justify-between items-center mb-4">
-
-<h2 class="text-xl font-black">
-My Ads
-</h2>
-
-<button
-onclick="openPostAdForm()"
-class="bg-[#FCD535]
-text-black
-font-black
-px-4 py-2
-rounded-xl text-sm">
-
-<i class="fa-solid fa-plus"></i>
-Post Ad
-
-</button>
-
-</div>
-
-<div id="my-published-ads-list"
-class="space-y-3">
-</div>
-
-</section>
-
-<!-- POST AD -->
-
-<section id="post-view"
-class="tab-content p-4 space-y-4">
-
-<div class="flex items-center gap-3">
-
-<button
-onclick="switchMainTab('myads')">
-<i class="fa-solid fa-arrow-left"></i>
-</button>
-
-<h2 class="text-xl font-black">
-Create Advertisement
-</h2>
-
-</div>
-
-<div class="bg-[#1e2329]
-border border-[#2b3139]
-rounded-2xl
-p-4
-space-y-4">
-
-<div class="flex bg-[#0b0e11]
-rounded-xl p-1">
-
-<button
-onclick="setAdType('buy')"
-id="ad-type-buy"
-class="flex-1 py-2 rounded-lg
-bg-[#0ECB81]
-font-black">
-BUY
-</button>
-
-<button
-onclick="setAdType('sell')"
-id="ad-type-sell"
-class="flex-1 py-2 rounded-lg
-text-[#848E9C]
-font-black">
-SELL
-</button>
-
-</div>
-
-<input type="hidden"
-id="ad-type"
-value="buy">
-
-<div>
-
-<label class="text-xs text-[#848E9C]">
-Price (ETB)
-</label>
-
-<input
-id="ad-price"
-type="number"
-placeholder="125"
-class="w-full p-3 rounded-xl mt-1">
-
-</div>
-
-<div>
-
-<label class="text-xs text-[#848E9C]">
-USDT Amount
-</label>
-
-<input
-id="ad-amount"
-type="number"
-placeholder="100"
-class="w-full p-3 rounded-xl mt-1">
-
-</div>
-
-<div class="grid grid-cols-2 gap-3">
-
-<div>
-
-<label class="text-xs text-[#848E9C]">
-Min
-</label>
-
-<input
-id="ad-min"
-type="number"
-placeholder="10"
-class="w-full p-3 rounded-xl mt-1">
-
-</div>
-
-<div>
-
-<label class="text-xs text-[#848E9C]">
-Max
-</label>
-
-<input
-id="ad-max"
-type="number"
-placeholder="100"
-class="w-full p-3 rounded-xl mt-1">
-
-</div>
-
-</div>
-
-<div>
-
-<label class="text-xs text-[#848E9C]">
-Payment Method
-</label>
-
-<select
-id="ad-payment-method"
-class="w-full p-3 rounded-xl mt-1">
-
-<option>Telebirr</option>
-<option>CBE</option>
-<option>BOA</option>
-
-</select>
-
-</div>
-
-<div>
-
-<label class="text-xs text-[#848E9C]">
-Terms
-</label>
-
-<textarea
-id="ad-terms"
-rows="3"
-placeholder="Write rules..."
-class="w-full p-3 rounded-xl mt-1"></textarea>
-
-</div>
-
-<button
-onclick="publishAd()"
-class="w-full
-bg-[#FCD535]
-text-black
-font-black
-py-3
-rounded-xl">
-
-Post Advertisement
-
-</button>
-
-</div>
-
-</section>
-
-<!-- PROFILE -->
-
-<section id="profile-view"
-class="tab-content p-4 space-y-4">
-
-<div class="bg-[#1e2329]
-border border-[#2b3139]
-rounded-2xl
-p-4">
-
-<div class="flex items-center gap-3">
-
-<div id="prof-avatar"
-class="w-14 h-14 rounded-full
-bg-[#2b3139]
-flex items-center justify-center
-font-black text-lg
-border-2 border-[#FCD535]">
-A
-</div>
-
-<div>
-
-<h2 id="prof-name"
-class="font-black text-lg">
-Loading...
-</h2>
-
-<p id="prof-status-text"
-class="text-xs text-[#848E9C]">
-STATUS
-</p>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="bg-[#1e2329]
-border border-[#2b3139]
-rounded-2xl
-p-4
-space-y-4">
-
-<h3 class="font-black">
-Payment Methods
-</h3>
-
-<input
-id="pm-tele-name"
-type="text"
-placeholder="Telebirr Name"
-class="w-full p-3 rounded-xl">
-
-<input
-id="pm-tele-phone"
-type="number"
-placeholder="Telebirr Number"
-class="w-full p-3 rounded-xl">
-
-<input
-id="pm-cbe-acc"
-type="number"
-placeholder="CBE Account"
-class="w-full p-3 rounded-xl">
-
-<input
-id="pm-binance-id"
-type="number"
-placeholder="Binance Pay ID"
-class="w-full p-3 rounded-xl">
-
-<button
-onclick="saveProfile()"
-class="w-full
-bg-[#FCD535]
-text-black
-font-black
-py-3
-rounded-xl">
-
-Save Profile
-
-</button>
-
-</div>
-
-</section>
-
-<!-- ADMIN -->
-
-<section id="admin-view"
-class="tab-content p-4">
-
-<h2 class="text-xl font-black
-text-[#F6465D]
-mb-4">
-
-SUPER ADMIN
-
-</h2>
-
-<div id="admin-users"
-class="space-y-3">
-</div>
-
-</section>
-
-</main>
-
-<!-- NAV -->
-
-<nav class="fixed bottom-0 w-full
-bg-[#0b0e11]
-border-t border-[#2b3139]
-flex justify-around
-py-3 z-50">
-
-<button
-onclick="switchMainTab('market')"
-id="nav-market"
-class="nav-item active
-flex flex-col items-center gap-1">
-
-<i class="fa-solid fa-chart-line"></i>
-
-<span class="text-[10px] font-bold">
-Market
-</span>
-
-</button>
-
-<button
-onclick="switchMainTab('myads')"
-id="nav-myads"
-class="nav-item
-flex flex-col items-center gap-1">
-
-<i class="fa-solid fa-list"></i>
-
-<span class="text-[10px] font-bold">
-My Ads
-</span>
-
-</button>
-
-<button
-onclick="switchMainTab('profile')"
-id="nav-profile"
-class="nav-item
-flex flex-col items-center gap-1">
-
-<i class="fa-solid fa-user"></i>
-
-<span class="text-[10px] font-bold">
-Profile
-</span>
-
-</button>
-
-<button
-onclick="switchMainTab('admin')"
-id="nav-admin"
-class="nav-item hidden
-flex flex-col items-center gap-1
-text-[#FCD535]">
-
-<i class="fa-solid fa-crown"></i>
-
-<span class="text-[10px] font-bold">
-Admin
-</span>
-
-</button>
-
-</nav>
-
+<body class="pb-20 h-screen flex flex-col">
+
+    <div id="banned-screen" class="banned-screen fixed inset-0 hidden flex-col items-center justify-center p-6 text-center">
+        <i class="fa-solid fa-ban text-6xl text-red-500 mb-4"></i>
+        <h1 class="text-2xl font-bold text-white mb-2">Account Suspended</h1>
+        <p class="text-sm text-gray-400">Your account has been permanently banned by the Admin.</p>
+    </div>
+
+    <div id="toast-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 flex flex-col gap-2 pointer-events-none"></div>
+
+    <header class="flex justify-between items-center p-4 bg-[#0b0e11] border-b border-[#2b3139] shrink-0 sticky top-0 z-40">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="switchMainTab('profile')">
+            <div id="header-avatar" class="w-8 h-8 rounded-full bg-[#2b3139] flex items-center justify-center font-bold text-white border border-[#FCD535] overflow-hidden">
+                <i class="fa-solid fa-user text-sm"></i>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="bg-[#FCD535] text-black font-black text-[10px] px-1.5 py-1 rounded">AX</div>
+                <h1 class="text-sm font-bold tracking-wide">ATOM X PRO</h1>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="text-xs font-bold bg-[#1e2329] px-2 py-1 rounded border border-[#2b3139]">ETB</span>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto w-full relative">
+        
+        <section id="market-view" class="tab-content active p-0">
+            <div class="sticky top-0 bg-[#0b0e11] z-30 p-4 border-b border-[#2b3139] space-y-4">
+                <div class="flex gap-6 text-base font-bold">
+                    <button onclick="setMarket('buy')" id="btn-market-buy" class="text-white border-b-2 border-[#FCD535] pb-1">Buy</button>
+                    <button onclick="setMarket('sell')" id="btn-market-sell" class="text-[#848E9C] pb-1">Sell</button>
+                </div>
+            </div>
+            <div id="market-list" class="p-2 space-y-2"></div>
+        </section>
+
+        <section id="myads-view" class="tab-content p-4 space-y-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-white">Orders & Advertisements</h2>
+                <button onclick="openPostAdForm()" class="bg-[#FCD535] text-black px-3 py-1.5 rounded text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Post Ad</button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <h3 class="text-xs font-bold text-[#848E9C] uppercase mb-2">My Active Trades</h3>
+                    <div id="user-orders-list" class="space-y-2"></div>
+                </div>
+                <hr class="border-[#2b3139]">
+                <div>
+                    <h3 class="text-xs font-bold text-[#848E9C] uppercase mb-2">My Published Ads (ማስተካከያ/ማጥፊያ)</h3>
+                    <div id="my-published-ads-list" class="space-y-2"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="post-view" class="tab-content p-4 space-y-5">
+            <div class="flex items-center gap-3 mb-2">
+                <button onclick="switchMainTab('myads')" class="text-white text-xl"><i class="fa-solid fa-arrow-left"></i></button>
+                <h2 id="ad-form-title" class="text-lg font-bold text-white">Create Ad</h2>
+            </div>
+            <div class="bg-[#1e2329] rounded-xl p-4 border border-[#2b3139] space-y-4">
+                <div class="flex bg-[#0b0e11] rounded-lg p-1 border border-[#2b3139]">
+                    <button onclick="setAdForm('buy')" id="form-tab-buy" class="flex-1 py-2 text-sm font-bold bg-[#0ECB81] text-white rounded-md">Buy</button>
+                    <button onclick="setAdForm('sell')" id="form-tab-sell" class="flex-1 py-2 text-sm font-bold text-[#848E9C] rounded-md">Sell</button>
+                </div>
+                <input type="hidden" id="ad-form-type" value="buy">
+                <input type="hidden" id="editing-ad-id" value="">
+
+                <div>
+                    <label class="text-xs text-[#848E9C] mb-1 block">Price (ETB per 1 USDT)</label>
+                    <input type="number" step="0.01" id="ad-price" placeholder="e.g. 125.50" class="w-full p-3 rounded-lg font-bold text-lg">
+                </div>
+                <div>
+                    <label class="text-xs text-[#848E9C] mb-1 block">Total Amount (USDT)</label>
+                    <input type="number" id="ad-amount" placeholder="e.g. 100" class="w-full p-3 rounded-lg font-bold">
+                </div>
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        <label class="text-xs text-[#848E9C] mb-1 block">Min Order (USDT)</label>
+                        <input type="number" id="ad-min" placeholder="e.g. 5" class="w-full p-3 rounded-lg font-bold text-sm">
+                    </div>
+                    <div class="flex-1">
+                        <label class="text-xs text-[#848E9C] mb-1 block">Max Order (USDT)</label>
+                        <input type="number" id="ad-max" placeholder="e.g. 100" class="w-full p-3 rounded-lg font-bold text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs text-[#848E9C] mb-1 block">Preferred Payment Method for this Ad</label>
+                    <select id="ad-payment-method" class="w-full p-3 rounded-lg text-sm">
+                        <option value="Telebirr">Telebirr</option>
+                        <option value="CBE Birr">Commercial Bank (CBE)</option>
+                        <option value="BOA">Bank of Abyssinia</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-[#848E9C] mb-1 block">Terms of Trade (Notes)</label>
+                    <textarea id="ad-terms" rows="2" placeholder="Write your rules here..." class="w-full p-3 rounded-lg text-sm font-medium"></textarea>
+                </div>
+                <button onclick="publishAd()" id="btn-submit-ad" class="w-full bg-[#FCD535] text-black font-bold py-3 rounded-lg text-sm hover:opacity-90">Post Ad</button>
+            </div>
+        </section>
+
+        <section id="profile-view" class="tab-content p-4 space-y-4">
+            <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139] flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div id="prof-avatar" class="w-12 h-12 rounded-full bg-[#2b3139] flex items-center justify-center text-lg font-bold text-white border-2 border-[#FCD535]"></div>
+                    <div>
+                        <h2 id="prof-name" class="text-base font-bold text-white">Loading...</h2>
+                        <p class="text-[10px] font-bold mt-1" id="prof-status-text">STATUS: UNVERIFIED</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139]">
+                <h3 class="text-xs font-bold text-[#848E9C] uppercase mb-3">Identity Verification (KYC)</h3>
+                <div id="kyc-action-area">
+                    <button onclick="document.getElementById('kyc-file').click()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold">Upload ID to Verify</button>
+                    <input type="file" id="kyc-file" class="hidden" accept="image/*" onchange="uploadKYC(this)">
+                </div>
+            </div>
+
+            <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139] space-y-4">
+                <h3 class="text-xs font-bold text-[#848E9C] uppercase border-b border-[#2b3139] pb-2 flex justify-between">Payment Methods Configuration</h3>
+                
+                <div class="space-y-4">
+                    <div class="p-3 bg-[#0b0e11] rounded-lg border border-[#2b3139]">
+                        <label class="text-[11px] font-bold text-[#0ECB81] block mb-1 uppercase">Commercial Bank of Ethiopia (CBE)</label>
+                        <input type="text" id="pm-cbe-name" placeholder="CBE Account Full Name" class="w-full p-2.5 rounded mb-2 text-xs">
+                        <input type="number" id="pm-cbe-acc" placeholder="CBE Account Number" class="w-full p-2.5 rounded text-xs">
+                    </div>
+
+                    <div class="p-3 bg-[#0b0e11] rounded-lg border border-[#2b3139]">
+                        <label class="text-[11px] font-bold text-[#0ECB81] block mb-1 uppercase">Telebirr Wallet</label>
+                        <input type="text" id="pm-tele-name" placeholder="Telebirr Full Name" class="w-full p-2.5 rounded mb-2 text-xs">
+                        <input type="number" id="pm-tele-phone" placeholder="Telebirr Phone Number" class="w-full p-2.5 rounded text-xs">
+                    </div>
+
+                    <div class="p-3 bg-[#0b0e11] rounded-lg border border-[#2b3139]">
+                        <label class="text-[11px] font-bold text-[#0ECB81] block mb-1 uppercase">Bank of Abyssinia (BOA)</label>
+                        <input type="text" id="pm-boa-name" placeholder="BOA Account Full Name" class="w-full p-2.5 rounded mb-2 text-xs">
+                        <input type="number" id="pm-boa-acc" placeholder="BOA Account Number" class="w-full p-2.5 rounded text-xs">
+                    </div>
+
+                    <div class="p-3 bg-[#0b0e11] rounded-lg border border-[#2b3139]">
+                        <label class="text-[11px] font-bold text-[#FCD535] block mb-1 uppercase">Binance Pay ID (For Crypto Delivery)</label>
+                        <input type="number" id="pm-binance-id" placeholder="Binance Pay ID (Numbers Only)" class="w-full p-2.5 rounded text-xs">
+                    </div>
+                </div>
+                <button onclick="saveProfile()" class="w-full bg-[#FCD535] text-black font-bold py-3 rounded-lg text-sm">Save All Settings</button>
+            </div>
+        </section>
+
+        <section id="admin-view" class="tab-content p-4 space-y-4">
+            <div class="flex items-center justify-between mb-2">
+                <h2 class="text-lg font-black text-[#F6465D] uppercase">Super Admin Panel</h2>
+                <div class="text-xs bg-[#2b3139] px-2 py-1 rounded text-white font-bold">Users: <span id="admin-user-count" class="text-[#FCD535]">0</span></div>
+            </div>
+            
+            <div class="flex gap-2 overflow-x-auto pb-2 text-xs font-bold">
+                <button onclick="switchAdminTab('admin-users', this)" class="admin-tab-btn bg-[#FCD535] text-black px-3 py-1.5 rounded-lg shadow-lg">Users Management</button>
+                <button onclick="switchAdminTab('admin-kyc', this)" class="admin-tab-btn bg-[#1e2329] text-white px-3 py-1.5 rounded-lg border border-[#2b3139]">KYC Desk</button>
+                <button onclick="switchAdminTab('admin-disputes', this)" class="admin-tab-btn relative bg-[#1e2329] text-white px-3 py-1.5 rounded-lg border border-[#2b3139]">
+                    Disputes Room <span id="dispute-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+                </button>
+            </div>
+
+            <div id="admin-users" class="admin-panel space-y-2"></div>
+            <div id="admin-kyc" class="admin-panel hidden space-y-2"></div>
+            <div id="admin-disputes" class="admin-panel hidden space-y-2"></div>
+        </section>
+
+    </main>
+
+    <nav class="bg-[#0b0e11] border-t border-[#2b3139] flex justify-between px-6 py-2 pb-5 fixed bottom-0 w-full z-40">
+        <button onclick="switchMainTab('market')" id="nav-market" class="nav-item active flex flex-col items-center gap-1 w-16"><i class="fa-solid fa-chart-line text-lg"></i><span class="text-[10px] font-bold">Market</span></button>
+        <button onclick="switchMainTab('myads')" id="nav-myads" class="nav-item flex flex-col items-center gap-1 w-16"><i class="fa-solid fa-list-ul text-lg"></i><span class="text-[10px] font-bold">Orders/Ads</span></button>
+        <button onclick="switchMainTab('profile')" id="nav-profile" class="nav-item flex flex-col items-center gap-1 w-16"><i class="fa-solid fa-user-gear text-lg"></i><span class="text-[10px] font-bold">Settings</span></button>
+        <button onclick="switchMainTab('admin')" id="nav-admin" class="nav-item hidden flex flex-col items-center gap-1 w-16 text-[#FCD535] relative">
+            <i class="fa-solid fa-crown text-lg"></i><span class="text-[10px] font-bold">Admin</span>
+            <div id="nav-dispute-dot" class="absolute top-0 right-3 w-2 h-2 bg-red-500 rounded-full hidden"></div>
+        </button>
+    </nav>
+
+    <div id="purchaseModal" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
+        <div class="bg-[#1e2329] w-full max-w-sm rounded-xl p-5 border border-[#2b3139]">
+            <h3 class="text-white font-bold text-lg mb-1" id="pm-title">Trade USDT</h3>
+            <p class="text-xs text-[#848E9C] mb-4">Allowed Limit: <span id="pm-limit" class="text-white"></span></p>
+            <div class="bg-[#0b0e11] p-3 rounded-lg mb-4 text-xs text-[#848E9C] border border-[#2b3139]">
+                <strong class="text-white">Trader Terms:</strong><br><span id="pm-terms"></span>
+            </div>
+            <div>
+                <label class="text-[11px] text-gray-400 block mb-1">Enter USDT Amount</label>
+                <input type="number" id="purchase-amount" oninput="calculateModalFiat()" placeholder="0.00" class="w-full p-3 rounded-lg font-bold mb-1 text-base">
+                <p id="purchase-fiat-calc" class="text-xs text-[#0ECB81] font-bold mb-4">Total: 0.00 ETB</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeModal('purchaseModal')" class="flex-1 py-2.5 rounded-lg border border-[#2b3139] text-[#848E9C] font-bold">Cancel</button>
+                <button id="btn-confirm-purchase" class="flex-1 py-2.5 rounded-lg bg-[#0ECB81] text-white font-bold">Confirm Order</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tradeModal" class="fixed inset-0 bg-[#0b0e11] z-[60] hidden flex-col h-screen">
+        <div class="bg-[#1e2329] border-b border-[#2b3139] p-3 flex justify-between items-center shrink-0">
+            <div class="flex items-center gap-3">
+                <button onclick="closeModal('tradeModal')" class="text-white text-lg"><i class="fa-solid fa-arrow-left"></i></button>
+                <div>
+                    <h2 class="text-xs font-bold text-white flex items-center gap-2">Order Desk <span id="tr-id" class="text-[#848E9C]">#000</span></h2>
+                    <p class="text-[10px] text-[#FCD535]">Timer: <span id="tr-timer" class="font-bold">15:00</span></p>
+                </div>
+            </div>
+            <button onclick="reportDispute()" class="text-[#F6465D] text-xs font-bold border border-[#F6465D] px-2 py-1 rounded">Open Dispute</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto pb-24 bg-[#0b0e11]">
+            <div class="p-4 bg-[#1e2329] border-b border-[#2b3139] text-center">
+                <h1 id="tr-etb" class="text-2xl font-black text-[#FCD535]">0.00 ETB</h1>
+                <p id="tr-usdt" class="text-xs font-bold text-white mt-1">0.00 USDT</p>
+                <div id="trade-status-banner" class="mt-2 text-xs font-bold uppercase text-amber-400"></div>
+            </div>
+
+            <div class="p-3 space-y-3">
+                <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139] space-y-3">
+                    <div class="flex items-center gap-2 pb-2 border-b border-[#2b3139]">
+                        <div class="w-7 h-7 rounded-full bg-[#2b3139] flex items-center justify-center font-bold text-white text-xs" id="tr-partner-av"></div>
+                        <h3 id="tr-partner-name" class="font-bold text-xs text-white">Partner</h3>
+                    </div>
+                    
+                    <div id="smart-payment-display" class="space-y-2 text-xs">
+                        </div>
+                </div>
+
+                <div class="bg-[#1e2329] rounded-xl border border-[#2b3139] h-72 flex flex-col">
+                    <div class="bg-[#2b3139] text-[10px] text-center py-1.5 text-gray-300 font-bold rounded-t-xl uppercase tracking-wider"><i class="fa-solid fa-camera mr-1"></i> Upload Payment Screenshot As Proof</div>
+                    <div id="chat-messages" class="flex-1 overflow-y-auto p-2 space-y-2 text-xs"></div>
+                    
+                    <div class="p-2 border-t border-[#2b3139] flex gap-2 items-center bg-[#181a20]">
+                        <input type="file" id="chat-img-upload" class="hidden" accept="image/*" onchange="sendChatImage(this)">
+                        <button onclick="document.getElementById('chat-img-upload').click()" class="text-[#848E9C] hover:text-white px-1"><i class="fa-solid fa-image text-lg"></i></button>
+                        <input type="text" id="chat-input" placeholder="Type message..." class="flex-1 bg-[#0b0e11] border border-[#2b3139] rounded-lg p-2 text-white text-xs">
+                        <button onclick="sendMsg()" class="bg-[#FCD535] text-black w-8 h-8 rounded-lg flex items-center justify-center font-bold"><i class="fa-solid fa-paper-plane text-xs"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="fixed bottom-0 w-full bg-[#1e2329] border-t border-[#2b3139] p-3 flex gap-2 z-[60]">
+            <button onclick="cancelTrade()" id="btn-tr-cancel" class="flex-1 py-3 rounded-xl border border-[#2b3139] text-[#848E9C] text-xs font-bold">Cancel Order</button>
+            <button onclick="acceptTrade()" id="btn-tr-accept" class="flex-[2] py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase tracking-wide"></button>
+        </div>
+    </div>
+
+    <div id="ratingModal" class="fixed inset-0 bg-black/90 z-[70] hidden items-center justify-center p-4">
+        <div class="bg-[#1e2329] w-full max-w-sm rounded-xl p-6 text-center border border-[#2b3139]">
+            <i class="fa-solid fa-circle-check text-5xl text-[#0ECB81] mb-3"></i>
+            <h2 class="text-lg font-bold text-white mb-1">Trade Completed</h2>
+            <p class="text-xs text-[#848E9C] mb-5">Rate your trading experience</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="submitRating('positive')" class="flex-1 py-2 rounded-lg border border-[#0ECB81] text-[#0ECB81] bg-[#0ECB81]/10 font-bold">Good 👍</button>
+                <button onclick="submitRating('negative')" class="flex-1 py-2 rounded-lg border border-[#F6465D] text-[#F6465D] bg-[#F6465D]/10 font-bold">Bad 👎</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. ENGINE CONSTANTS
+        const firebaseConfig = {
+            apiKey: "AIzaSyD3getH9kSW2oHuOI9AZR8t4yZ34_jPZG0",
+            authDomain: "atomx-exchange.firebaseapp.com",
+            databaseURL: "https://atomx-exchange-default-rtdb.firebaseio.com",
+            projectId: "atomx-exchange",
+            storageBucket: "atomx-exchange.firebasestorage.app"
+        };
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const db = firebase.database();
+
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        const user = tg.initDataUnsafe?.user || { id: 7798504269, first_name: "Admin" }; 
+        const ADMIN_ID = 7798504269; 
+
+        let myData = {};
+        let currentMarketType = 'buy';
+        let activeTradeId = null;
+        let selectedAd = null;
+        let tradeInterval;
+
+        window.onload = () => {
+            if(user.id == ADMIN_ID) document.getElementById('nav-admin').classList.remove('hidden');
+            initUser();
+            loadMarketAds();
+            listenToOrders();
+            loadMyAds();
+            if(user.id == ADMIN_ID) loadAdminData();
+        };
+
+        // 2. IDENTITY AND CONFIGURATION MODULE
+        function initUser() {
+            db.ref('users/' + user.id).on('value', snap => {
+                myData = snap.val();
+                if(!myData) {
+                    db.ref('users/' + user.id).set({ name: user.first_name, status: 'unverified', isBanned: false });
+                    return;
+                }
+                if(myData.isBanned) { document.getElementById('banned-screen').classList.remove('hidden'); return; }
+                updateProfileUI();
+            });
+        }
+
+        function updateProfileUI() {
+            document.getElementById('prof-name').innerText = myData.name;
+            const initLetter = myData.name.charAt(0).toUpperCase();
+            document.getElementById('prof-avatar').innerText = initLetter;
+            if(user.photo_url) {
+                document.getElementById('header-avatar').innerHTML = `<img src="${user.photo_url}" class="w-full h-full object-cover">`;
+            } else {
+                document.getElementById('header-avatar').innerText = initLetter;
+            }
+            
+            const sText = document.getElementById('prof-status-text');
+            const kycArea = document.getElementById('kyc-action-area');
+
+            if(myData.status === 'verified') {
+                sText.innerText = 'STATUS: VERIFIED'; sText.className = "text-[10px] text-[#0ECB81] mt-1 font-bold";
+                kycArea.innerHTML = `<div class="text-center text-[#0ECB81] font-bold text-xs">✅ ID Verified Account</div>`;
+            } else if(myData.status === 'pending') {
+                sText.innerText = 'STATUS: PENDING REVIEW'; sText.className = "text-[10px] text-[#FCD535] mt-1 font-bold";
+                kycArea.innerHTML = `<button disabled class="w-full bg-[#1e2329] border border-[#2b3139] text-[#FCD535] py-2.5 rounded-lg text-xs font-bold animate-pulse">Under Verification Review...</button>`;
+            } else if(myData.status === 'declined') {
+                sText.innerText = 'STATUS: DECLINED'; sText.className = "text-[10px] text-[#F6465D] mt-1 font-bold";
+                kycArea.innerHTML = `<button onclick="document.getElementById('kyc-file').click()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold">Verification Failed. Re-upload ID</button>`;
+            } else {
+                sText.innerText = 'STATUS: UNVERIFIED'; sText.className = "text-[10px] text-gray-400 mt-1 font-bold";
+                kycArea.innerHTML = `<button onclick="document.getElementById('kyc-file').click()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold">Upload ID Card to Verify</button>`;
+            }
+
+            if(myData.telePhone) document.getElementById('pm-tele-phone').value = myData.telePhone;
+            if(myData.teleName) document.getElementById('pm-tele-name').value = myData.teleName;
+            if(myData.cbeName) document.getElementById('pm-cbe-name').value = myData.cbeName;
+            if(myData.cbeAcc) document.getElementById('pm-cbe-acc').value = myData.cbeAcc;
+            if(myData.boaName) document.getElementById('pm-boa-name').value = myData.boaName;
+            if(myData.boaAcc) document.getElementById('pm-boa-acc').value = myData.boaAcc;
+            if(myData.binanceId) document.getElementById('pm-binance-id').value = myData.binanceId;
+        }
+
+        function saveProfile() {
+            db.ref('users/' + user.id).update({
+                telePhone: document.getElementById('pm-tele-phone').value,
+                teleName: document.getElementById('pm-tele-name').value,
+                cbeName: document.getElementById('pm-cbe-name').value,
+                cbeAcc: document.getElementById('pm-cbe-acc').value,
+                boaName: document.getElementById('pm-boa-name').value,
+                boaAcc: document.getElementById('pm-boa-acc').value,
+                binanceId: document.getElementById('pm-binance-id').value
+            });
+            showToast("Settings Saved Successfully!");
+        }
+
+        function uploadKYC(input) {
+            if(input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    db.ref('users/' + user.id).update({ status: 'pending', idPhoto: e.target.result });
+                    showToast("ID Uploaded! Pending Admin Check.");
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function checkRequirements() {
+            if(!myData.binanceId || (!myData.telePhone && !myData.cbeAcc && !myData.boaAcc) || myData.status !== 'verified') {
+                showToast("🔒 Complete Payment setup & Get ID Verified First!");
+                switchMainTab('profile');
+                return false;
+            }
+            return true;
+        }
+
+        // 3. ADVERTISEMENTS & LIVE UPDATING MODULE
+        function openPostAdForm() {
+            if(!checkRequirements()) return;
+            document.getElementById('ad-form-title').innerText = "Create Ad";
+            document.getElementById('editing-ad-id').value = "";
+            document.getElementById('ad-price').value = "";
+            document.getElementById('ad-amount').value = "";
+            document.getElementById('ad-min').value = "";
+            document.getElementById('ad-max').value = "";
+            document.getElementById('ad-terms').value = "";
+            document.getElementById('btn-submit-ad').innerText = "Post Ad";
+            switchMainTab('post');
+        }
+
+        function publishAd() {
+            const price = parseFloat(document.getElementById('ad-price').value);
+            const amount = parseFloat(document.getElementById('ad-amount').value);
+            const min = parseFloat(document.getElementById('ad-min').value);
+            const max = parseFloat(document.getElementById('ad-max').value);
+            const method = document.getElementById('ad-payment-method').value;
+            const terms = document.getElementById('ad-terms').value || "None.";
+            const editId = document.getElementById('editing-ad-id').value;
+
+            if(!price || !amount || !min || !max) return showToast("Fill all metrics!");
+
+            const adPayload = {
+                uid: user.id, userName: user.first_name, type: document.getElementById('ad-form-type').value,
+                price: price, amount: amount, min: min, max: max, paymentMethod: method, terms: terms, timestamp: Date.now()
+            };
+
+            if(editId) {
+                db.ref('ads/' + editId).update(adPayload).then(() => {
+                    showToast("Ad Updated!"); switchMainTab('myads');
+                });
+            } else {
+                db.ref('ads').push(adPayload).then(() => {
+                    showToast("Ad Live on Market!"); switchMainTab('market');
+                });
+            }
+        }
+
+        function editAd(id, type, price, amount, min, max, method, terms) {
+            document.getElementById('ad-form-title').innerText = "Modify Ad";
+            document.getElementById('editing-ad-id').value = id;
+            setAdForm(type);
+            document.getElementById('ad-price').value = price;
+            document.getElementById('ad-amount').value = amount;
+            document.getElementById('ad-min').value = min;
+            document.getElementById('ad-max').value = max;
+            document.getElementById('ad-payment-method').value = method;
+            document.getElementById('ad-terms').value = terms;
+            document.getElementById('btn-submit-ad').innerText = "Save Adjustments";
+            switchMainTab('post');
+        }
+
+        function deleteAd(id) {
+            if(confirm("Are you sure you want to delete this Advertisement?")) {
+                db.ref('ads/' + id).remove().then(() => showToast("Ad Deleted."));
+            }
+        }
+
+        function setMarket(type) {
+            currentMarketType = type;
+            document.getElementById('btn-market-buy').className = type === 'buy' ? 'text-white border-b-2 border-[#FCD535] pb-1' : 'text-[#848E9C] pb-1';
+            document.getElementById('btn-market-sell').className = type === 'sell' ? 'text-white border-b-2 border-[#FCD535] pb-1' : 'text-[#848E9C] pb-1';
+            loadMarketAds();
+        }
+
+        function setAdForm(type) {
+            document.getElementById('ad-form-type').value = type;
+            document.getElementById('form-tab-buy').className = type === 'buy' ? "flex-1 py-2 text-sm font-bold bg-[#0ECB81] text-white rounded-md" : "flex-1 py-2 text-sm font-bold text-[#848E9C] rounded-md";
+            document.getElementById('form-tab-sell').className = type === 'sell' ? "flex-1 py-2 text-sm font-bold bg-[#F6465D] text-white rounded-md" : "flex-1 py-2 text-sm font-bold text-[#848E9C] rounded-md";
+        }
+
+        function loadMarketAds() {
+            db.ref('ads').on('value', snap => {
+                const list = document.getElementById('market-list'); list.innerHTML = '';
+                let adsArray = [];
+                snap.forEach(child => { adsArray.push({ id: child.key, ...child.val() }); });
+
+                adsArray = adsArray.filter(a => a.type === (currentMarketType === 'buy' ? 'sell' : 'buy'));
+                adsArray.sort((a, b) => currentMarketType === 'buy' ? a.price - b.price : b.price - a.price);
+
+                adsArray.forEach(ad => {
+                    if(ad.uid == user.id) return; 
+                    const btnLabel = currentMarketType === 'buy' ? 'Buy' : 'Sell';
+                    const btnClr = currentMarketType === 'buy' ? 'bg-[#0ECB81]' : 'bg-[#F6465D]';
+                    
+                    list.innerHTML += `
+                    <div class="bg-[#1e2329] p-4 rounded-xl mb-2 flex justify-between items-center border border-[#2b3139]">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <div class="w-5 h-5 rounded-full bg-[#2b3139] flex items-center justify-center text-[9px] text-white font-bold">${ad.userName.charAt(0)}</div>
+                                <h4 class="text-xs font-bold text-white">${ad.userName}</h4>
+                            </div>
+                            <p class="text-[11px] text-[#848E9C]">Limit: ${ad.min} - ${ad.max} USDT</p>
+                            <span class="text-[10px] bg-[#2b3139] px-1.5 py-0.5 rounded text-emerald-400 font-bold">${ad.paymentMethod}</span>
+                        </div>
+                        <div class="text-right space-y-2">
+                            <p class="text-lg font-black text-white">${ad.price.toFixed(2)} <span class="text-xs text-[#848E9C]">ETB</span></p>
+                            <button onclick="openPurchaseModal('${ad.id}', '${ad.uid}', ${ad.price}, ${ad.min}, ${ad.max}, '${ad.terms}', '${ad.paymentMethod}')" class="${btnClr} text-black px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wide">${btnLabel}</button>
+                        </div>
+                    </div>`;
+                });
+            });
+        }
+
+        function loadMyAds() {
+            db.ref('ads').on('value', snap => {
+                const container = document.getElementById('my-published-ads-list'); container.innerHTML = '';
+                let hasAds = false;
+                snap.forEach(child => {
+                    const ad = child.val();
+                    if(ad.uid == user.id) {
+                        hasAds = true;
+                        const badgeColor = ad.type === 'buy' ? 'bg-[#0ECB81]/20 text-[#0ECB81]' : 'bg-[#F6465D]/20 text-[#F6465D]';
+                        container.innerHTML += `
+                        <div class="bg-[#181a20] p-3 rounded-lg border border-[#2b3139] flex justify-between items-center text-xs">
+                            <div>
+                                <span class="px-1.5 py-0.5 rounded font-black uppercase text-[9px] ${badgeColor}">${ad.type}</span>
+                                <p class="text-white font-bold mt-1">${ad.price.toFixed(2)} ETB | ${ad.amount} USDT</p>
+                                <p class="text-[10px] text-gray-400">Limits: ${ad.min}-${ad.max} | ${ad.paymentMethod}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="editAd('${child.key}','${ad.type}',${ad.price},${ad.amount},${ad.min},${ad.max},'${ad.paymentMethod}','${ad.terms}')" class="bg-gray-700 text-white px-2.5 py-1 rounded"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deleteAd('${child.key}')" class="bg-red-900/40 text-red-400 px-2.5 py-1 rounded"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>`;
+                    }
+                });
+                if(!hasAds) container.innerHTML = `<p class="text-xs text-gray-500 italic">You haven't posted any advertisements yet.</p>`;
+            });
+        }
+
+        // 4. SMART MULTI-ROLE ESCROW PROCESSORS
+        function openPurchaseModal(adId, creatorId, price, min, max, terms, method) {
+            selectedAd = { adId, creatorId, price, min, max, method };
+            document.getElementById('pm-title').innerText = `${currentMarketType === 'buy' ? 'Buy' : 'Sell'} USDT`;
+            document.getElementById('pm-limit').innerText = `${min} - ${max} USDT`;
+            document.getElementById('pm-terms').innerText = terms;
+            document.getElementById('purchase-amount').value = '';
+            document.getElementById('purchase-fiat-calc').innerText = "Total: 0.00 ETB";
+            document.getElementById('btn-confirm-purchase').onclick = confirmPurchase;
+            openModal('purchaseModal');
+        }
+
+        function calculateModalFiat() {
+            const val = parseFloat(document.getElementById('purchase-amount').value) || 0;
+            document.getElementById('purchase-fiat-calc').innerText = `Total: ${(val * selectedAd.price).toFixed(2)} ETB`;
+        }
+
+        function confirmPurchase() {
+            const amt = parseFloat(document.getElementById('purchase-amount').value);
+            if(amt < selectedAd.min || amt > selectedAd.max) return showToast("Amount violates limits!");
+            
+            const orderRef = db.ref('orders').push();
+            orderRef.set({
+                adId: selectedAd.adId,
+                buyerId: currentMarketType === 'buy' ? user.id : selectedAd.creatorId,
+                sellerId: currentMarketType === 'sell' ? user.id : selectedAd.creatorId,
+                amountUsdt: amt, amountEtb: amt * selectedAd.price, price: selectedAd.price,
+                paymentMethod: selectedAd.method,
+                status: 'pending', buyerAccepted: false, sellerAccepted: false, 
+                startTime: Date.now(), dispute: false
+            }).then(() => {
+                db.ref('chats/' + orderRef.key).push({ sender: 'system', text: '🔒 Atom X Guard Escrow Active. 15:00 Minutes left to settle.' });
+                closeModal('purchaseModal');
+                openTradeRoom(orderRef.key);
+            });
+        }
+
+        function listenToOrders() {
+            db.ref('orders').on('value', snap => {
+                const orders = snap.val() || {};
+                const list = document.getElementById('user-orders-list'); list.innerHTML = '';
+                let activeCount = 0;
+
+                Object.keys(orders).forEach(id => {
+                    const o = orders[id];
+                    if(o.buyerId == user.id || o.sellerId == user.id) {
+                        if(o.status !== 'completed' && o.status !== 'cancelled') {
+                            activeCount++;
+                            const labelClr = o.dispute ? 'text-red-500' : 'text-[#FCD535]';
+                            list.innerHTML += `
+                            <div onclick="openTradeRoom('${id}')" class="bg-[#181a20] p-3 rounded-lg border border-[#2b3139] flex justify-between items-center text-xs cursor-pointer hover:border-yellow-500 transition">
+                                <div>
+                                    <span class="text-white font-bold block">${o.amountUsdt} USDT (${o.amountEtb.toFixed(2)} ETB)</span>
+                                    <span class="text-[10px] text-gray-400">Method: ${o.paymentMethod}</span>
+                                </div>
+                                <span class="${labelClr} uppercase font-black tracking-wider text-[11px]">${o.dispute ? '⚠️ DISPUTE' : o.status}</span>
+                            </div>`;
+                        }
+                    }
+                });
+                if(activeCount === 0) list.innerHTML = `<p class="text-xs text-gray-500 italic">No active transactions.</p>`;
+            });
+        }
+
+        function openTradeRoom(orderId) {
+            activeTradeId = orderId;
+            db.ref('orders/' + orderId).on('value', s => {
+                const o = s.val();
+                if(!o) return;
+                
+                if(o.status === 'completed' || o.status === 'cancelled') { 
+                    closeModal('tradeModal'); 
+                    if(o.status === 'completed') openModal('ratingModal');
+                    return; 
+                }
+
+                document.getElementById('tr-id').innerText = "#" + orderId.substring(1, 7).toUpperCase();
+                document.getElementById('tr-etb').innerText = o.amountEtb.toFixed(2) + " ETB";
+                document.getElementById('tr-usdt').innerText = o.amountUsdt.toFixed(2) + " USDT";
+                
+                const banner = document.getElementById('trade-status-banner');
+                if(o.dispute) banner.innerHTML = "🚨 DISPUTE REPORTED. ADMIN INVESTIGATING";
+                else if(o.buyerAccepted) banner.innerHTML = "💳 Buyer claimed payment. Waiting for seller release";
+                else banner.innerHTML = "⏳ Escrow running. Complete transaction";
+
+                clearInterval(tradeInterval);
+                tradeInterval = setInterval(() => {
+                    const diff = 15 * 60 - Math.floor((Date.now() - o.startTime) / 1000);
+                    if(diff <= 0) { clearInterval(tradeInterval); document.getElementById('tr-timer').innerText = "EXPIRED"; }
+                    else {
+                        const m = String(Math.floor(diff / 60)).padStart(2, '0');
+                        const sec = String(diff % 60).padStart(2, '0');
+                        document.getElementById('tr-timer').innerText = `${m}:${sec}`;
+                    }
+                }, 1000);
+
+                const iAmBuyer = o.buyerId == user.id;
+                const partnerId = iAmBuyer ? o.sellerId : o.buyerId;
+
+                db.ref('users/' + partnerId).once('value', ps => {
+                    const p = ps.val() || { name: "Trader" };
+                    document.getElementById('tr-partner-name').innerText = p.name + (iAmBuyer ? " (Seller)" : " (Buyer)");
+                    document.getElementById('tr-partner-av').innerText = p.name.charAt(0).toUpperCase();
+                    
+                    const payDisplay = document.getElementById('smart-payment-display');
+                    
+                    // CRITICAL ROLE BASED PAYMENT VISIBILITY LOGIC
+                    if (iAmBuyer) {
+                        // 1. I am Buyer -> I must see local fiat information to send money
+                        let bankDetails = "";
+                        if(o.paymentMethod === 'Telebirr') {
+                            bankDetails = `<div>Name: <b>${p.teleName || 'N/A'}</b></div><div>Phone: <b class="text-[#FCD535] select-all">${p.telePhone || 'N/A'}</b></div>`;
+                        } else if(o.paymentMethod === 'CBE Birr') {
+                            bankDetails = `<div>Name: <b>${p.cbeName || 'N/A'}</b></div><div>Account: <b class="text-[#FCD535] select-all">${p.cbeAcc || 'N/A'}</b></div>`;
+                        } else {
+                            bankDetails = `<div>Name: <b>${p.boaName || 'N/A'}</b></div><div>Account: <b class="text-[#FCD535] select-all">${p.boaAcc || 'N/A'}</b></div>`;
+                        }
+                        payDisplay.innerHTML = `
+                            <div class="text-[11px] text-gray-400 uppercase font-black tracking-wider text-emerald-400">👇 Make Payment To Seller Below:</div>
+                            <div class="p-2.5 bg-[#0b0e11] rounded border border-[#2b3139] space-y-1">
+                                <div>Method: <span class="bg-[#2b3139] px-1 rounded font-bold">${o.paymentMethod}</span></div>
+                                ${bankDetails}
+                            </div>
+                        `;
+                    } else {
+                        // 2. I am Seller -> I only need to see Buyer's Binance Pay ID to dispatch crypto after payment
+                        payDisplay.innerHTML = `
+                            <div class="text-[11px] text-gray-400 uppercase font-black tracking-wider text-yellow-500">🚀 Deliver Crypto To Buyer:</div>
+                            <div class="p-2.5 bg-[#0b0e11] rounded border border-[#2b3139] space-y-1">
+                                <div>Buyer Name: <b>${p.name}</b></div>
+                                <div>Target Binance Pay ID: <b class="text-[#FCD535] text-sm select-all">${p.binanceId || 'N/A'}</b></div>
+                                <div class="text-[10px] text-gray-400 italic mt-1">⚠️ Release only after verifying money arrived inside your bank!</div>
+                            </div>
+                        `;
+                    }
+                });
+
+                const btn = document.getElementById('btn-tr-accept');
+                if(iAmBuyer) {
+                    if(o.buyerAccepted) {
+                        btn.innerText = "Settle Pending Seller Release..."; btn.className = "flex-[2] py-3 rounded-xl bg-gray-700 text-gray-400 text-xs font-bold"; btn.disabled = true;
+                    } else {
+                        btn.innerText = "I Have Transferred ETB"; btn.className = "flex-[2] py-3 rounded-xl bg-[#0ECB81] text-black font-black text-xs"; btn.disabled = false;
+                    }
+                } else {
+                    if(!o.buyerAccepted) {
+                        btn.innerText = "Awaiting Buyer Transfer..."; btn.className = "flex-[2] py-3 rounded-xl bg-gray-700 text-gray-400 text-xs font-bold"; btn.disabled = true;
+                    } else {
+                        btn.innerText = "Confirm & Release Crypto"; btn.className = "flex-[2] py-3 rounded-xl bg-[#FCD535] text-black font-black text-xs"; btn.disabled = false;
+                    }
+                }
+
+                loadChat(orderId);
+                openModal('tradeModal');
+            });
+        }
+
+        function acceptTrade() {
+            db.ref('orders/' + activeTradeId).once('value', s => {
+                const o = s.val();
+                const iAmBuyer = o.buyerId == user.id;
+                
+                if(iAmBuyer) {
+                    db.ref('orders/' + activeTradeId).update({ buyerAccepted: true });
+                    db.ref('chats/' + activeTradeId).push({ sender: 'system', text: `✅ Buyer ${user.first_name} marked order as PAID. Check your bank.` });
+                } else {
+                    db.ref('orders/' + activeTradeId).update({ status: 'completed' });
+                    db.ref('chats/' + activeTradeId).push({ sender: 'system', text: `🎉 Seller released custody. Crypto dispatched.` });
+                }
+            });
+        }
+
+        function cancelTrade() {
+            if(confirm("Are you sure you want to cancel this order escrow?")) {
+                db.ref('orders/' + activeTradeId).update({ status: 'cancelled' });
+                showToast("Escrow Aborted.");
+            }
+        }
+
+        function reportDispute() {
+            db.ref('orders/' + activeTradeId).update({ dispute: true });
+            db.ref('chats/' + activeTradeId).push({ sender: 'system', text: `⚠️ DISPUTE INITIATED. Atom X Resolution Admin entering...` });
+            showToast("Dispute escalated to system Admin desk.");
+        }
+
+        function submitRating(type) {
+            closeModal('ratingModal'); showToast(`Feedback logged: ${type}`);
+        }
+
+        // 5. SECURE MESSAGING CHAT ENGINE WITH BASE64 SCREENSHOTS
+        function loadChat(orderId) {
+            db.ref('chats/' + orderId).on('value', s => {
+                const box = document.getElementById('chat-messages'); box.innerHTML = '';
+                const chats = s.val() || {};
+                Object.values(chats).forEach(c => {
+                    const isMe = c.sender == user.id;
+                    const isSys = c.sender == 'system';
+                    const align = isMe ? 'justify-end' : isSys ? 'justify-center' : 'justify-start';
+                    const bg = isMe ? 'bg-[#FCD535] text-black' : isSys ? 'text-gray-500 italic' : 'bg-[#2b3139] text-white';
+                    
+                    let content = c.image ? `<img src="${c.image}" class="chat-image" onclick="window.open('${c.image}')">` : c.text;
+                    box.innerHTML += `<div class="flex ${align} mb-1"><div class="${bg} px-3 py-1.5 rounded-xl text-[11px] max-w-[80%] break-words">${content}</div></div>`;
+                });
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+
+        function sendMsg() {
+            const el = document.getElementById('chat-input');
+            if(!el.value.trim()) return;
+            db.ref('chats/' + activeTradeId).push({ sender: user.id, text: el.value });
+            el.value = '';
+        }
+
+        function sendChatImage(input) {
+            if(input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    db.ref('chats/' + activeTradeId).push({ sender: user.id, image: e.target.result });
+                    showToast("Screenshot Verification Uploaded!");
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // 6. TOTAL ADAPTIVE ADMIN MONITOR
+        function switchAdminTab(id, btn) {
+            document.querySelectorAll('.admin-panel').forEach(e => e.classList.add('hidden'));
+            document.querySelectorAll('.admin-tab-btn').forEach(e => {
+                e.className = "admin-tab-btn bg-[#1e2329] text-white px-3 py-1.5 rounded-lg border border-[#2b3139]";
+            });
+            document.getElementById(id).classList.remove('hidden');
+            btn.className = "admin-tab-btn bg-[#FCD535] text-black px-3 py-1.5 rounded-lg shadow-lg";
+        }
+
+        function loadAdminData() {
+            db.ref('users').on('value', s => {
+                const users = s.val() || {};
+                document.getElementById('admin-user-count').innerText = Object.keys(users).length;
+                const uList = document.getElementById('admin-users'); uList.innerHTML = '';
+                const kList = document.getElementById('admin-kyc'); kList.innerHTML = '';
+                
+                Object.keys(users).forEach(id => {
+                    const u = users[id];
+                    const banBtn = u.isBanned ? `<button onclick="toggleBan('${id}', false)" class="bg-gray-600 text-white px-2 py-1 rounded text-[10px]">UNBAN</button>` : `<button onclick="toggleBan('${id}', true)" class="bg-[#F6465D] text-white px-2 py-1 rounded text-[10px]">BAN</button>`;
+                    uList.innerHTML += `<div class="bg-[#1e2329] p-3 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-1"><span class="text-white font-medium">${u.name} (ID: ${id})</span>${id != ADMIN_ID ? banBtn:''}</div>`;
+                    
+                    if(u.status === 'pending') {
+                        kList.innerHTML += `
+                        <div class="bg-[#1e2329] p-3 rounded border border-yellow-500 text-xs mb-2 space-y-2">
+                            <div class="text-white font-bold">Verification For: <span class="text-[#FCD535]">${u.name}</span></div>
+                            <img src="${u.idPhoto}" class="w-full max-h-48 object-contain bg-black rounded">
+                            <div class="flex gap-2">
+                                <button onclick="adminKYC('${id}','verified')" class="flex-1 bg-[#0ECB81] py-1 text-black font-bold rounded">Approve</button>
+                                <button onclick="adminKYC('${id}','declined')" class="flex-1 bg-[#F6465D] py-1 text-white font-bold rounded">Reject</button>
+                            </div>
+                        </div>`;
+                    }
+                });
+                if(!kList.innerHTML) kList.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">No pending identity audits.</p>`;
+            });
+
+            db.ref('orders').on('value', s => {
+                const dList = document.getElementById('admin-disputes'); dList.innerHTML = '';
+                const orders = s.val() || {};
+                let count = 0;
+
+                Object.keys(orders).forEach(id => {
+                    const o = orders[id];
+                    if(o.dispute && o.status !== 'completed' && o.status !== 'cancelled') {
+                        count++;
+                        dList.innerHTML += `
+                        <div class="bg-red-950/20 p-3 rounded border border-red-500 text-xs mb-2 space-y-2">
+                            <div class="flex justify-between font-bold text-white"><span>Dispute Room #${id.substring(1,7)}</span> <span class="text-[#FCD535]">${o.amountUsdt} USDT</span></div>
+                            <p class="text-[11px] text-gray-400">Buyer: ${o.buyerId} | Seller: ${o.sellerId} | Target: ${o.paymentMethod}</p>
+                            <div class="flex gap-2">
+                                <button onclick="resolveDisputeAdmin('${id}', 'completed')" class="flex-1 bg-[#0ECB81] text-black font-bold py-1.5 rounded text-[11px]">Force Release to Buyer</button>
+                                <button onclick="resolveDisputeAdmin('${id}', 'cancelled')" class="flex-1 bg-[#F6465D] text-white font-bold py-1.5 rounded text-[11px]">Force Cancel / Refund</button>
+                                <button onclick="openTradeRoom('${id}')" class="bg-blue-600 px-2 rounded text-white font-bold text-xs"><i class="fa-solid fa-comments"></i></button>
+                            </div>
+                        </div>`;
+                    }
+                });
+                document.getElementById('dispute-badge').innerText = count;
+                const dot = document.getElementById('nav-dispute-dot');
+                if(count > 0) { dot.classList.remove('hidden'); } else { dot.classList.add('hidden'); }
+                if(!dList.innerHTML) dList.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">Dispute room is clear.</p>`;
+            });
+        }
+
+        function toggleBan(uid, val) { db.ref('users/'+uid).update({isBanned: val}); showToast("User configuration revised."); }
+        function adminKYC(uid, status) { db.ref('users/'+uid).update({status: status}); showToast(`KYC finalized as ${status}`); }
+        function resolveDisputeAdmin(orderId, finalStatus) { 
+            db.ref('orders/'+orderId).update({ status: finalStatus, dispute: false }); 
+            db.ref('chats/' + orderId).push({ sender: 'system', text: `⚖️ System Admin Judgement: Case resolved as ${finalStatus.toUpperCase()}` });
+            showToast("Judgement deployed."); 
+        }
+
+        // NAVIGATION SWITCH UTILITIES
+        function switchMainTab(id) {
+            document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+            document.getElementById(`${id}-view`).classList.add('active');
+            const navItem = document.getElementById(`nav-${id}`);
+            if(navItem) navItem.classList.add('active');
+        }
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.className = "bg-[#FCD535] text-black px-4 py-2 rounded shadow-xl text-xs font-black border border-[#2b3139]";
+            t.innerText = msg;
+            document.getElementById('toast-container').appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+    <!-- REPLACE ONLY THIS SCRIPT PART -->
 <script>
+/* =========================
+   ATOM X PRO P2P ENGINE
+   PROFESSIONAL FIXED VERSION
+========================= */
 
-/* FIREBASE */
-
+// FIREBASE CONFIG
 const firebaseConfig = {
-
-apiKey:"AIzaSyD3getH9kSW2oHuOI9AZR8t4yZ34_jPZG0",
-
-authDomain:"atomx-exchange.firebaseapp.com",
-
-databaseURL:"https://atomx-exchange-default-rtdb.firebaseio.com",
-
-projectId:"atomx-exchange",
-
-storageBucket:"atomx-exchange.appspot.com"
-
+    apiKey: "AIzaSyD3getH9kSW2oHuOI9AZR8t4yZ34_jPZG0",
+    authDomain: "atomx-exchange.firebaseapp.com",
+    databaseURL: "https://atomx-exchange-default-rtdb.firebaseio.com",
+    projectId: "atomx-exchange",
+    storageBucket: "atomx-exchange.firebasestorage.app"
 };
 
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 
 const db = firebase.database();
 
-/* TELEGRAM */
-
+// TELEGRAM
 const tg = window.Telegram.WebApp;
-
 tg.expand();
 
 const user = tg.initDataUnsafe?.user || {
-id:7798504269,
-first_name:"Admin"
+    id: 7798504269,
+    first_name: "Admin"
 };
 
+// ADMIN
 const ADMIN_ID = 7798504269;
 
-/* GLOBAL */
-
+// GLOBALS
 let myData = {};
-let currentMarket = "buy";
+let currentMarketType = "buy";
+let activeTradeId = null;
+let selectedAd = null;
+let tradeInterval = null;
 
-/* START */
+// START
+window.onload = async () => {
 
-window.onload = async()=>{
+    if (user.id == ADMIN_ID) {
+        document.getElementById("nav-admin").classList.remove("hidden");
+    }
 
-if(user.id == ADMIN_ID){
+    await initUser();
 
-document
-.getElementById("nav-admin")
-.classList.remove("hidden");
+    loadMarketAds();
 
-}
+    loadMyAds();
 
-initUser();
+    listenToOrders();
 
-loadMarketAds();
-
-loadMyAds();
-
-loadAdminData();
-
+    if (user.id == ADMIN_ID) {
+        loadAdminData();
+    }
 };
 
-/* USER */
+/* =========================
+   USER SYSTEM
+========================= */
 
-function initUser(){
+async function initUser() {
 
-db.ref("users/"+user.id)
-.on("value",snap=>{
+    db.ref("users/" + user.id).on("value", snap => {
 
-myData = snap.val();
+        myData = snap.val();
 
-if(!myData){
+        // CREATE NEW USER
+        if (!myData) {
 
-db.ref("users/"+user.id)
-.set({
+            db.ref("users/" + user.id).set({
+                name: user.first_name || "User",
+                username: user.username || "",
+                status: "unverified",
+                isBanned: false,
+                createdAt: Date.now(),
+                positiveRate: 0,
+                negativeRate: 0,
+                totalTrades: 0
+            });
 
-name:user.first_name,
+            return;
+        }
 
-status:"verified",
+        // BANNED
+        if (myData.isBanned) {
+            document
+                .getElementById("banned-screen")
+                .classList.remove("hidden");
 
-isBanned:false,
+            return;
+        }
 
-createdAt:Date.now()
-
-});
-
-return;
-
+        updateProfileUI();
+    });
 }
 
-if(myData.isBanned){
+function updateProfileUI() {
 
-document.body.innerHTML =
-`
-<div class="h-screen flex items-center justify-center text-center p-5">
+    document.getElementById("prof-name").innerText =
+        myData.name || "User";
 
-<div>
+    const letter =
+        (myData.name || "U").charAt(0).toUpperCase();
 
-<i class="fa-solid fa-ban text-6xl text-red-500 mb-4"></i>
+    document.getElementById("prof-avatar").innerText =
+        letter;
 
-<h1 class="text-2xl font-black mb-2">
-ACCOUNT BANNED
-</h1>
+    if (user.photo_url) {
 
-<p class="text-gray-400">
-You are blocked by admin
-</p>
+        document.getElementById("header-avatar").innerHTML =
+            `<img src="${user.photo_url}"
+            class="w-full h-full object-cover">`;
 
-</div>
+    } else {
 
-</div>
-`;
+        document.getElementById("header-avatar").innerText =
+            letter;
+    }
 
-return;
+    // STATUS
+    const statusText =
+        document.getElementById("prof-status-text");
 
+    if (myData.status == "verified") {
+
+        statusText.innerHTML =
+            "STATUS: VERIFIED ✔";
+
+        statusText.className =
+            "text-[10px] text-[#0ECB81] mt-1 font-bold";
+
+    } else if (myData.status == "pending") {
+
+        statusText.innerHTML =
+            "STATUS: PENDING";
+
+        statusText.className =
+            "text-[10px] text-[#FCD535] mt-1 font-bold";
+
+    } else {
+
+        statusText.innerHTML =
+            "STATUS: UNVERIFIED";
+
+        statusText.className =
+            "text-[10px] text-gray-400 mt-1 font-bold";
+    }
+
+    // LOAD PAYMENT INFO
+    document.getElementById("pm-tele-phone").value =
+        myData.telePhone || "";
+
+    document.getElementById("pm-tele-name").value =
+        myData.teleName || "";
+
+    document.getElementById("pm-cbe-name").value =
+        myData.cbeName || "";
+
+    document.getElementById("pm-cbe-acc").value =
+        myData.cbeAcc || "";
+
+    document.getElementById("pm-boa-name").value =
+        myData.boaName || "";
+
+    document.getElementById("pm-boa-acc").value =
+        myData.boaAcc || "";
+
+    document.getElementById("pm-binance-id").value =
+        myData.binanceId || "";
 }
 
-updateProfileUI();
+function saveProfile() {
 
-});
+    db.ref("users/" + user.id).update({
 
+        telePhone:
+            document.getElementById("pm-tele-phone").value,
+
+        teleName:
+            document.getElementById("pm-tele-name").value,
+
+        cbeName:
+            document.getElementById("pm-cbe-name").value,
+
+        cbeAcc:
+            document.getElementById("pm-cbe-acc").value,
+
+        boaName:
+            document.getElementById("pm-boa-name").value,
+
+        boaAcc:
+            document.getElementById("pm-boa-acc").value,
+
+        binanceId:
+            document.getElementById("pm-binance-id").value
+    });
+
+    showToast("Profile Saved");
 }
 
-function updateProfileUI(){
+/* =========================
+   REQUIREMENTS
+========================= */
 
-document.getElementById("prof-name").innerText =
-myData.name || "User";
+function checkRequirements() {
 
-document.getElementById("prof-avatar").innerText =
-(myData.name || "U")
-.charAt(0)
-.toUpperCase();
+    if (myData.status !== "verified") {
 
-document.getElementById("header-avatar").innerText =
-(myData.name || "U")
-.charAt(0)
-.toUpperCase();
+        showToast("Verify your account first");
 
-document.getElementById("prof-status-text").innerText =
-"STATUS : " + myData.status.toUpperCase();
+        switchMainTab("profile");
 
-document.getElementById("pm-tele-name").value =
-myData.teleName || "";
+        return false;
+    }
 
-document.getElementById("pm-tele-phone").value =
-myData.telePhone || "";
+    if (
+        !myData.telePhone &&
+        !myData.cbeAcc &&
+        !myData.boaAcc
+    ) {
 
-document.getElementById("pm-cbe-acc").value =
-myData.cbeAcc || "";
+        showToast("Add payment method");
 
-document.getElementById("pm-binance-id").value =
-myData.binanceId || "";
+        switchMainTab("profile");
 
+        return false;
+    }
+
+    if (!myData.binanceId) {
+
+        showToast("Add Binance Pay ID");
+
+        switchMainTab("profile");
+
+        return false;
+    }
+
+    return true;
 }
 
-function saveProfile(){
+/* =========================
+   CREATE AD
+========================= */
 
-db.ref("users/"+user.id)
-.update({
+function openPostAdForm() {
 
-teleName:
-document.getElementById("pm-tele-name").value,
+    if (!checkRequirements()) return;
 
-telePhone:
-document.getElementById("pm-tele-phone").value,
+    document.getElementById("editing-ad-id").value = "";
 
-cbeAcc:
-document.getElementById("pm-cbe-acc").value,
+    document.getElementById("ad-price").value = "";
 
-binanceId:
-document.getElementById("pm-binance-id").value
+    document.getElementById("ad-amount").value = "";
 
-});
+    document.getElementById("ad-min").value = "";
 
-showToast("Profile Saved");
+    document.getElementById("ad-max").value = "";
 
+    document.getElementById("ad-terms").value = "";
+
+    document.getElementById("btn-submit-ad").innerText =
+        "Post Ad";
+
+    switchMainTab("post");
 }
 
-/* NAV */
+function publishAd() {
 
-function switchMainTab(id){
+    const price =
+        parseFloat(
+            document.getElementById("ad-price").value
+        );
 
-document
-.querySelectorAll(".tab-content")
-.forEach(e=>{
+    const amount =
+        parseFloat(
+            document.getElementById("ad-amount").value
+        );
 
-e.classList.remove("active");
+    const min =
+        parseFloat(
+            document.getElementById("ad-min").value
+        );
 
-});
+    const max =
+        parseFloat(
+            document.getElementById("ad-max").value
+        );
 
-document
-.querySelectorAll(".nav-item")
-.forEach(e=>{
+    const paymentMethod =
+        document.getElementById("ad-payment-method").value;
 
-e.classList.remove("active");
+    const terms =
+        document.getElementById("ad-terms").value || "None";
 
-});
+    const type =
+        document.getElementById("ad-form-type").value;
 
-document
-.getElementById(id+"-view")
-.classList.add("active");
+    if (
+        !price ||
+        !amount ||
+        !min ||
+        !max
+    ) {
 
-document
-.getElementById("nav-"+id)
-.classList.add("active");
+        showToast("Fill all fields");
 
+        return;
+    }
+
+    if (min > max) {
+
+        showToast("Min > Max");
+
+        return;
+    }
+
+    const adData = {
+
+        uid: user.id,
+
+        userName: myData.name,
+
+        userStatus: myData.status,
+
+        type: type,
+
+        price: Number(price),
+
+        amount: Number(amount),
+
+        min: Number(min),
+
+        max: Number(max),
+
+        paymentMethod: paymentMethod,
+
+        terms: terms,
+
+        createdAt: Date.now()
+    };
+
+    db.ref("ads")
+        .push(adData)
+        .then(() => {
+
+            showToast("Ad Posted Successfully");
+
+            switchMainTab("market");
+
+            loadMarketAds();
+
+            loadMyAds();
+        });
 }
 
-/* MARKET */
+/* =========================
+   MARKET SYSTEM
+========================= */
 
-function setMarket(type){
+function setMarket(type) {
 
-currentMarket = type;
+    currentMarketType = type;
 
-document.getElementById("btn-market-buy")
-.className =
-type=="buy"
-?
-"font-black border-b-2 border-[#FCD535] pb-1"
-:
-"text-[#848E9C] font-black pb-1";
+    document.getElementById("btn-market-buy").className =
+        type == "buy"
+            ? "text-white border-b-2 border-[#FCD535] pb-1"
+            : "text-[#848E9C] pb-1";
 
-document.getElementById("btn-market-sell")
-.className =
-type=="sell"
-?
-"font-black border-b-2 border-[#FCD535] pb-1"
-:
-"text-[#848E9C] font-black pb-1";
+    document.getElementById("btn-market-sell").className =
+        type == "sell"
+            ? "text-white border-b-2 border-[#FCD535] pb-1"
+            : "text-[#848E9C] pb-1";
 
-loadMarketAds();
-
+    loadMarketAds();
 }
 
-function loadMarketAds(){
+function loadMarketAds() {
 
-const list =
-document.getElementById("market-list");
+    const list =
+        document.getElementById("market-list");
 
-db.ref("ads").on("value",snap=>{
+    db.ref("ads").off();
 
-list.innerHTML = "";
+    db.ref("ads").on("value", snap => {
 
-if(!snap.exists()){
+        list.innerHTML = "";
 
-list.innerHTML =
-`
-<div class="text-center py-20 text-gray-500">
+        if (!snap.exists()) {
 
-No Ads Available
+            list.innerHTML =
+                `
+                <div class="text-center py-10 text-gray-500">
+                    No Ads Available
+                </div>
+                `;
 
-</div>
-`;
+            return;
+        }
 
-return;
+        let ads = [];
 
+        snap.forEach(child => {
+
+            const ad = child.val();
+
+            if (!ad) return;
+
+            ads.push({
+                id: child.key,
+                ...ad
+            });
+        });
+
+        // FILTER
+        ads = ads.filter(ad => {
+
+            return currentMarketType == "buy"
+                ? ad.type == "sell"
+                : ad.type == "buy";
+        });
+
+        // REMOVE MY ADS
+        ads = ads.filter(ad => ad.uid != user.id);
+
+        // SORT
+        ads.sort((a, b) => {
+
+            return currentMarketType == "buy"
+                ? a.price - b.price
+                : b.price - a.price;
+        });
+
+        if (ads.length == 0) {
+
+            list.innerHTML =
+                `
+                <div class="text-center py-10 text-gray-500">
+                    No Matching Ads
+                </div>
+                `;
+
+            return;
+        }
+
+        ads.forEach(ad => {
+
+            const verified =
+                ad.userStatus == "verified"
+                    ? `<span class="text-[#0ECB81] text-[10px] font-bold">✔ VERIFIED</span>`
+                    : `<span class="text-gray-500 text-[10px]">UNVERIFIED</span>`;
+
+            const btnColor =
+                currentMarketType == "buy"
+                    ? "bg-[#0ECB81]"
+                    : "bg-[#F6465D]";
+
+            const btnText =
+                currentMarketType == "buy"
+                    ? "BUY"
+                    : "SELL";
+
+            list.innerHTML += `
+            <div class="bg-[#1e2329] border border-[#2b3139] p-4 rounded-2xl mb-3">
+
+                <div class="flex justify-between">
+
+                    <div>
+
+                        <div class="flex items-center gap-2 mb-2">
+
+                            <div class="w-8 h-8 rounded-full bg-[#2b3139]
+                            flex items-center justify-center text-xs font-black">
+                                ${ad.userName.charAt(0).toUpperCase()}
+                            </div>
+
+                            <div>
+                                <div class="font-bold text-white text-sm">
+                                    ${ad.userName}
+                                </div>
+
+                                ${verified}
+                            </div>
+
+                        </div>
+
+                        <div class="text-xs text-gray-400 space-y-1">
+
+                            <div>
+                                Available:
+                                <span class="text-white font-bold">
+                                    ${ad.amount} USDT
+                                </span>
+                            </div>
+
+                            <div>
+                                Limit:
+                                <span class="text-white font-bold">
+                                    ${ad.min} - ${ad.max}
+                                </span>
+                            </div>
+
+                            <div>
+                                <span class="bg-[#2b3139]
+                                text-[#FCD535]
+                                px-2 py-1 rounded text-[10px] font-bold">
+                                    ${ad.paymentMethod}
+                                </span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="text-right">
+
+                        <div class="text-2xl font-black text-white">
+                            ${Number(ad.price).toFixed(2)}
+                        </div>
+
+                        <div class="text-[11px] text-gray-500 mb-3">
+                            ETB
+                        </div>
+
+                        <button
+                        onclick="openPurchaseModal(
+                            '${ad.id}',
+                            '${ad.uid}',
+                            ${ad.price},
+                            ${ad.min},
+                            ${ad.max},
+                            '${ad.terms}',
+                            '${ad.paymentMethod}'
+                        )"
+                        class="${btnColor}
+                        px-5 py-2 rounded-xl
+                        text-black font-black text-xs">
+
+                            ${btnText}
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+            `;
+        });
+    });
 }
 
-let ads = [];
+/* =========================
+   MY ADS
+========================= */
 
-snap.forEach(child=>{
+function loadMyAds() {
 
-ads.push({
+    db.ref("ads").on("value", snap => {
 
-id:child.key,
-...child.val()
+        const container =
+            document.getElementById(
+                "my-published-ads-list"
+            );
 
-});
+        container.innerHTML = "";
 
-});
+        let hasAds = false;
 
-ads = ads.filter(ad=>{
+        snap.forEach(child => {
 
-return currentMarket=="buy"
-?
-ad.type=="sell"
-:
-ad.type=="buy";
+            const ad = child.val();
 
-});
+            if (ad.uid == user.id) {
 
-ads.forEach(ad=>{
+                hasAds = true;
 
-if(ad.uid == user.id) return;
+                container.innerHTML += `
+                <div class="bg-[#1e2329]
+                border border-[#2b3139]
+                rounded-xl p-4 mb-2">
 
-const btnColor =
-currentMarket=="buy"
-?
-"bg-[#0ECB81]"
-:
-"bg-[#F6465D]";
+                    <div class="flex justify-between items-center">
 
-const btnText =
-currentMarket=="buy"
-?
-"BUY"
-:
-"SELL";
+                        <div>
 
-list.innerHTML +=
-`
-<div class="bg-[#1e2329]
-border border-[#2b3139]
-rounded-2xl
-p-4">
+                            <div class="font-bold text-white">
+                                ${ad.amount} USDT
+                            </div>
 
-<div class="flex justify-between">
+                            <div class="text-xs text-gray-400">
+                                ${ad.price} ETB
+                            </div>
 
-<div>
+                        </div>
 
-<div class="flex items-center gap-2 mb-2">
+                        <button
+                        onclick="deleteAd('${child.key}')"
+                        class="bg-red-500 px-3 py-1 rounded text-white text-xs font-bold">
 
-<div class="w-9 h-9 rounded-full
-bg-[#2b3139]
-flex items-center justify-center
-font-black">
+                            DELETE
 
-${ad.userName.charAt(0)}
+                        </button>
 
-</div>
+                    </div>
 
-<div>
+                </div>
+                `;
+            }
+        });
 
-<h3 class="font-black">
-${ad.userName}
-</h3>
+        if (!hasAds) {
 
-<p class="text-[10px] text-[#0ECB81]">
-VERIFIED
-</p>
-
-</div>
-
-</div>
-
-<div class="text-xs text-gray-400 space-y-1">
-
-<div>
-Available:
-<span class="text-white font-bold">
-${ad.amount} USDT
-</span>
-</div>
-
-<div>
-Limit:
-<span class="text-white font-bold">
-${ad.min} - ${ad.max}
-</span>
-</div>
-
-<div>
-<span class="bg-[#2b3139]
-px-2 py-1
-rounded
-text-[#FCD535]
-font-bold text-[10px]">
-
-${ad.paymentMethod}
-
-</span>
-</div>
-
-</div>
-
-</div>
-
-<div class="text-right">
-
-<div class="text-2xl font-black">
-${ad.price}
-</div>
-
-<div class="text-[11px] text-gray-500 mb-3">
-ETB
-</div>
-
-<button
-class="${btnColor}
-text-black
-font-black
-px-5 py-2
-rounded-xl">
-
-${btnText}
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-`;
-
-});
-
-});
-
+            container.innerHTML =
+                `
+                <div class="text-gray-500 text-sm">
+                    No Ads Posted
+                </div>
+                `;
+        }
+    });
 }
 
-/* POST AD */
+function deleteAd(id) {
 
-function openPostAdForm(){
+    if (!confirm("Delete this ad?")) return;
 
-switchMainTab("post");
+    db.ref("ads/" + id)
+        .remove()
+        .then(() => {
 
+            showToast("Ad Deleted");
+        });
 }
 
-function setAdType(type){
+/* =========================
+   ORDER SYSTEM
+========================= */
 
-document.getElementById("ad-type").value = type;
+function openPurchaseModal(
+    adId,
+    creatorId,
+    price,
+    min,
+    max,
+    terms,
+    method
+) {
 
-document.getElementById("ad-type-buy")
-.className =
-type=="buy"
-?
-"flex-1 py-2 rounded-lg bg-[#0ECB81] font-black"
-:
-"flex-1 py-2 rounded-lg text-[#848E9C] font-black";
+    selectedAd = {
+        adId,
+        creatorId,
+        price,
+        min,
+        max,
+        method
+    };
 
-document.getElementById("ad-type-sell")
-.className =
-type=="sell"
-?
-"flex-1 py-2 rounded-lg bg-[#F6465D] font-black"
-:
-"flex-1 py-2 rounded-lg text-[#848E9C] font-black";
+    document.getElementById("pm-title").innerText =
+        currentMarketType == "buy"
+            ? "Buy USDT"
+            : "Sell USDT";
 
+    document.getElementById("pm-limit").innerText =
+        `${min} - ${max} USDT`;
+
+    document.getElementById("pm-terms").innerText =
+        terms;
+
+    openModal("purchaseModal");
+
+    document.getElementById(
+        "btn-confirm-purchase"
+    ).onclick = confirmPurchase;
 }
 
-function publishAd(){
+function confirmPurchase() {
 
-const data = {
+    const amount =
+        parseFloat(
+            document.getElementById(
+                "purchase-amount"
+            ).value
+        );
 
-uid:user.id,
+    if (
+        amount < selectedAd.min ||
+        amount > selectedAd.max
+    ) {
 
-userName:myData.name,
+        showToast("Invalid amount");
 
-type:
-document.getElementById("ad-type").value,
+        return;
+    }
 
-price:Number(
-document.getElementById("ad-price").value
-),
+    const orderRef =
+        db.ref("orders").push();
 
-amount:Number(
-document.getElementById("ad-amount").value
-),
+    const orderData = {
 
-min:Number(
-document.getElementById("ad-min").value
-),
+        adId: selectedAd.adId,
 
-max:Number(
-document.getElementById("ad-max").value
-),
+        buyerId:
+            currentMarketType == "buy"
+                ? user.id
+                : selectedAd.creatorId,
 
-paymentMethod:
-document.getElementById("ad-payment-method").value,
+        sellerId:
+            currentMarketType == "buy"
+                ? selectedAd.creatorId
+                : user.id,
 
-terms:
-document.getElementById("ad-terms").value,
+        amountUsdt: amount,
 
-createdAt:Date.now()
+        amountEtb:
+            amount * selectedAd.price,
 
-};
+        paymentMethod:
+            selectedAd.method,
 
-db.ref("ads")
-.push(data)
-.then(()=>{
+        status: "pending",
 
-showToast("Advertisement Posted");
+        createdAt: Date.now(),
 
-switchMainTab("market");
+        dispute: false
+    };
 
-});
+    orderRef
+        .set(orderData)
+        .then(() => {
 
+            closeModal("purchaseModal");
+
+            showToast("Order Created");
+
+            openTradeRoom(orderRef.key);
+        });
 }
 
-/* MY ADS */
+/* =========================
+   ADMIN
+========================= */
 
-function loadMyAds(){
+function loadAdminData() {
 
-db.ref("ads")
-.on("value",snap=>{
+    db.ref("users").on("value", snap => {
 
-const box =
-document.getElementById("my-published-ads-list");
+        const users =
+            snap.val() || {};
 
-box.innerHTML = "";
+        document.getElementById(
+            "admin-user-count"
+        ).innerText =
+            Object.keys(users).length;
 
-snap.forEach(child=>{
+        const list =
+            document.getElementById(
+                "admin-users"
+            );
 
-const ad = child.val();
+        list.innerHTML = "";
 
-if(ad.uid == user.id){
+        Object.keys(users).forEach(uid => {
 
-box.innerHTML +=
-`
-<div class="bg-[#1e2329]
-border border-[#2b3139]
-rounded-2xl
-p-4">
+            const u = users[uid];
 
-<div class="flex justify-between items-center">
+            list.innerHTML += `
+            <div class="bg-[#1e2329]
+            border border-[#2b3139]
+            p-3 rounded-xl mb-2">
 
-<div>
+                <div class="flex justify-between items-center">
 
-<div class="font-black">
-${ad.amount} USDT
-</div>
+                    <div>
 
-<div class="text-xs text-gray-400">
-${ad.price} ETB
-</div>
+                        <div class="font-bold text-white">
+                            ${u.name}
+                        </div>
 
-</div>
+                        <div class="text-xs text-gray-400">
+                            ${uid}
+                        </div>
 
-<button
-onclick="deleteAd('${child.key}')"
-class="bg-red-500
-text-white
-px-4 py-2
-rounded-xl
-text-xs
-font-black">
+                    </div>
 
-DELETE
+                    <div class="flex gap-2">
 
-</button>
+                        <button
+                        onclick="toggleBan('${uid}', true)"
+                        class="bg-red-500 px-3 py-1 rounded text-xs text-white font-bold">
 
-</div>
+                            BAN
 
-</div>
-`;
+                        </button>
 
+                        <button
+                        onclick="toggleBan('${uid}', false)"
+                        class="bg-green-500 px-3 py-1 rounded text-xs text-black font-bold">
+
+                            UNBAN
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+            `;
+        });
+    });
 }
 
-});
+function toggleBan(uid, value) {
 
-});
+    db.ref("users/" + uid)
+        .update({
+            isBanned: value
+        });
 
+    showToast("User Updated");
 }
 
-function deleteAd(id){
+/* =========================
+   HELPERS
+========================= */
 
-if(!confirm("Delete this ad?")) return;
+function switchMainTab(id) {
 
-db.ref("ads/"+id)
-.remove();
+    document
+        .querySelectorAll(".tab-content")
+        .forEach(e => {
+            e.classList.remove("active");
+        });
 
-showToast("Advertisement Deleted");
+    document
+        .querySelectorAll(".nav-item")
+        .forEach(e => {
+            e.classList.remove("active");
+        });
 
+    document
+        .getElementById(id + "-view")
+        .classList.add("active");
+
+    const nav =
+        document.getElementById(
+            "nav-" + id
+        );
+
+    if (nav) {
+        nav.classList.add("active");
+    }
 }
 
-/* ADMIN */
+function openModal(id) {
 
-function loadAdminData(){
+    document
+        .getElementById(id)
+        .classList.remove("hidden");
 
-db.ref("users")
-.on("value",snap=>{
-
-const users =
-snap.val() || {};
-
-const box =
-document.getElementById("admin-users");
-
-box.innerHTML = "";
-
-Object.keys(users)
-.forEach(uid=>{
-
-const u = users[uid];
-
-box.innerHTML +=
-`
-<div class="bg-[#1e2329]
-border border-[#2b3139]
-rounded-2xl
-p-4">
-
-<div class="flex justify-between items-center">
-
-<div>
-
-<div class="font-black">
-${u.name}
-</div>
-
-<div class="text-xs text-gray-400">
-${uid}
-</div>
-
-</div>
-
-<div class="flex gap-2">
-
-<button
-onclick="toggleBan('${uid}',true)"
-class="bg-red-500
-text-white
-px-3 py-1
-rounded
-text-xs
-font-black">
-
-BAN
-
-</button>
-
-<button
-onclick="toggleBan('${uid}',false)"
-class="bg-green-500
-text-black
-px-3 py-1
-rounded
-text-xs
-font-black">
-
-UNBAN
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-`;
-
-});
-
-});
-
+    document
+        .getElementById(id)
+        .classList.add("flex");
 }
 
-function toggleBan(uid,val){
+function closeModal(id) {
 
-db.ref("users/"+uid)
-.update({
+    document
+        .getElementById(id)
+        .classList.add("hidden");
 
-isBanned:val
-
-});
-
-showToast("User Updated");
-
+    document
+        .getElementById(id)
+        .classList.remove("flex");
 }
 
-/* TOAST */
+function showToast(message) {
 
-function showToast(msg){
+    const toast =
+        document.createElement("div");
 
-const t =
-document.createElement("div");
+    toast.className =
+        `
+        bg-[#FCD535]
+        text-black
+        px-4 py-2
+        rounded-xl
+        text-xs
+        font-black
+        shadow-xl
+        `;
 
-t.className =
-`
-bg-[#FCD535]
-text-black
-px-4 py-2
-rounded-xl
-font-black
-text-xs
-shadow-xl
-`;
+    toast.innerText = message;
 
-t.innerText = msg;
+    document
+        .getElementById("toast-container")
+        .appendChild(toast);
 
-document
-.getElementById("toast-container")
-.appendChild(t);
-
-setTimeout(()=>{
-
-t.remove();
-
-},3000);
-
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
 }
-
 </script>
-
 </body>
-    </html>
+</html>
