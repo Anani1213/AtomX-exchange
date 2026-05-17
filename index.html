@@ -162,9 +162,7 @@
                         <label class="text-[10px] text-[#848E9C] font-bold mb-2 block">Payment Method</label>
                         <div class="flex flex-wrap gap-2">
                             <span class="filter-chip active" onclick="togglePaymentFilter('telebirr', this)">Telebirr</span>
-                            <span class="filter-chip" onclick="togglePaymentFilter('binance', this)">Binance</span>
                             <span class="filter-chip" onclick="togglePaymentFilter('cbe', this)">CBE</span>
-                            <span class="filter-chip" onclick="togglePaymentFilter('mobile', this)">Mobile</span>
                         </div>
                     </div>
 
@@ -239,9 +237,7 @@
                     <label class="text-xs text-[#848E9C] mb-2 block">Payment Methods</label>
                     <div class="space-y-2">
                         <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="pm-telebirr" class="w-4 h-4" checked> <span class="text-sm">Telebirr</span></label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="pm-binance" class="w-4 h-4"> <span class="text-sm">Binance Pay</span></label>
                         <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="pm-cbe" class="w-4 h-4"> <span class="text-sm">CBE Bank</span></label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="pm-mobile" class="w-4 h-4"> <span class="text-sm">Mobile Money</span></label>
                     </div>
                 </div>
 
@@ -304,20 +300,14 @@
                 </div>
 
                 <div class="border-l-2 border-[#F7931A] pl-3">
-                    <label class="text-[10px] font-bold text-[#F7931A] block mb-2">BINANCE PAY</label>
-                    <input type="text" id="pm-binance-id" placeholder="Binance ID/Email" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
+                    <label class="text-[10px] font-bold text-[#F7931A] block mb-2">BINANCE PAY (REQUIRED FOR TRADING)</label>
+                    <input type="text" id="pm-binance-id" placeholder="Binance ID" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
                 </div>
 
                 <div class="border-l-2 border-[#4285F4] pl-3">
                     <label class="text-[10px] font-bold text-[#4285F4] block mb-2">CBE BANK</label>
                     <input type="text" id="pm-cbe-account" placeholder="Account Number" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11] mb-2">
                     <input type="text" id="pm-cbe-name" placeholder="Account Name" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
-                </div>
-
-                <div class="border-l-2 border-[#00B894] pl-3">
-                    <label class="text-[10px] font-bold text-[#00B894] block mb-2">MOBILE MONEY (Ethio Telecom)</label>
-                    <input type="number" id="pm-mobile-phone" placeholder="Phone Number" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11] mb-2">
-                    <input type="text" id="pm-mobile-name" placeholder="Account Name" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
                 </div>
 
                 <button onclick="saveProfile()" class="w-full bg-[#FCD535] text-black font-bold py-3 rounded-lg text-sm">Save Information</button>
@@ -348,7 +338,7 @@
                     Disputes <span id="dispute-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center hidden font-bold">0</span>
                 </button>
                 <button onclick="switchAdminTab('admin-orders', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap">Monitor Chats</button>
-                <button onclick="switchAdminTab('admin-analytics', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap">Live Platform Volume</button>
+                <button onclick="switchAdminTab('admin-analytics', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap">Platform Volume</button>
             </div>
 
             <div id="admin-users" class="admin-panel space-y-2"></div>
@@ -378,13 +368,13 @@
             <h3 class="text-white font-bold text-lg mb-1" id="pm-title">Buy USDT</h3>
             <p class="text-xs text-[#848E9C] mb-4">Limits: <span id="pm-limit" class="text-white"></span></p>
             <div class="bg-[#0b0e11] p-3 rounded-lg mb-4 text-xs text-[#848E9C] border border-[#2b3139]">
-                <strong class="text-white">Seller Info:</strong><br><span id="pm-seller-name"></span> | <span class="text-[#0ECB81] font-bold" id="pm-seller-trades">0 Trades</span>
+                <strong class="text-white">Merchant Info:</strong><br><span id="pm-seller-name"></span> | <span class="text-[#0ECB81] font-bold" id="pm-seller-trades">0 Trades</span>
             </div>
             <div class="bg-[#0b0e11] p-3 rounded-lg mb-4 text-xs text-[#848E9C] border border-[#2b3139]">
                 <strong class="text-white">Terms:</strong><br><span id="pm-terms"></span>
             </div>
             <div class="bg-[#0b0e11] p-3 rounded-lg mb-4 text-xs border border-[#2b3139]">
-                <label class="text-[#848E9C] block mb-2">Payment Method:</label>
+                <label class="text-[#848E9C] block mb-2">Select Payment Method:</label>
                 <select id="payment-method-select" class="w-full p-2 rounded text-xs">
                     <option value="">Select method...</option>
                 </select>
@@ -427,7 +417,7 @@
                 <button onclick="closeModal('tradeModal')" class="text-white text-lg"><i class="fa-solid fa-arrow-left"></i></button>
                 <div>
                     <h2 class="text-xs font-bold text-white flex items-center gap-2">Order <span id="tr-id" class="text-[#848E9C]">#000</span></h2>
-                    <p class="text-[10px] text-[#FCD535]">Time: <span id="tr-timer" class="font-bold">15:00</span></p>
+                    <p class="text-[10px] text-[#FCD535]">Time Room: <span id="tr-timer" class="font-bold">15:00</span></p>
                 </div>
             </div>
             <button onclick="reportDispute()" class="text-[#F6465D] text-xs font-bold border border-[#F6465D] px-2 py-1 rounded">Dispute</button>
@@ -449,9 +439,9 @@
                     <div class="space-y-2 text-xs">
                         <div>
                             <label class="text-[#848E9C] block mb-1">Selected Payment Method:</label>
-                            <div class="bg-[#0b0e11] p-2 rounded border-l-2 border-[#FCD535]" id="tr-payment-method">Telebirr</div>
+                            <div class="bg-[#0b0e11] p-2 rounded border-l-2 border-[#FCD535] font-bold text-sm" id="tr-payment-method">Telebirr</div>
                         </div>
-                        <div id="tr-payment-info" class="space-y-1 text-xs text-[#EAECEF]"></div>
+                        <div id="tr-payment-info" class="space-y-1 text-xs text-[#EAECEF] pt-2"></div>
                     </div>
                 </div>
 
@@ -636,8 +626,6 @@
             if(myData.binanceId) document.getElementById('pm-binance-id').value = myData.binanceId;
             if(myData.cbeAccount) document.getElementById('pm-cbe-account').value = myData.cbeAccount;
             if(myData.cbeName) document.getElementById('pm-cbe-name').value = myData.cbeName;
-            if(myData.mobilePhone) document.getElementById('pm-mobile-phone').value = myData.mobilePhone;
-            if(myData.mobileName) document.getElementById('pm-mobile-name').value = myData.mobileName;
         }
 
         function saveProfile() {
@@ -646,9 +634,7 @@
                 teleName: document.getElementById('pm-tele-name').value,
                 binanceId: document.getElementById('pm-binance-id').value,
                 cbeAccount: document.getElementById('pm-cbe-account').value,
-                cbeName: document.getElementById('pm-cbe-name').value,
-                mobilePhone: document.getElementById('pm-mobile-phone').value,
-                mobileName: document.getElementById('pm-mobile-name').value
+                cbeName: document.getElementById('pm-cbe-name').value
             };
             db.ref('users/' + user.id).update(updates);
             showToast("Profile Settings Saved!");
@@ -671,8 +657,8 @@
         }
 
         function checkRequirements() {
-            if(!myData.telePhone || !myData.teleName || myData.status !== 'verified') {
-                showToast("🔒 Complete Payment Info & Get Verified First!");
+            if(!myData.binanceId || myData.status !== 'verified') {
+                showToast("🔒 Binance ID & KYC Verification Required to Trade!");
                 switchMainTab('profile');
                 return false;
             }
@@ -693,9 +679,7 @@
 
             const paymentMethods = [
                 document.getElementById('pm-telebirr').checked ? 'telebirr' : null,
-                document.getElementById('pm-binance').checked ? 'binance' : null,
-                document.getElementById('pm-cbe').checked ? 'cbe' : null,
-                document.getElementById('pm-mobile').checked ? 'mobile' : null
+                document.getElementById('pm-cbe').checked ? 'cbe' : null
             ].filter(p => p);
 
             if(paymentMethods.length === 0) return showToast("Select at least one payment method!");
@@ -780,7 +764,6 @@
                     if(ad.status === 'active') {
                         allAds.push(ad);
                         
-                        // Render inside "My Posted Ads" section
                         if(String(ad.uid) == String(user.id) && userAdsList) {
                             myAdsCounter++;
                             userAdsList.innerHTML += `
@@ -802,7 +785,6 @@
                     userAdsList.innerHTML = '<div class="text-center text-[#848E9C] text-xs py-3">No ads posted yet</div>';
                 }
 
-                // Filter for Public Market View
                 filteredAds = allAds.filter(a => {
                     if(a.type !== (currentMarketType === 'buy' ? 'sell' : 'buy')) return false;
                     if(a.price < filterPriceMin || a.price > filterPriceMax) return false;
@@ -832,7 +814,7 @@
                     const totalTrades = ownerData.totalTrades || 0;
 
                     let paymentBadges = ad.paymentMethods.map(m => {
-                        const icons = { 'telebirr': '📱 Telebirr', 'binance': '💰 Binance', 'cbe': '🏦 CBE', 'mobile': '📲 Mobile' };
+                        const icons = { 'telebirr': '📱 Telebirr', 'cbe': '🏦 CBE' };
                         return icons[m] || m;
                     }).join(' ');
 
@@ -873,6 +855,7 @@
         // ====== FILTER FUNCTIONS ======
         function togglePaymentFilter(method, el) {
             if(filterPaymentMethods.includes(method)) {
+                if(filterPaymentMethods.length === 1) return; 
                 filterPaymentMethods = filterPaymentMethods.filter(m => m !== method);
                 el.classList.remove('active');
             } else {
@@ -914,7 +897,7 @@
             const select = document.getElementById('payment-method-select');
             select.innerHTML = '<option value="">Select method...</option>';
             paymentMethods.forEach(m => {
-                const labels = { 'telebirr': 'Telebirr', 'binance': 'Binance Pay', 'cbe': 'CBE Bank', 'mobile': 'Mobile Money' };
+                const labels = { 'telebirr': 'Telebirr', 'cbe': 'CBE Bank' };
                 select.innerHTML += `<option value="${m}">${labels[m]}</option>`;
             });
 
@@ -983,7 +966,6 @@
                     if(o.status === 'completed') { totalVolumeCounter += o.amountEtb; }
                     totalOrdersCounter++;
 
-                    // String safe conversion for matching orders correctly
                     if(String(o.buyerId) == String(user.id) || String(o.sellerId) == String(user.id)) {
                         if(o.status !== 'completed' && o.status !== 'cancelled' && list) {
                             const statusColor = o.dispute ? 'text-red-500' : o.status === 'pending' ? 'text-[#FCD535]' : 'text-[#0ECB81]';
@@ -1009,7 +991,7 @@
 
                     const badge = document.getElementById('dispute-badge');
                     const dot = document.getElementById('nav-dispute-dot');
-                    let disputeCount = Object.keys(orders).filter(id => orders[id].dispute && orders[id].status !== 'completed').length;
+                    let disputeCount = Object.keys(orders).filter(id => orders[id].dispute && orders[id].status !== 'completed' && orders[id].status !== 'cancelled').length;
                     if(disputeCount > 0) {
                         badge.innerText = disputeCount;
                         badge.classList.remove('hidden');
@@ -1022,7 +1004,6 @@
             });
         }
 
-        // ====== REAL LIVE GRAPH UPDATE ======
         function updateLiveChartData(prices) {
             const lastPrices = prices.slice(-10);
             const currentRate = lastPrices[lastPrices.length - 1];
@@ -1105,37 +1086,30 @@
 
                 const paymentMethod = o.selectedPaymentMethod;
                 document.getElementById('tr-payment-method').innerText = {
-                    'telebirr': 'Telebirr', 'binance': 'Binance Pay', 'cbe': 'CBE Bank', 'mobile': 'Mobile Money'
+                    'telebirr': 'Telebirr', 'cbe': 'CBE Bank'
                 }[paymentMethod] || paymentMethod;
 
-                // ====== የተስተካከለው የ PAYMENT METHOD ማሳያ ሎጂክ ======
+                // ====== FIXED VISIBILITY LOGIC (BINANCE P2P STYLE) ======
                 let paymentHTML = '';
                 const iAmBuyer = String(o.buyerId) == String(user.id);
 
                 if (iAmBuyer) {
-                    // እኔ ገዢ ከሆንኩ ፡ ብር የምልክለት ስለሆነ የሻጩን የባንክ/የቴሌብር አካውንት መረጃ ማየት አለብኝ
+                    // Buyer Views Seller's Bank/Telebirr to send Money
                     if(paymentMethod === 'telebirr') {
                         paymentHTML = `
-                        <div class="flex justify-between"><span>Telebirr Phone:</span> <span class="font-bold text-[#FCD535]">${p.telePhone || 'N/A'}</span></div>
-                        <div class="flex justify-between"><span>Account Name:</span> <span class="font-bold text-[#FCD535]">${p.teleName || 'N/A'}</span></div>`;
-                    } else if(paymentMethod === 'binance') {
-                        paymentHTML = `
-                        <div class="flex justify-between"><span>Binance ID (Seller):</span> <span class="font-bold text-[#FCD535]">${p.binanceId || 'N/A'}</span></div>`;
+                        <div class="flex justify-between p-1 bg-[#0b0e11] mb-1 px-2 rounded"><span>Telebirr Phone:</span> <span class="font-black text-[#FCD535]">${p.telePhone || 'N/A'}</span></div>
+                        <div class="flex justify-between p-1 bg-[#0b0e11] px-2 rounded"><span>Account Name:</span> <span class="font-black text-[#FCD535]">${p.teleName || 'N/A'}</span></div>`;
                     } else if(paymentMethod === 'cbe') {
                         paymentHTML = `
-                        <div class="flex justify-between"><span>Account Number:</span> <span class="font-bold text-[#FCD535]">${p.cbeAccount || 'N/A'}</span></div>
-                        <div class="flex justify-between"><span>Account Name:</span> <span class="font-bold text-[#FCD535]">${p.cbeName || 'N/A'}</span></div>`;
-                    } else if(paymentMethod === 'mobile') {
-                        paymentHTML = `
-                        <div class="flex justify-between"><span>Phone Number:</span> <span class="font-bold text-[#FCD535]">${p.mobilePhone || 'N/A'}</span></div>
-                        <div class="flex justify-between"><span>Account Name:</span> <span class="font-bold text-[#FCD535]">${p.mobileName || 'N/A'}</span></div>`;
+                        <div class="flex justify-between p-1 bg-[#0b0e11] mb-1 px-2 rounded"><span>CBE Account Number:</span> <span class="font-black text-[#FCD535]">${p.cbeAccount || 'N/A'}</span></div>
+                        <div class="flex justify-between p-1 bg-[#0b0e11] px-2 rounded"><span>Account Name:</span> <span class="font-black text-[#FCD535]">${p.cbeName || 'N/A'}</span></div>`;
                     }
                 } else {
-                    // እኔ ሻጭ ከሆንኩ ፡ USDT የማስተላልፍለት ስለሆነ የገዢውን Binance ID ብቻ ነው ማየት ያለብኝ
+                    // Seller Only Sees Buyer's Binance ID to transfer USDT
                     paymentHTML = `
-                    <div class="flex justify-between bg-yellow-500/10 p-2 rounded border border-yellow-500/30">
-                        <span>Buyer Binance ID (USDT መላኪያ ቁጥር):</span> 
-                        <span class="font-black text-[#FCD535] text-sm">${p.binanceId || 'Not provided'}</span>
+                    <div class="bg-yellow-500/10 p-3 rounded border border-yellow-500/20">
+                        <div class="text-[10px] text-gray-400 mb-1 font-bold">🎯 BUYER BINANCE ID (ክሪፕቶ መላኪያ ቁጥር)</div>
+                        <div class="text-base font-black text-[#FCD535] tracking-wider">${p.binanceId || 'Not Setup Yet'}</div>
                     </div>`;
                 }
 
@@ -1149,7 +1123,7 @@
                     btn.className = "flex-[2] py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase";
                     btn.disabled = true;
                 } else {
-                    btn.innerText = iAmBuyer ? "I Have Transferred ETB" : "Confirm Release USDT";
+                    btn.innerText = iAmBuyer ? "I Have Paid (Transferred ETB)" : "Release Crypto (USDT)";
                     btn.className = "flex-[2] py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase shadow-lg";
                     btn.disabled = false;
                 }
@@ -1181,7 +1155,7 @@
                     });
                 } else {
                     db.ref('orders/' + activeTradeId).update(updates);
-                    db.ref('chats/' + activeTradeId).push({ sender: 'system', text: `${user.first_name} confirmed payment.`, timestamp: Date.now() });
+                    db.ref('chats/' + activeTradeId).push({ sender: 'system', text: `${user.first_name} confirmed action.`, timestamp: Date.now() });
                 }
             });
         }
@@ -1273,13 +1247,9 @@
                     <div class="flex justify-between items-start mb-2">
                         <div>
                             <p class="text-xs font-bold text-white">${t.amountUsdt} USDT</p>
-                            <p class="text-[10px] text-[#848E9C]">${iAmBuyer ? 'Buy' : 'Sell'} @ ${t.price.toFixed(2)} ETB</p>
+                            <p class="text-[10px] text-[#848E9C]">Rate: ${t.price.toFixed(2)} ETB</p>
                         </div>
                         <span class="${statusColor} text-xs font-bold uppercase">${t.dispute ? 'DISPUTE' : t.status}</span>
-                    </div>
-                    <div class="text-[9px] text-[#848E9C]">
-                        <p>Payment: ${t.selectedPaymentMethod}</p>
-                        <p>Date: ${new Date(t.startTime).toLocaleDateString()}</p>
                     </div>
                 </div>`;
             });
@@ -1300,7 +1270,7 @@
             showToast("CSV exported!");
         }
 
-        // ====== NOTIFICATIONS ======
+        // ====== NOTIFICATIONS MANAGEMENT (WITH DELETE CAPABILITY) ======
         function listenToNotifications() {
             db.ref('notifications/' + user.id).on('value', snap => {
                 const notifs = snap.val() || {};
@@ -1315,13 +1285,27 @@
 
                 const list = document.getElementById('notifications-list');
                 list.innerHTML = '';
-                Object.entries(notifs).reverse().slice(0, 10).forEach(([key, n]) => {
+                
+                Object.entries(notifs).reverse().slice(0, 15).forEach(([key, n]) => {
                     list.innerHTML += `
-                    <div class="p-2 border-b border-[#2b3139] text-xs ${!n.read ? 'bg-[#2b3139]' : ''}">
-                        <p class="text-white font-bold">${n.message}</p>
-                        <p class="text-[#848E9C] mt-1">${new Date(n.timestamp).toLocaleString()}</p>
+                    <div class="p-3 border-b border-[#2b3139] text-xs flex justify-between items-start gap-2 ${!n.read ? 'bg-[#2b3139]' : ''}">
+                        <div onclick="markAsRead('${key}')" class="flex-1 cursor-pointer">
+                            <p class="text-white font-bold">${n.message}</p>
+                            <p class="text-[10px] text-[#848E9C] mt-1">${new Date(n.timestamp).toLocaleString()}</p>
+                        </div>
+                        <button onclick="deleteNotification('${key}')" class="text-red-400 p-1 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
                     </div>`;
                 });
+            });
+        }
+
+        function markAsRead(key) {
+            db.ref(`notifications/${user.id}/${key}`).update({ read: true });
+        }
+
+        function deleteNotification(key) {
+            db.ref(`notifications/${user.id}/${key}`).remove().then(() => {
+                showToast("Notification deleted!");
             });
         }
 
@@ -1369,7 +1353,6 @@
         }
 
         function loadAdminData() {
-            // 1. Users Control Dashboard
             db.ref('users').on('value', s => {
                 const users = s.val() || {};
                 document.getElementById('admin-user-count').innerText = Object.keys(users).length;
@@ -1393,7 +1376,6 @@
                 });
             });
 
-            // 2. KYC Verification Pending Applications
             db.ref('users').on('value', s => {
                 const users = s.val() || {};
                 const kList = document.getElementById('admin-kyc');
@@ -1416,7 +1398,6 @@
                 if(kList.innerHTML === '') kList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No pending KYC applications</div>`;
             });
 
-            // 3. Disputes Control Window
             db.ref('orders').on('value', s => {
                 const dList = document.getElementById('admin-disputes');
                 dList.innerHTML = '';
@@ -1431,9 +1412,8 @@
                                 <strong class="text-red-400">Dispute #${id.substring(1, 6)}</strong>
                                 <span class="text-[#FCD535] font-bold">${o.amountUsdt} USDT</span>
                             </div>
-                            <p class="text-[11px] text-gray-300">Buyer: ${o.buyerId} | Seller: ${o.sellerId}</p>
                             <div class="flex gap-2 pt-1">
-                                <button onclick="openAdminChatMonitor('${id}')" class="bg-[#4285F4] text-white px-2 py-1 rounded text-[10px] font-bold">View Chat & Proof</button>
+                                <button onclick="openAdminChatMonitor('${id}')" class="bg-[#4285F4] text-white px-2 py-1 rounded text-[10px] font-bold">Live Admin Chat</button>
                                 <button onclick="resolveDisputeAdmin('${id}', 'completed')" class="bg-[#0ECB81] text-white px-2 py-1 rounded font-bold text-[10px]">Release USDT</button>
                                 <button onclick="resolveDisputeAdmin('${id}', 'cancelled')" class="bg-[#F6465D] text-white px-2 py-1 rounded font-bold text-[10px]">Refund Ad</button>
                             </div>
@@ -1443,7 +1423,6 @@
                 if(dList.innerHTML === '') dList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No active disputes</div>`;
             });
 
-            // 4. Live Platform Orders & Monitoring Chat Rooms
             db.ref('orders').on('value', s => {
                 const orders = s.val() || {};
                 const monitorList = document.getElementById('admin-orders');
@@ -1462,7 +1441,7 @@
                                 <p class="text-white font-bold">Order #${id.substring(1,6)} (${o.amountUsdt} USDT)</p>
                                 <p class="text-[10px] text-[#848E9C]">${bName} ➔ ${sName} | ${o.amountEtb.toFixed(2)} ETB</p>
                             </div>
-                            <button onclick="openAdminChatMonitor('${id}')" class="bg-[#4285F4] text-white px-3 py-1 rounded text-[10px] font-bold"><i class="fa-solid fa-comments mr-1"></i> Live Chat</button>
+                            <button onclick="openAdminChatMonitor('${id}')" class="bg-[#4285F4] text-white px-3 py-1 rounded text-[10px] font-bold"><i class="fa-solid fa-comments mr-1"></i> Monitor Chat</button>
                         </div>`;
                     }
                 });
@@ -1495,7 +1474,6 @@
             });
         }
 
-        // ====== ADMIN ANALYTICS LIVE CHART ======
         function initAdminChart() {
             const ctx = document.getElementById('adminChart');
             if(!ctx) return;
