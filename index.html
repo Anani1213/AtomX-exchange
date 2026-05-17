@@ -13,7 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700;800&display=swap');
         
         :root {
             --bg-dark: #0b0e11;
@@ -93,17 +93,14 @@
 </head>
 <body class="pb-20 h-screen flex flex-col">
 
-    <!-- Banned Screen -->
     <div id="banned-screen" class="banned-screen fixed inset-0 hidden flex-col items-center justify-center p-6 text-center">
         <i class="fa-solid fa-ban text-6xl text-red-500 mb-4"></i>
         <h1 class="text-2xl font-bold text-white mb-2">Account Suspended</h1>
         <p class="text-sm text-gray-400">Your account has been permanently banned by the Admin.</p>
     </div>
 
-    <!-- Toast Container -->
     <div id="toast-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- Notification Center -->
     <div id="notification-panel" class="fixed top-16 right-0 w-80 max-h-96 bg-[#1e2329] border-l border-[#2b3139] z-40 hidden overflow-y-auto shadow-xl slide-in">
         <div class="p-4 border-b border-[#2b3139] flex justify-between items-center sticky top-0 bg-[#0b0e11]">
             <h3 class="font-bold text-white">Notifications</h3>
@@ -112,7 +109,6 @@
         <div id="notifications-list" class="space-y-2 p-2"></div>
     </div>
 
-    <!-- Header -->
     <header class="flex justify-between items-center p-4 bg-[#0b0e11] border-b border-[#2b3139] shrink-0 sticky top-0 z-40">
         <div class="flex items-center gap-3 cursor-pointer" onclick="switchMainTab('profile')">
             <div id="header-avatar" class="w-8 h-8 rounded-full bg-[#2b3139] flex items-center justify-center font-bold text-white border border-[#FCD535] overflow-hidden">
@@ -134,29 +130,25 @@
 
     <main class="flex-1 overflow-y-auto w-full relative">
         
-        <!-- MARKET PAGE -->
         <section id="market-view" class="tab-content active p-0">
-            <!-- Price Chart -->
             <div class="bg-[#1e2329] border-b border-[#2b3139] p-4 sticky top-0 z-20">
                 <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-xs font-bold text-[#848E9C]">ETB/USDT Rate</h3>
-                    <span class="text-sm font-bold text-[#0ECB81]">+2.5%</span>
+                    <h3 class="text-xs font-bold text-[#848E9C]">ETB/USDT Live Rate (Based on Orders)</h3>
+                    <span id="live-rate-badge" class="text-sm font-bold text-[#0ECB81]">+0.0%</span>
                 </div>
                 <canvas id="priceChart" height="60"></canvas>
                 <div class="flex justify-between text-[10px] text-[#848E9C] mt-2">
-                    <span>24H Low: 120.50</span>
-                    <span>24H High: 128.75</span>
+                    <span id="low-24h">24H Low: --.--</span>
+                    <span id="high-24h">24H High: --.--</span>
                 </div>
             </div>
 
-            <!-- Buy/Sell Toggle -->
             <div class="sticky top-20 bg-[#0b0e11] z-20 p-4 border-b border-[#2b3139] space-y-4">
                 <div class="flex gap-6 text-base font-bold">
                     <button onclick="setMarket('buy')" id="btn-market-buy" class="text-white border-b-2 border-[#FCD535] pb-1">Buy</button>
                     <button onclick="setMarket('sell')" id="btn-market-sell" class="text-[#848E9C] pb-1">Sell</button>
                 </div>
 
-                <!-- Advanced Filters -->
                 <div class="space-y-3">
                     <div>
                         <label class="text-[10px] text-[#848E9C] font-bold mb-2 block">Price Range (ETB)</label>
@@ -177,11 +169,11 @@
                     </div>
 
                     <div>
-                        <label class="text-[10px] text-[#848E9C] font-bold mb-2 block">Min Rating</label>
+                        <label class="text-[10px] text-[#848E9C] font-bold mb-2 block">Min Trades (የትሬድ ብዛት)</label>
                         <div class="flex gap-2">
-                            <span class="filter-chip" onclick="setMinRating(3, this)">3.0+</span>
-                            <span class="filter-chip active" onclick="setMinRating(4, this)">4.0+</span>
-                            <span class="filter-chip" onclick="setMinRating(4.5, this)">4.5+</span>
+                            <span class="filter-chip" onclick="setMinTrades(0, this)">All Users</span>
+                            <span class="filter-chip active" onclick="setMinTrades(10, this)">10+ Trades</span>
+                            <span class="filter-chip" onclick="setMinTrades(50, this)">50+ Trades</span>
                         </div>
                     </div>
 
@@ -190,11 +182,9 @@
                 </div>
             </div>
 
-            <!-- Market List -->
             <div id="market-list" class="p-2 space-y-2"></div>
         </section>
 
-        <!-- MY ADS PAGE -->
         <section id="myads-view" class="tab-content p-4 space-y-4">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-bold text-white">Orders & Ads</h2>
@@ -203,7 +193,6 @@
             <div id="user-orders-list" class="space-y-3"></div>
         </section>
 
-        <!-- CREATE AD PAGE -->
         <section id="post-view" class="tab-content p-4 space-y-5">
             <div class="flex items-center gap-3 mb-2">
                 <button onclick="switchMainTab('myads')" class="text-white text-xl"><i class="fa-solid fa-arrow-left"></i></button>
@@ -253,7 +242,6 @@
             </div>
         </section>
 
-        <!-- TRANSACTION HISTORY PAGE -->
         <section id="history-view" class="tab-content p-4 space-y-4">
             <h2 class="text-xl font-bold text-white mb-4">Transaction History</h2>
             <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
@@ -268,7 +256,6 @@
             <div id="transaction-list" class="space-y-3"></div>
         </section>
 
-        <!-- PROFILE PAGE -->
         <section id="profile-view" class="tab-content p-4 space-y-4">
             <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139]">
                 <div class="flex items-center justify-between mb-4">
@@ -282,14 +269,12 @@
                     <div id="prof-badge" class="badge-verified">✓</div>
                 </div>
                 
-                <div class="grid grid-cols-3 gap-2 text-center text-xs bg-[#0b0e11] p-3 rounded-lg">
-                    <div><div class="rating-stars text-lg" id="prof-rating">★★★★★</div><p class="text-[#848E9C] mt-1">Rating</p></div>
-                    <div><div class="font-bold text-lg text-[#FCD535]" id="prof-completion">98%</div><p class="text-[#848E9C] mt-1">Completion</p></div>
-                    <div><div class="font-bold text-lg text-[#0ECB81]" id="prof-trades">50</div><p class="text-[#848E9C] mt-1">Trades</p></div>
+                <div class="grid grid-cols-2 gap-2 text-center text-xs bg-[#0b0e11] p-3 rounded-lg">
+                    <div><div class="font-bold text-lg text-[#FCD535]" id="prof-completion">100%</div><p class="text-[#848E9C] mt-1">Completion Rate</p></div>
+                    <div><div class="font-bold text-lg text-[#0ECB81]" id="prof-trades">0</div><p class="text-[#848E9C] mt-1">Total Trades</p></div>
                 </div>
             </div>
 
-            <!-- KYC -->
             <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139]">
                 <h3 class="text-xs font-bold text-[#848E9C] uppercase mb-3">Identity Verification</h3>
                 <div id="kyc-action-area">
@@ -298,31 +283,26 @@
                 </div>
             </div>
 
-            <!-- Payment Methods -->
             <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139] space-y-4">
                 <h3 class="text-xs font-bold text-[#848E9C] uppercase border-b border-[#2b3139] pb-2">Payment Methods</h3>
                 
-                <!-- Telebirr -->
                 <div class="border-l-2 border-[#FCD535] pl-3">
                     <label class="text-[10px] font-bold text-[#FCD535] block mb-2">TELEBIRR</label>
                     <input type="number" id="pm-tele-phone" placeholder="Phone Number" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11] mb-2">
                     <input type="text" id="pm-tele-name" placeholder="Account Name" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
                 </div>
 
-                <!-- Binance Pay -->
                 <div class="border-l-2 border-[#F7931A] pl-3">
                     <label class="text-[10px] font-bold text-[#F7931A] block mb-2">BINANCE PAY</label>
                     <input type="text" id="pm-binance-id" placeholder="Binance ID/Email" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
                 </div>
 
-                <!-- CBE Bank -->
                 <div class="border-l-2 border-[#4285F4] pl-3">
                     <label class="text-[10px] font-bold text-[#4285F4] block mb-2">CBE BANK</label>
                     <input type="text" id="pm-cbe-account" placeholder="Account Number" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11] mb-2">
                     <input type="text" id="pm-cbe-name" placeholder="Account Name" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
                 </div>
 
-                <!-- Mobile Money -->
                 <div class="border-l-2 border-[#00B894] pl-3">
                     <label class="text-[10px] font-bold text-[#00B894] block mb-2">MOBILE MONEY (Ethio Telecom)</label>
                     <input type="number" id="pm-mobile-phone" placeholder="Phone Number" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11] mb-2">
@@ -333,22 +313,20 @@
             </div>
         </section>
 
-        <!-- ADMIN DASHBOARD -->
         <section id="admin-view" class="tab-content p-4 space-y-4">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-black text-[#F6465D] uppercase">Super Admin Dashboard</h2>
                 <div class="text-xs bg-[#2b3139] px-3 py-1.5 rounded text-white font-bold">Users: <span id="admin-user-count" class="text-[#FCD535]">0</span></div>
             </div>
 
-            <!-- Admin Stats -->
             <div class="grid grid-cols-2 gap-2 mb-4">
                 <div class="bg-[#1e2329] p-3 rounded border border-[#2b3139] text-center">
-                    <div class="text-lg font-bold text-[#0ECB81]" id="admin-total-volume">0</div>
-                    <p class="text-[10px] text-[#848E9C] mt-1">Total Volume</p>
+                    <div class="text-lg font-bold text-[#0ECB81]" id="admin-total-volume">0 ETB</div>
+                    <p class="text-[10px] text-[#848E9C] mt-1">Total Volume Traded</p>
                 </div>
                 <div class="bg-[#1e2329] p-3 rounded border border-[#2b3139] text-center">
-                    <div class="text-lg font-bold text-[#FCD535]" id="admin-fees">0</div>
-                    <p class="text-[10px] text-[#848E9C] mt-1">Fees Collected</p>
+                    <div class="text-lg font-bold text-[#FCD535]" id="admin-fees">0 USDT</div>
+                    <p class="text-[10px] text-[#848E9C] mt-1">Total Orders Counter</p>
                 </div>
             </div>
 
@@ -358,7 +336,7 @@
                 <button onclick="switchAdminTab('admin-disputes', this)" class="admin-tab-btn relative bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap">
                     Disputes <span id="dispute-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center hidden font-bold">0</span>
                 </button>
-                <button onclick="switchAdminTab('admin-analytics', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap">Analytics</button>
+                <button onclick="switchAdminTab('admin-analytics', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap">Live Platform Volume</button>
             </div>
 
             <div id="admin-users" class="admin-panel space-y-2"></div>
@@ -371,7 +349,6 @@
 
     </main>
 
-    <!-- Navigation Bar -->
     <nav class="bg-[#0b0e11] border-t border-[#2b3139] flex justify-between px-6 py-2 pb-5 fixed bottom-0 w-full z-40">
         <button onclick="switchMainTab('market')" id="nav-market" class="nav-item active flex flex-col items-center gap-1 w-16"><i class="fa-solid fa-chart-line text-lg"></i><span class="text-[10px] font-bold">Market</span></button>
         <button onclick="switchMainTab('myads')" id="nav-myads" class="nav-item flex flex-col items-center gap-1 w-16"><i class="fa-solid fa-list-ul text-lg"></i><span class="text-[10px] font-bold">Orders</span></button>
@@ -383,13 +360,12 @@
         </button>
     </nav>
 
-    <!-- PURCHASE MODAL -->
     <div id="purchaseModal" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
         <div class="bg-[#1e2329] w-full max-w-sm rounded-xl p-5 border border-[#2b3139]">
             <h3 class="text-white font-bold text-lg mb-1" id="pm-title">Buy USDT</h3>
             <p class="text-xs text-[#848E9C] mb-4">Limits: <span id="pm-limit" class="text-white"></span></p>
             <div class="bg-[#0b0e11] p-3 rounded-lg mb-4 text-xs text-[#848E9C] border border-[#2b3139]">
-                <strong class="text-white">Seller Info:</strong><br><span id="pm-seller-name"></span> <span class="rating-stars text-xs" id="pm-seller-rating"></span>
+                <strong class="text-white">Seller Info:</strong><br><span id="pm-seller-name"></span> | <span class="text-[#0ECB81] font-bold" id="pm-seller-trades">0 Trades</span>
             </div>
             <div class="bg-[#0b0e11] p-3 rounded-lg mb-4 text-xs text-[#848E9C] border border-[#2b3139]">
                 <strong class="text-white">Terms:</strong><br><span id="pm-terms"></span>
@@ -408,7 +384,6 @@
         </div>
     </div>
 
-    <!-- TRADE ROOM MODAL -->
     <div id="tradeModal" class="fixed inset-0 bg-[#0b0e11] z-[60] hidden flex-col h-screen">
         <div class="bg-[#1e2329] border-b border-[#2b3139] p-3 flex justify-between items-center shrink-0">
             <div class="flex items-center gap-3">
@@ -428,12 +403,11 @@
             </div>
 
             <div class="p-4 space-y-3">
-                <!-- Partner Card -->
                 <div class="bg-[#1e2329] p-3 rounded-xl border border-[#2b3139]">
                     <div class="flex items-center gap-2 mb-2 pb-2 border-b border-[#2b3139]">
                         <div class="w-8 h-8 rounded-full bg-[#2b3139] flex items-center justify-center font-bold text-white text-sm" id="tr-partner-av"></div>
                         <h3 id="tr-partner-name" class="font-bold text-sm text-white">Name</h3>
-                        <span class="rating-stars text-xs" id="tr-partner-rating"></span>
+                        <span class="text-[#0ECB81] text-xs font-bold" id="tr-partner-trades">0 Trades</span>
                     </div>
                     <div class="space-y-2 text-xs">
                         <div>
@@ -444,7 +418,6 @@
                     </div>
                 </div>
 
-                <!-- Chat Box -->
                 <div class="bg-[#1e2329] rounded-xl border border-[#2b3139] h-64 flex flex-col">
                     <div class="bg-[#2b3139] text-[10px] text-center py-1 text-[#848E9C] font-bold rounded-t-xl">Upload Screenshot as Proof</div>
                     <div id="chat-messages" class="flex-1 overflow-y-auto p-2 space-y-2 text-xs"></div>
@@ -458,36 +431,18 @@
             </div>
         </div>
 
-        <div class="fixed bottom-0 w-full bg-[#1e2329] border-t border-[#2b3139] p-3 flex gap-2 z-[60]">
+        <div class="flex-1 fixed bottom-0 w-full bg-[#1e2329] border-t border-[#2b3139] p-3 flex gap-2 z-[60]">
             <button onclick="cancelTrade()" class="flex-1 py-3 rounded-xl border border-[#2b3139] text-[#848E9C] text-xs font-bold">Cancel</button>
             <button onclick="acceptTrade()" id="btn-tr-accept" class="flex-[2] py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase">I Have Paid</button>
         </div>
     </div>
 
-    <!-- RATING MODAL -->
     <div id="ratingModal" class="fixed inset-0 bg-black/90 z-[70] hidden items-center justify-center p-4">
         <div class="bg-[#1e2329] w-full max-w-sm rounded-xl p-6 text-center border border-[#2b3139]">
             <i class="fa-solid fa-circle-check text-5xl text-[#0ECB81] mb-3"></i>
             <h2 class="text-lg font-bold text-white mb-1">Trade Completed</h2>
-            <p class="text-xs text-[#848E9C] mb-4">Rate your trading experience</p>
-            
-            <div class="mb-4">
-                <label class="text-[10px] text-[#848E9C] block mb-2">Your Rating</label>
-                <div class="flex justify-center gap-2 text-2xl">
-                    <span class="cursor-pointer star-rating" data-rating="1">☆</span>
-                    <span class="cursor-pointer star-rating" data-rating="2">☆</span>
-                    <span class="cursor-pointer star-rating" data-rating="3">☆</span>
-                    <span class="cursor-pointer star-rating" data-rating="4">☆</span>
-                    <span class="cursor-pointer star-rating" data-rating="5">☆</span>
-                </div>
-            </div>
-
-            <textarea id="rating-comment" placeholder="Comment (optional)" class="w-full p-2 rounded-lg text-xs mb-3 h-16"></textarea>
-
-            <div class="flex gap-3">
-                <button onclick="closeModal('ratingModal')" class="flex-1 py-2 rounded-lg border border-[#2b3139] text-[#848E9C] font-bold">Skip</button>
-                <button onclick="submitRating()" class="flex-1 py-2 rounded-lg bg-[#FCD535] text-black font-bold">Submit</button>
-            </div>
+            <p class="text-xs text-[#848E9C] mb-4">Your dynamic stats have updated instantly!</p>
+            <button onclick="closeModal('ratingModal'); switchMainTab('myads');" class="w-full py-2 rounded-lg bg-[#FCD535] text-black font-bold">Awesome</button>
         </div>
     </div>
 
@@ -510,7 +465,7 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
         const user = tg.initDataUnsafe?.user || { id: 7798504269, first_name: "Admin" };
-        const ADMIN_ID = 7798504269;
+        const ADMIN_ID = 7798504269; // የራስህ Super Admin ID
 
         // ====== GLOBAL VARIABLES ======
         let myData = {};
@@ -518,32 +473,40 @@
         let activeTradeId = null;
         let selectedAd = null;
         let tradeInterval;
-        let currentRating = 0;
         let priceChart = null;
         let adminChart = null;
         let allAds = [];
         let filteredAds = [];
         let allTransactions = [];
+        let usersCachedMap = {}; // ለተጠቃሚዎች Trades መጠን መለያ
 
         // Filter states
         let filterPaymentMethods = ['telebirr'];
-        let filterMinRating = 4;
+        let filterMinTrades = 10; // "Rating" ፈንታ "Trade count" መለያ
         let filterPriceMin = 0;
-        let filterPriceMax = 1000;
+        let filterPriceMax = 100000;
         let filterSearch = '';
         let currentTxnStatus = 'all';
 
         // ====== INITIALIZATION ======
         window.onload = () => {
-            if(user.id == ADMIN_ID) document.getElementById('nav-admin').classList.remove('hidden');
+            // ለአንተ ብቻ Admin panel እንዲታይ ማድረግ
+            if(user.id == ADMIN_ID) {
+                document.getElementById('nav-admin').classList.remove('hidden');
+            }
+            
+            // የሁሉንም ሰው መረጃ አስቀድሞ cache ማድረግ (ለ Filter ፍጥነት እንዲያግዝ)
+            db.ref('users').on('value', snap => {
+                usersCachedMap = snap.val() || {};
+                loadMarketAds(); // ተጠቃሚዎች ሲጫኑ ገበያውን አድስ
+            });
+
             initUser();
-            loadMarketAds();
             listenToOrders();
             listenToNotifications();
-            initPriceChart();
+            
             if(user.id == ADMIN_ID) {
                 loadAdminData();
-                setTimeout(initAdminChart, 500);
             }
         };
 
@@ -556,12 +519,8 @@
                         name: user.first_name,
                         status: 'unverified',
                         isBanned: false,
-                        ratings: {avg: 0, count: 0, totalStars: 0},
                         completionRate: 100,
                         totalTrades: 0,
-                        responseTime: 0,
-                        verificationBadge: null,
-                        profileCompletion: 20,
                         joinDate: Date.now()
                     });
                     return;
@@ -585,7 +544,6 @@
                 document.getElementById('header-avatar').innerText = initLetter;
             }
 
-            // Status
             const sText = document.getElementById('prof-status-text');
             const kycArea = document.getElementById('kyc-action-area');
             
@@ -607,14 +565,9 @@
                 kycArea.innerHTML = `<button onclick="document.getElementById('kyc-file').click()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold">Upload ID to Verify</button><input type="file" id="kyc-file" class="hidden" accept="image/*" onchange="uploadKYC(this)">`;
             }
 
-            // Ratings & Stats
-            const avg = (myData.ratings && myData.ratings.avg) || 0;
-            const stars = '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
-            document.getElementById('prof-rating').innerText = stars;
             document.getElementById('prof-completion').innerText = (myData.completionRate || 100) + '%';
             document.getElementById('prof-trades').innerText = myData.totalTrades || 0;
 
-            // Badge
             const badge = document.getElementById('prof-badge');
             if(myData.verificationBadge === 'pro') {
                 badge.className = 'badge-pro';
@@ -630,7 +583,6 @@
                 badge.innerText = 'UNVERIFIED';
             }
 
-            // Load payment methods
             if(myData.telePhone) document.getElementById('pm-tele-phone').value = myData.telePhone;
             if(myData.teleName) document.getElementById('pm-tele-name').value = myData.teleName;
             if(myData.binanceId) document.getElementById('pm-binance-id').value = myData.binanceId;
@@ -670,9 +622,8 @@
             }
         }
 
-        // ====== REQUIREMENTS CHECK ======
         function checkRequirements() {
-            if(!myData.telePhone || !myData.teleName || !myData.binanceId || myData.status !== 'verified') {
+            if(!myData.telePhone || !myData.teleName || myData.status !== 'verified') {
                 showToast("🔒 Complete Payment Info & Get Verified First!");
                 switchMainTab('profile');
                 return false;
@@ -750,12 +701,18 @@
                     if(ad.status === 'active') allAds.push(ad);
                 });
 
-                // Filter ads
+                // Filter ads (Rating ጠፍቶ በ Trade Count ተተክቷል)
                 filteredAds = allAds.filter(a => {
                     if(a.type !== (currentMarketType === 'buy' ? 'sell' : 'buy')) return false;
                     if(a.price < filterPriceMin || a.price > filterPriceMax) return false;
                     if(!filterPaymentMethods.some(m => a.paymentMethods.includes(m))) return false;
                     if(a.userName.toLowerCase().indexOf(filterSearch.toLowerCase()) === -1) return false;
+                    
+                    // የባለቤቱን የትሬድ ብዛት መፈተሽ
+                    const ownerData = usersCachedMap[a.uid] || {};
+                    const ownerTradesCount = ownerData.totalTrades || 0;
+                    if(ownerTradesCount < filterMinTrades) return false;
+
                     return true;
                 });
 
@@ -772,20 +729,11 @@
                     const btnClr = currentMarketType === 'buy' ? 'bg-[#0ECB81]' : 'bg-[#F6465D]';
                     const myAd = ad.uid == user.id;
 
-                    // Get seller rating
-                    let sellerRating = '★☆☆☆☆';
-                    if(myData && myData.ratings) {
-                        const avg = myData.ratings.avg || 0;
-                        sellerRating = '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
-                    }
+                    const ownerData = usersCachedMap[ad.uid] || {};
+                    const totalTrades = ownerData.totalTrades || 0;
 
                     let paymentBadges = ad.paymentMethods.map(m => {
-                        const icons = {
-                            'telebirr': '📱 Telebirr',
-                            'binance': '💰 Binance',
-                            'cbe': '🏦 CBE',
-                            'mobile': '📲 Mobile'
-                        };
+                        const icons = { 'telebirr': '📱 Telebirr', 'binance': '💰 Binance', 'cbe': '🏦 CBE', 'mobile': '📲 Mobile' };
                         return icons[m] || m;
                     }).join(' ');
 
@@ -796,7 +744,7 @@
                                 <div class="flex items-center gap-2 mb-1">
                                     <div class="w-5 h-5 rounded-full bg-[#2b3139] flex items-center justify-center text-[9px] text-white font-bold">${ad.userName.charAt(0)}</div>
                                     <h4 class="text-[11px] font-bold text-white">${ad.userName}</h4>
-                                    <span class="rating-stars text-[9px]">${sellerRating}</span>
+                                    <span class="text-[#0ECB81] text-[10px] font-bold ml-1"><i class="fa-solid fa-handshake"></i> ${totalTrades} Trades</span>
                                 </div>
                                 <p class="text-[9px] text-[#848E9C] mb-1">Limit: ${ad.min} - ${ad.max} USDT</p>
                                 <p class="text-[8px] text-[#FCD535]">${paymentBadges}</p>
@@ -805,8 +753,7 @@
                                 <p class="text-sm font-black text-white">${ad.price.toFixed(2)} <span class="text-[8px] text-[#848E9C]">ETB</span></p>
                                 ${myAd ? `
                                     <div class="flex gap-1">
-                                        <button onclick="editAd('${ad.id}')" class="bg-blue-600 text-white px-2 py-0.5 rounded text-[8px]"><i class="fa-solid fa-pen"></i></button>
-                                        <button onclick="deleteAd('${ad.id}')" class="bg-[#F6465D] text-white px-2 py-0.5 rounded text-[8px]"><i class="fa-solid fa-trash"></i></button>
+                                        <button onclick="deleteAd('${ad.id}')" class="bg-[#F6465D] text-white px-2 py-0.5 rounded text-[8px]"><i class="fa-solid fa-trash"></i> Delete Ad</button>
                                     </div>
                                 ` : `
                                     <button onclick="openPurchaseModal('${ad.id}', '${ad.uid}', ${ad.price}, ${ad.min}, ${ad.max}, '${ad.terms}', ${JSON.stringify(ad.paymentMethods).replace(/"/g, '&quot;')})" class="${btnClr} text-white px-4 py-1.5 rounded-lg text-[10px] font-black">${btnLabel}</button>
@@ -817,10 +764,6 @@
                     list.innerHTML += html;
                 });
             });
-        }
-
-        function editAd(adId) {
-            showToast("Edit feature coming soon!");
         }
 
         function deleteAd(adId) {
@@ -839,17 +782,19 @@
                 filterPaymentMethods.push(method);
                 el.classList.add('active');
             }
+            loadMarketAds(); // ክፍያ ሲመረጥ ገበያው ወዲያውኑ እንዲታደስ
         }
 
-        function setMinRating(rating, el) {
-            filterMinRating = rating;
-            document.querySelectorAll('[onclick*="setMinRating"]').forEach(e => e.classList.remove('active'));
+        function setMinTrades(count, el) {
+            filterMinTrades = count;
+            document.querySelectorAll('[onclick*="setMinTrades"]').forEach(e => e.classList.remove('active'));
             el.classList.add('active');
+            loadMarketAds(); // የትሬድ ብዛት ሲመረጥ ገበያው ወዲያውኑ እንዲታደስ
         }
 
         function applyFilters() {
             filterPriceMin = parseFloat(document.getElementById('filter-price-min').value) || 0;
-            filterPriceMax = parseFloat(document.getElementById('filter-price-max').value) || 1000;
+            filterPriceMax = parseFloat(document.getElementById('filter-price-max').value) || 100000;
             filterSearch = document.getElementById('filter-search').value;
             loadMarketAds();
             showToast("Filters applied!");
@@ -865,25 +810,14 @@
             document.getElementById('pm-limit').innerText = `${min} - ${max} USDT`;
             document.getElementById('pm-terms').innerText = terms;
 
-            // Get seller info
-            db.ref('users/' + creatorId).once('value', s => {
-                const seller = s.val();
-                const avg = (seller.ratings && seller.ratings.avg) || 0;
-                const stars = '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
-                document.getElementById('pm-seller-name').innerText = seller.name;
-                document.getElementById('pm-seller-rating').innerText = stars;
-            });
+            const sellerData = usersCachedMap[creatorId] || {};
+            document.getElementById('pm-seller-name').innerText = sellerData.name || "User";
+            document.getElementById('pm-seller-trades').innerText = (sellerData.totalTrades || 0) + " Trades";
 
-            // Payment method select
             const select = document.getElementById('payment-method-select');
             select.innerHTML = '<option value="">Select method...</option>';
             paymentMethods.forEach(m => {
-                const labels = {
-                    'telebirr': 'Telebirr',
-                    'binance': 'Binance Pay',
-                    'cbe': 'CBE Bank',
-                    'mobile': 'Mobile Money'
-                };
+                const labels = { 'telebirr': 'Telebirr', 'binance': 'Binance Pay', 'cbe': 'CBE Bank', 'mobile': 'Mobile Money' };
                 select.innerHTML += `<option value="${m}">${labels[m]}</option>`;
             });
 
@@ -920,11 +854,10 @@
                     timestamp: Date.now()
                 });
                 
-                // Add notification
                 const partnerId = currentMarketType === 'buy' ? selectedAd.creatorId : user.id;
                 db.ref('notifications/' + partnerId).push({
                     type: 'new_order',
-                    message: `New ${currentMarketType} order: ${amt} USDT`,
+                    message: `New order received: ${amt} USDT`,
                     timestamp: Date.now(),
                     read: false
                 });
@@ -939,12 +872,24 @@
                 const orders = snap.val() || {};
                 const list = document.getElementById('user-orders-list');
                 list.innerHTML = '';
-                let hasDispute = false;
                 allTransactions = [];
+
+                let pricesArray = [];
+                let totalVolumeCounter = 0;
+                let totalOrdersCounter = 0;
 
                 Object.keys(orders).forEach(id => {
                     const o = orders[id];
                     allTransactions.push({ id, ...o });
+
+                    // 1. የዋጋ ግራፍ ዳታ ማዘጋጀት (ከእውነተኛ ያለቁ ወይም ንቁ ትሬዶች)
+                    if(o.price) {
+                        pricesArray.push(o.price);
+                    }
+                    if(o.status === 'completed') {
+                        totalVolumeCounter += o.amountEtb;
+                    }
+                    totalOrdersCounter++;
 
                     if(o.buyerId == user.id || o.sellerId == user.id) {
                         if(o.status !== 'completed' && o.status !== 'cancelled') {
@@ -955,17 +900,24 @@
                             <div onclick="openTradeRoom('${id}')" class="bg-[#1e2329] p-3 rounded-lg border border-[#2b3139] flex justify-between items-center text-xs cursor-pointer mb-2">
                                 <div>
                                     <span class="font-bold text-white">${o.amountUsdt} USDT</span>
-                                    <p class="text-[10px] text-[#848E9C] mt-1">₦${o.amountEtb.toFixed(2)}</p>
+                                    <p class="text-[10px] text-[#848E9C] mt-1">${o.amountEtb.toFixed(2)} ETB</p>
                                 </div>
                                 <span class="${statusColor} uppercase font-bold text-[10px]">${statusText}</span>
                             </div>`;
                         }
                     }
-
-                    if(o.dispute) hasDispute = true;
                 });
 
+                // እውነተኛ የዋጋ መረጃዎችን ወደ ግራፉ መላክ (Real Data Graph)
+                if(pricesArray.length > 0) {
+                    updateLiveChartData(pricesArray);
+                }
+
+                // Super Admin Counters ማደስ
                 if(user.id == ADMIN_ID) {
+                    document.getElementById('admin-total-volume').innerText = totalVolumeCounter.toLocaleString() + " ETB";
+                    document.getElementById('admin-fees').innerText = totalOrdersCounter + " Orders";
+
                     const badge = document.getElementById('dispute-badge');
                     const dot = document.getElementById('nav-dispute-dot');
                     let disputeCount = Object.keys(orders).filter(id => orders[id].dispute && orders[id].status !== 'completed').length;
@@ -981,6 +933,56 @@
             });
         }
 
+        // ====== REAL LIVE GRAPH UPDATE ======
+        function updateLiveChartData(prices) {
+            // የመጨረሻዎቹን 10 የትሬድ ዋጋዎች መውሰድ
+            const lastPrices = prices.slice(-10);
+            const currentRate = lastPrices[lastPrices.length - 1];
+            
+            // የከፍተኛ እና ዝቅተኛ ዋጋዎችን መለያ
+            const minPrice = Math.min(...prices).toFixed(2);
+            const maxPrice = Math.max(...prices).toFixed(2);
+            
+            document.getElementById('low-24h').innerText = `24H Low: ${minPrice}`;
+            document.getElementById('high-24h').innerText = `24H High: ${maxPrice}`;
+            document.getElementById('live-rate-badge').innerText = `${currentRate.toFixed(2)} ETB`;
+
+            const ctx = document.getElementById('priceChart');
+            if(!ctx) return;
+
+            if (priceChart) {
+                priceChart.data.labels = Array.from({length: lastPrices.length}, (_, i) => 'T-' + i);
+                priceChart.data.datasets[0].data = lastPrices;
+                priceChart.update();
+            } else {
+                priceChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: lastPrices.length}, (_, i) => 'T-' + i),
+                        datasets: [{
+                            label: 'Live ETB/USDT',
+                            data: lastPrices,
+                            borderColor: '#FCD535',
+                            backgroundColor: 'rgba(252, 213, 53, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: false, grid: { color: '#2b3139' }, ticks: { color: '#848E9C', font: { size: 9 } } },
+                            x: { grid: { display: false }, ticks: { color: '#848E9C', font: { size: 9 } } }
+                        }
+                    }
+                });
+            }
+        }
+
         function openTradeRoom(orderId) {
             activeTradeId = orderId;
             db.ref('orders/' + orderId).on('value', s => {
@@ -994,7 +996,6 @@
                 document.getElementById('tr-etb').innerText = o.amountEtb.toFixed(2) + " ETB";
                 document.getElementById('tr-usdt').innerText = o.amountUsdt.toFixed(2) + " USDT";
 
-                // Timer
                 clearInterval(tradeInterval);
                 tradeInterval = setInterval(() => {
                     const diff = 15 * 60 - Math.floor((Date.now() - o.startTime) / 1000);
@@ -1008,49 +1009,38 @@
                     }
                 }, 1000);
 
-                // Partner info
                 const partnerId = (o.buyerId == user.id) ? o.sellerId : o.buyerId;
-                db.ref('users/' + partnerId).once('value', ps => {
-                    const p = ps.val();
-                    document.getElementById('tr-partner-name').innerText = p.name;
-                    document.getElementById('tr-partner-av').innerText = p.name.charAt(0).toUpperCase();
+                const p = usersCachedMap[partnerId] || { name: "Partner", totalTrades: 0 };
+                
+                document.getElementById('tr-partner-name').innerText = p.name;
+                document.getElementById('tr-partner-av').innerText = p.name.charAt(0).toUpperCase();
+                document.getElementById('tr-partner-trades').innerText = (p.totalTrades || 0) + " Trades";
 
-                    const avg = (p.ratings && p.ratings.avg) || 0;
-                    const stars = '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
-                    document.getElementById('tr-partner-rating').innerText = stars;
+                const paymentMethod = o.selectedPaymentMethod;
+                document.getElementById('tr-payment-method').innerText = {
+                    'telebirr': 'Telebirr', 'binance': 'Binance Pay', 'cbe': 'CBE Bank', 'mobile': 'Mobile Money'
+                }[paymentMethod] || paymentMethod;
 
-                    // Payment method
-                    const paymentMethod = o.selectedPaymentMethod;
-                    document.getElementById('tr-payment-method').innerText = {
-                        'telebirr': 'Telebirr',
-                        'binance': 'Binance Pay',
-                        'cbe': 'CBE Bank',
-                        'mobile': 'Mobile Money'
-                    }[paymentMethod] || paymentMethod;
+                let paymentHTML = '';
+                if(paymentMethod === 'telebirr') {
+                    paymentHTML = `
+                    <div class="flex justify-between"><span>Telebirr Phone:</span> <span class="font-bold text-[#FCD535]">${p.telePhone || 'N/A'}</span></div>
+                    <div class="flex justify-between"><span>Account Name:</span> <span class="font-bold text-[#FCD535]">${p.teleName || 'N/A'}</span></div>`;
+                } else if(paymentMethod === 'binance') {
+                    paymentHTML = `
+                    <div class="flex justify-between"><span>Binance ID:</span> <span class="font-bold text-[#FCD535]">${p.binanceId || 'N/A'}</span></div>`;
+                } else if(paymentMethod === 'cbe') {
+                    paymentHTML = `
+                    <div class="flex justify-between"><span>Account Number:</span> <span class="font-bold text-[#FCD535]">${p.cbeAccount || 'N/A'}</span></div>
+                    <div class="flex justify-between"><span>Account Name:</span> <span class="font-bold text-[#FCD535]">${p.cbeName || 'N/A'}</span></div>`;
+                } else if(paymentMethod === 'mobile') {
+                    paymentHTML = `
+                    <div class="flex justify-between"><span>Phone Number:</span> <span class="font-bold text-[#FCD535]">${p.mobilePhone || 'N/A'}</span></div>
+                    <div class="flex justify-between"><span>Account Name:</span> <span class="font-bold text-[#FCD535]">${p.mobileName || 'N/A'}</span></div>`;
+                }
 
-                    // Payment info (based on selected method)
-                    let paymentHTML = '';
-                    if(paymentMethod === 'telebirr') {
-                        paymentHTML = `
-                        <div class="flex justify-between"><span>Telebirr Phone:</span> <span class="font-bold text-[#FCD535]">${p.telePhone || 'N/A'}</span></div>
-                        <div class="flex justify-between"><span>Account Name:</span> <span class="font-bold text-[#FCD535]">${p.teleName || 'N/A'}</span></div>`;
-                    } else if(paymentMethod === 'binance') {
-                        paymentHTML = `
-                        <div class="flex justify-between"><span>Binance ID:</span> <span class="font-bold text-[#FCD535]">${p.binanceId || 'N/A'}</span></div>`;
-                    } else if(paymentMethod === 'cbe') {
-                        paymentHTML = `
-                        <div class="flex justify-between"><span>Account Number:</span> <span class="font-bold text-[#FCD535]">${p.cbeAccount || 'N/A'}</span></div>
-                        <div class="flex justify-between"><span>Account Name:</span> <span class="font-bold text-[#FCD535]">${p.cbeName || 'N/A'}</span></div>`;
-                    } else if(paymentMethod === 'mobile') {
-                        paymentHTML = `
-                        <div class="flex justify-between"><span>Phone Number:</span> <span class="font-bold text-[#FCD535]">${p.mobilePhone || 'N/A'}</span></div>
-                        <div class="flex justify-between"><span>Account Name:</span> <span class="font-bold text-[#FCD535]">${p.mobileName || 'N/A'}</span></div>`;
-                    }
+                document.getElementById('tr-payment-info').innerHTML = paymentHTML;
 
-                    document.getElementById('tr-payment-info').innerHTML = paymentHTML;
-                });
-
-                // Accept button
                 const btn = document.getElementById('btn-tr-accept');
                 const iAmBuyer = o.buyerId == user.id;
                 const myAcceptStatus = iAmBuyer ? o.buyerAccepted : o.sellerAccepted;
@@ -1060,7 +1050,7 @@
                     btn.className = "flex-[2] py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase";
                     btn.disabled = true;
                 } else {
-                    btn.innerText = iAmBuyer ? "I Have Transferred ETB" : "I Have Transferred USDT";
+                    btn.innerText = iAmBuyer ? "I Have Transferred ETB" : "Confirm Release USDT";
                     btn.className = "flex-[2] py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase shadow-lg";
                     btn.disabled = false;
                 }
@@ -1082,31 +1072,18 @@
                 if((iAmBuyer && o.sellerAccepted) || (!iAmBuyer && o.buyerAccepted)) {
                     updates.status = 'completed';
                     db.ref('orders/' + activeTradeId).update(updates).then(() => {
-                        db.ref('chats/' + activeTradeId).push({
-                            sender: 'system',
-                            text: '✓ Trade completed successfully!',
-                            timestamp: Date.now()
-                        });
+                        db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '✓ Trade completed successfully!', timestamp: Date.now() });
 
-                        // Add notification
-                        const partnerId = iAmBuyer ? o.sellerId : o.buyerId;
-                        db.ref('notifications/' + partnerId).push({
-                            type: 'trade_completed',
-                            message: 'Trade completed!',
-                            timestamp: Date.now(),
-                            read: false
-                        });
+                        // የሁለቱንም ሰዎች (የገዢ እና ሻጭ) የትሬድ ብዛት በ database ሪል-ታይም አንድ መጨመር (Increment Count)
+                        db.ref('users/' + o.buyerId + '/totalTrades').transaction(current => (current || 0) + 1);
+                        db.ref('users/' + o.sellerId + '/totalTrades').transaction(current => (current || 0) + 1);
 
                         closeModal('tradeModal');
                         openModal('ratingModal');
                     });
                 } else {
                     db.ref('orders/' + activeTradeId).update(updates);
-                    db.ref('chats/' + activeTradeId).push({
-                        sender: 'system',
-                        text: `${user.first_name} confirmed payment.`,
-                        timestamp: Date.now()
-                    });
+                    db.ref('chats/' + activeTradeId).push({ sender: 'system', text: `${user.first_name} confirmed payment.`, timestamp: Date.now() });
                 }
             });
         }
@@ -1120,11 +1097,7 @@
 
         function reportDispute() {
             db.ref('orders/' + activeTradeId).update({ dispute: true });
-            db.ref('chats/' + activeTradeId).push({
-                sender: 'system',
-                text: '⚠️ DISPUTE RAISED. Admin has been notified.',
-                timestamp: Date.now()
-            });
+            db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '⚠️ DISPUTE RAISED. Admin has been notified.', timestamp: Date.now() });
             showToast("Dispute reported to Admin.");
         }
 
@@ -1144,7 +1117,6 @@
                     let content = c.image ? `<img src="${c.image}" class="chat-image">` : c.text;
                     box.innerHTML += `<div class="flex ${align} mb-1"><div class="${bg} px-2 py-1.5 rounded-lg text-[11px] max-w-[80%] break-words">${content}</div></div>`;
                 });
-
                 box.scrollTop = box.scrollHeight;
             });
         }
@@ -1152,11 +1124,7 @@
         function sendMsg() {
             const el = document.getElementById('chat-input');
             if(!el.value.trim()) return;
-            db.ref('chats/' + activeTradeId).push({
-                sender: user.id,
-                text: el.value,
-                timestamp: Date.now()
-            });
+            db.ref('chats/' + activeTradeId).push({ sender: user.id, text: el.value, timestamp: Date.now() });
             el.value = '';
         }
 
@@ -1164,72 +1132,11 @@
             if(input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = e => {
-                    db.ref('chats/' + activeTradeId).push({
-                        sender: user.id,
-                        image: e.target.result,
-                        timestamp: Date.now()
-                    });
+                    db.ref('chats/' + activeTradeId).push({ sender: user.id, image: e.target.result, timestamp: Date.now() });
                     showToast("Screenshot Uploaded!");
                 };
                 reader.readAsDataURL(input.files[0]);
             }
-        }
-
-        // ====== RATING & REPUTATION ======
-        let selectedRatingValue = 0;
-        document.addEventListener('click', (e) => {
-            if(e.target.classList.contains('star-rating')) {
-                selectedRatingValue = parseInt(e.target.dataset.rating);
-                document.querySelectorAll('.star-rating').forEach((star, i) => {
-                    if(i < selectedRatingValue) {
-                        star.innerText = '★';
-                        star.classList.add('text-[#FCD535]');
-                    } else {
-                        star.innerText = '☆';
-                        star.classList.remove('text-[#FCD535]');
-                    }
-                });
-            }
-        });
-
-        function submitRating() {
-            if(selectedRatingValue === 0) return showToast("Select a rating!");
-
-            const comment = document.getElementById('rating-comment').value;
-
-            db.ref('ratings/' + activeTradeId).set({
-                ratedBy: user.id,
-                rating: selectedRatingValue,
-                comment: comment,
-                timestamp: Date.now()
-            });
-
-            // Update seller's reputation
-            db.ref('orders/' + activeTradeId).once('value', s => {
-                const o = s.val();
-                const sellerId = o.sellerId;
-
-                db.ref('users/' + sellerId).once('value', us => {
-                    const u = us.val();
-                    const oldAvg = (u.ratings && u.ratings.avg) || 0;
-                    const count = (u.ratings && u.ratings.count) || 0;
-                    const totalStars = (u.ratings && u.ratings.totalStars) || 0;
-
-                    const newTotalStars = totalStars + selectedRatingValue;
-                    const newCount = count + 1;
-                    const newAvg = newTotalStars / newCount;
-
-                    db.ref('users/' + sellerId).update({
-                        'ratings/avg': parseFloat(newAvg.toFixed(1)),
-                        'ratings/count': newCount,
-                        'ratings/totalStars': newTotalStars
-                    });
-                });
-            });
-
-            closeModal('ratingModal');
-            showToast("Rating submitted!");
-            switchMainTab('myads');
         }
 
         // ====== TRANSACTION HISTORY ======
@@ -1287,7 +1194,6 @@
                     csv += `"${new Date(t.startTime).toLocaleDateString()}","${t.amountUsdt}","${t.price}","${type}","${t.status}","${t.selectedPaymentMethod}"\n`;
                 }
             });
-
             const link = document.createElement('a');
             link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
             link.download = 'transactions.csv';
@@ -1325,48 +1231,6 @@
             panel.classList.toggle('hidden');
         }
 
-        // ====== PRICE CHART ======
-        function initPriceChart() {
-            const ctx = document.getElementById('priceChart');
-            if(!ctx) return;
-
-            const data = [120.5, 121.2, 122.8, 121.5, 123.4, 124.2, 123.8, 125.6, 126.8, 127.5, 128.2, 128.75];
-
-            priceChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: Array.from({length: 12}, (_, i) => i + 'h'),
-                    datasets: [{
-                        label: 'ETB/USDT',
-                        data: data,
-                        borderColor: '#FCD535',
-                        backgroundColor: 'rgba(252, 213, 53, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 0,
-                        pointHoverRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            grid: { color: '#2b3139', drawBorder: false },
-                            ticks: { color: '#848E9C', font: { size: 10 } }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#848E9C', font: { size: 10 } }
-                        }
-                    }
-                }
-            });
-        }
-
         // ====== ADMIN SYSTEM ======
         function switchAdminTab(id, btn) {
             document.querySelectorAll('.admin-panel').forEach(e => e.classList.add('hidden'));
@@ -1376,10 +1240,14 @@
 
             document.getElementById(id).classList.remove('hidden');
             btn.className = "admin-tab-btn bg-[#FCD535] text-black px-4 py-2 rounded-lg whitespace-nowrap font-bold";
+            
+            if(id === 'admin-analytics') {
+                setTimeout(initAdminChart, 100);
+            }
         }
 
         function loadAdminData() {
-            // Users
+            // Users Control
             db.ref('users').on('value', s => {
                 const users = s.val() || {};
                 document.getElementById('admin-user-count').innerText = Object.keys(users).length;
@@ -1389,22 +1257,21 @@
 
                 Object.keys(users).forEach(id => {
                     const u = users[id];
-                    const avg = (u.ratings && u.ratings.avg) || 0;
-                    const stars = '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
+                    const trades = u.totalTrades || 0;
                     const bBtn = u.isBanned ? `<button onclick="toggleBan('${id}', false)" class="bg-green-600 px-2 py-1 rounded text-[10px] text-white">UNBAN</button>` : `<button onclick="toggleBan('${id}', true)" class="bg-[#F6465D] px-2 py-1 rounded text-[10px] text-white">BAN</button>`;
 
                     uList.innerHTML += `
                     <div class="bg-[#1e2329] p-2 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-1">
                         <div class="flex-1">
-                            <p class="text-white font-medium">${u.name}</p>
-                            <p class="text-[10px] text-[#848E9C]">${u.status} | ${stars}</p>
+                            <p class="text-white font-medium">${u.name} (ID: ${id})</p>
+                            <p class="text-[10px] text-[#848E9C]">Status: ${u.status} | Trades: ${trades}</p>
                         </div>
                         ${id != ADMIN_ID ? bBtn : ''}
                     </div>`;
                 });
             });
 
-            // KYC
+            // KYC Verify
             db.ref('users').on('value', s => {
                 const users = s.val() || {};
                 const kList = document.getElementById('admin-kyc');
@@ -1424,11 +1291,10 @@
                         </div>`;
                     }
                 });
-
                 if(kList.innerHTML === '') kList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No pending KYC applications</div>`;
             });
 
-            // Disputes
+            // Disputes Control
             db.ref('orders').on('value', s => {
                 const dList = document.getElementById('admin-disputes');
                 dList.innerHTML = '';
@@ -1444,7 +1310,7 @@
                                 <span class="text-[#FCD535] font-bold">${o.amountUsdt} USDT</span>
                             </div>
                             <p class="text-[11px] text-gray-300">Buyer: ${o.buyerId} | Seller: ${o.sellerId}</p>
-                            <p class="text-[11px] text-gray-300">Payment: ${o.selectedPaymentMethod}</p>
+                            <p class="text-[11px] text-gray-300">Total ETB: ${o.amountEtb.toFixed(2)}</p>
                             <div class="flex gap-2 pt-1">
                                 <button onclick="resolveDisputeAdmin('${id}', 'completed')" class="flex-1 bg-[#0ECB81] text-white py-1 rounded font-bold text-[10px]">Release to Buyer</button>
                                 <button onclick="resolveDisputeAdmin('${id}', 'cancelled')" class="flex-1 bg-[#F6465D] text-white py-1 rounded font-bold text-[10px]">Refund to Seller</button>
@@ -1452,7 +1318,6 @@
                         </div>`;
                     }
                 });
-
                 if(dList.innerHTML === '') dList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No active disputes</div>`;
             });
         }
@@ -1468,31 +1333,48 @@
         }
 
         function resolveDisputeAdmin(orderId, finalStatus) {
-            db.ref('orders/' + orderId).update({
-                status: finalStatus,
-                dispute: false
-            });
+            db.ref('orders/' + orderId).once('value', snap => {
+                const o = snap.val();
+                db.ref('orders/' + orderId).update({ status: finalStatus, dispute: false });
+                
+                if(finalStatus === 'completed') {
+                    db.ref('users/' + o.buyerId + '/totalTrades').transaction(current => (current || 0) + 1);
+                    db.ref('users/' + o.sellerId + '/totalTrades').transaction(current => (current || 0) + 1);
+                }
 
-            db.ref('chats/' + orderId).push({
-                sender: 'system',
-                text: `⚖️ Admin resolved: ${finalStatus.toUpperCase()}`,
-                timestamp: Date.now()
+                db.ref('chats/' + orderId).push({ sender: 'system', text: `⚖️ Admin resolved: ${finalStatus.toUpperCase()}`, timestamp: Date.now() });
+                showToast(`Dispute resolved: ${finalStatus}`);
             });
-
-            showToast(`Dispute resolved: ${finalStatus}`);
         }
 
+        // ====== ADMIN ANALYTICS LIVE CHART ======
         function initAdminChart() {
             const ctx = document.getElementById('adminChart');
             if(!ctx) return;
+
+            // ከሁሉ ርዝመት ያላቸውን የትሬድ መጠኖች መሰብሰብ
+            let volumeData = [0, 0, 0, 0, 0, 0, 0]; 
+            allTransactions.forEach(t => {
+                if(t.status === 'completed') {
+                    let day = new Date(t.startTime).getDay(); // 0 = Sunday, 1 = Monday...
+                    let index = day === 0 ? 6 : day - 1; // ሰኞ መጀመሪያ እንዲሆን ማስተካከል
+                    volumeData[index] += t.amountEtb;
+                }
+            });
+
+            if(adminChart) {
+                adminChart.data.datasets[0].data = volumeData;
+                adminChart.update();
+                return;
+            }
 
             adminChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                     datasets: [{
-                        label: 'Trading Volume (ETB)',
-                        data: [45000, 52000, 48000, 61000, 55000, 48000, 42000],
+                        label: 'Real Trading Volume (ETB)',
+                        data: volumeData,
                         backgroundColor: '#0ECB81',
                         borderRadius: 5
                     }]
@@ -1501,14 +1383,8 @@
                     responsive: true,
                     plugins: { legend: { labels: { color: '#EAECEF' } } },
                     scales: {
-                        y: {
-                            grid: { color: '#2b3139' },
-                            ticks: { color: '#848E9C' }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#848E9C' }
-                        }
+                        y: { grid: { color: '#2b3139' }, ticks: { color: '#848E9C' } },
+                        x: { grid: { display: false }, ticks: { color: '#848E9C' } }
                     }
                 }
             });
@@ -1526,15 +1402,9 @@
             if(id === 'history') loadTransactionHistory();
         }
 
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-            document.getElementById(id).classList.add('flex');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-            document.getElementById(id).classList.remove('flex');
-        }
+        // Modal Controls
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
 
         function showToast(msg) {
             const t = document.createElement('div');
@@ -1545,4 +1415,4 @@
         }
     </script>
 </body>
-    </html>
+</html>
