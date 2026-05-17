@@ -185,12 +185,23 @@
             <div id="market-list" class="p-2 space-y-2"></div>
         </section>
 
-        <section id="myads-view" class="tab-content p-4 space-y-4">
-            <div class="flex justify-between items-center mb-4">
+        <section id="myads-view" class="tab-content p-4 space-y-6">
+            <div class="flex justify-between items-center">
                 <h2 class="text-xl font-bold text-white">Orders & Ads</h2>
                 <button onclick="switchMainTab('post')" class="bg-[#FCD535] text-black px-3 py-1.5 rounded text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Post Ad</button>
             </div>
-            <div id="user-orders-list" class="space-y-3"></div>
+            
+            <div class="space-y-4">
+                <div>
+                    <h3 class="text-xs font-bold text-[#848E9C] mb-2 uppercase tracking-wider">🔄 My Active Trades (ክፍት የንግድ ልውውጦች)</h3>
+                    <div id="user-orders-list" class="space-y-2"></div>
+                </div>
+                <hr class="border-[#2b3139]">
+                <div>
+                    <h3 class="text-xs font-bold text-[#848E9C] mb-2 uppercase tracking-wider">📢 My Posted Ads (የለጠፍኳቸው ማስታወቂያዎች)</h3>
+                    <div id="user-ads-list" class="space-y-2"></div>
+                </div>
+            </div>
         </section>
 
         <section id="post-view" class="tab-content p-4 space-y-5">
@@ -336,12 +347,14 @@
                 <button onclick="switchAdminTab('admin-disputes', this)" class="admin-tab-btn relative bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap">
                     Disputes <span id="dispute-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center hidden font-bold">0</span>
                 </button>
+                <button onclick="switchAdminTab('admin-orders', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap">Monitor Chats</button>
                 <button onclick="switchAdminTab('admin-analytics', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap">Live Platform Volume</button>
             </div>
 
             <div id="admin-users" class="admin-panel space-y-2"></div>
             <div id="admin-kyc" class="admin-panel hidden space-y-2"></div>
             <div id="admin-disputes" class="admin-panel hidden space-y-2"></div>
+            <div id="admin-orders" class="admin-panel hidden space-y-2"></div>
             <div id="admin-analytics" class="admin-panel hidden space-y-4">
                 <canvas id="adminChart"></canvas>
             </div>
@@ -380,6 +393,30 @@
             <div class="flex gap-3">
                 <button onclick="closeModal('purchaseModal')" class="flex-1 py-2.5 rounded-lg border border-[#2b3139] text-[#848E9C] font-bold">Cancel</button>
                 <button id="btn-confirm-purchase" class="flex-1 py-2.5 rounded-lg bg-[#0ECB81] text-white font-bold">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editAdModal" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
+        <div class="bg-[#1e2329] w-full max-w-sm rounded-xl p-5 border border-[#2b3139] space-y-4">
+            <h3 class="text-white font-bold text-base">Edit Posted Ad</h3>
+            <div>
+                <label class="text-xs text-[#848E9C] mb-1 block">Price (ETB)</label>
+                <input type="number" id="edit-ad-price" class="w-full p-2 rounded text-sm font-bold text-white">
+            </div>
+            <div class="flex gap-2">
+                <div class="flex-1">
+                    <label class="text-xs text-[#848E9C] mb-1 block">Min Limit</label>
+                    <input type="number" id="edit-ad-min" class="w-full p-2 rounded text-sm">
+                </div>
+                <div class="flex-1">
+                    <label class="text-xs text-[#848E9C] mb-1 block">Max Limit</label>
+                    <input type="number" id="edit-ad-max" class="w-full p-2 rounded text-sm">
+                </div>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button onclick="closeModal('editAdModal')" class="flex-1 py-2 rounded border border-[#2b3139] text-[#848E9C] text-xs font-bold">Cancel</button>
+                <button id="btn-save-edit-ad" class="flex-1 py-2 rounded bg-[#FCD535] text-black text-xs font-bold">Save Changes</button>
             </div>
         </div>
     </div>
@@ -437,6 +474,18 @@
         </div>
     </div>
 
+    <div id="adminChatModal" class="fixed inset-0 bg-[#0b0e11] z-[80] hidden flex-col h-screen">
+        <div class="bg-[#1e2329] border-b border-[#2b3139] p-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <button onclick="closeModal('adminChatModal')" class="text-white text-lg"><i class="fa-solid fa-arrow-left"></i></button>
+                <div>
+                    <h2 class="text-xs font-bold text-white">Admin Monitor Chat <span id="admin-ch-id" class="text-[#848E9C]">#000</span></h2>
+                </div>
+            </div>
+        </div>
+        <div id="admin-chat-messages" class="flex-1 overflow-y-auto p-4 space-y-2 text-xs bg-[#0b0e11]"></div>
+    </div>
+
     <div id="ratingModal" class="fixed inset-0 bg-black/90 z-[70] hidden items-center justify-center p-4">
         <div class="bg-[#1e2329] w-full max-w-sm rounded-xl p-6 text-center border border-[#2b3139]">
             <i class="fa-solid fa-circle-check text-5xl text-[#0ECB81] mb-3"></i>
@@ -465,12 +514,13 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
         const user = tg.initDataUnsafe?.user || { id: 7798504269, first_name: "Admin" };
-        const ADMIN_ID = 7798504269; // የራስህ Super Admin ID
+        const ADMIN_ID = 7798504269; 
 
         // ====== GLOBAL VARIABLES ======
         let myData = {};
         let currentMarketType = 'buy';
         let activeTradeId = null;
+        let editingAdId = null;
         let selectedAd = null;
         let tradeInterval;
         let priceChart = null;
@@ -478,11 +528,11 @@
         let allAds = [];
         let filteredAds = [];
         let allTransactions = [];
-        let usersCachedMap = {}; // ለተጠቃሚዎች Trades መጠን መለያ
+        let usersCachedMap = {}; 
 
         // Filter states
         let filterPaymentMethods = ['telebirr'];
-        let filterMinTrades = 10; // "Rating" ፈንታ "Trade count" መለያ
+        let filterMinTrades = 10; 
         let filterPriceMin = 0;
         let filterPriceMax = 100000;
         let filterSearch = '';
@@ -490,22 +540,20 @@
 
         // ====== INITIALIZATION ======
         window.onload = () => {
-            // ለአንተ ብቻ Admin panel እንዲታይ ማድረግ
-            if(user.id == ADMIN_ID) {
+            if(String(user.id) == String(ADMIN_ID)) {
                 document.getElementById('nav-admin').classList.remove('hidden');
             }
             
-            // የሁሉንም ሰው መረጃ አስቀድሞ cache ማድረግ (ለ Filter ፍጥነት እንዲያግዝ)
             db.ref('users').on('value', snap => {
                 usersCachedMap = snap.val() || {};
-                loadMarketAds(); // ተጠቃሚዎች ሲጫኑ ገበያውን አድስ
+                loadMarketAds(); 
             });
 
             initUser();
             listenToOrders();
             listenToNotifications();
             
-            if(user.id == ADMIN_ID) {
+            if(String(user.id) == String(ADMIN_ID)) {
                 loadAdminData();
             }
         };
@@ -681,6 +729,33 @@
             document.getElementById('form-tab-sell').className = type === 'sell' ? "flex-1 py-2 text-sm font-bold bg-[#F6465D] text-white rounded-md" : "flex-1 py-2 text-sm font-bold text-[#848E9C] rounded-md";
         }
 
+        // ====== EDIT AD SYSTEM ======
+        function openEditAdModal(id, price, min, max) {
+            editingAdId = id;
+            document.getElementById('edit-ad-price').value = price;
+            document.getElementById('edit-ad-min').value = min;
+            document.getElementById('edit-ad-max').value = max;
+            document.getElementById('btn-save-edit-ad').onclick = saveEditedAd;
+            openModal('editAdModal');
+        }
+
+        function saveEditedAd() {
+            const p = parseFloat(document.getElementById('edit-ad-price').value);
+            const mn = parseFloat(document.getElementById('edit-ad-min').value);
+            const mx = parseFloat(document.getElementById('edit-ad-max').value);
+            
+            if(!p || !mn || !mx) return showToast("Please fill all fields!");
+            
+            db.ref('ads/' + editingAdId).update({
+                price: p,
+                min: mn,
+                max: mx
+            }).then(() => {
+                showToast("Ad Updated Successfully!");
+                closeModal('editAdModal');
+            });
+        }
+
         // ====== MARKET SYSTEM ======
         function setMarket(type) {
             currentMarketType = type;
@@ -692,23 +767,48 @@
         function loadMarketAds() {
             db.ref('ads').on('value', snap => {
                 const list = document.getElementById('market-list');
+                const userAdsList = document.getElementById('user-ads-list');
+                
                 list.innerHTML = '';
+                if(userAdsList) userAdsList.innerHTML = '';
+                
                 allAds = [];
-                filteredAds = [];
+                let myAdsCounter = 0;
 
                 snap.forEach(child => {
                     const ad = { id: child.key, ...child.val() };
-                    if(ad.status === 'active') allAds.push(ad);
+                    if(ad.status === 'active') {
+                        allAds.push(ad);
+                        
+                        // Render inside "My Posted Ads" section
+                        if(String(ad.uid) == String(user.id) && userAdsList) {
+                            myAdsCounter++;
+                            userAdsList.innerHTML += `
+                            <div class="bg-[#1e2329] p-3 rounded-lg border border-[#2b3139] flex justify-between items-center text-xs">
+                                <div>
+                                    <span class="font-bold uppercase ${ad.type === 'buy' ? 'text-[#0ECB81]' : 'text-[#F6465D]'}">${ad.type} USDT</span>
+                                    <p class="text-[11px] text-white mt-1">Price: <span class="text-[#FCD535] font-bold">${ad.price.toFixed(2)}</span> ETB | Limit: ${ad.min}-${ad.max}</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="openEditAdModal('${ad.id}', ${ad.price}, ${ad.min}, ${ad.max})" class="bg-[#4285F4] text-white px-3 py-1 rounded text-[10px] font-bold"><i class="fa-solid fa-pen mr-1"></i> Edit</button>
+                                    <button onclick="deleteAd('${ad.id}')" class="bg-[#F6465D] text-white px-2 py-1 rounded text-[10px] font-bold"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>`;
+                        }
+                    }
                 });
 
-                // Filter ads (Rating ጠፍቶ በ Trade Count ተተክቷል)
+                if(myAdsCounter === 0 && userAdsList) {
+                    userAdsList.innerHTML = '<div class="text-center text-[#848E9C] text-xs py-3">No ads posted yet</div>';
+                }
+
+                // Filter for Public Market View
                 filteredAds = allAds.filter(a => {
                     if(a.type !== (currentMarketType === 'buy' ? 'sell' : 'buy')) return false;
                     if(a.price < filterPriceMin || a.price > filterPriceMax) return false;
                     if(!filterPaymentMethods.some(m => a.paymentMethods.includes(m))) return false;
                     if(a.userName.toLowerCase().indexOf(filterSearch.toLowerCase()) === -1) return false;
                     
-                    // የባለቤቱን የትሬድ ብዛት መፈተሽ
                     const ownerData = usersCachedMap[a.uid] || {};
                     const ownerTradesCount = ownerData.totalTrades || 0;
                     if(ownerTradesCount < filterMinTrades) return false;
@@ -716,7 +816,6 @@
                     return true;
                 });
 
-                // Sort by price
                 filteredAds.sort((a, b) => currentMarketType === 'buy' ? a.price - b.price : b.price - a.price);
 
                 if(filteredAds.length === 0) {
@@ -727,7 +826,7 @@
                 filteredAds.forEach(ad => {
                     const btnLabel = currentMarketType === 'buy' ? 'BUY' : 'SELL';
                     const btnClr = currentMarketType === 'buy' ? 'bg-[#0ECB81]' : 'bg-[#F6465D]';
-                    const myAd = ad.uid == user.id;
+                    const myAd = String(ad.uid) == String(user.id);
 
                     const ownerData = usersCachedMap[ad.uid] || {};
                     const totalTrades = ownerData.totalTrades || 0;
@@ -752,9 +851,7 @@
                             <div class="text-right space-y-1">
                                 <p class="text-sm font-black text-white">${ad.price.toFixed(2)} <span class="text-[8px] text-[#848E9C]">ETB</span></p>
                                 ${myAd ? `
-                                    <div class="flex gap-1">
-                                        <button onclick="deleteAd('${ad.id}')" class="bg-[#F6465D] text-white px-2 py-0.5 rounded text-[8px]"><i class="fa-solid fa-trash"></i> Delete Ad</button>
-                                    </div>
+                                    <span class="text-[10px] bg-gray-700 text-gray-300 px-2 py-1 rounded">My Ad</span>
                                 ` : `
                                     <button onclick="openPurchaseModal('${ad.id}', '${ad.uid}', ${ad.price}, ${ad.min}, ${ad.max}, '${ad.terms}', ${JSON.stringify(ad.paymentMethods).replace(/"/g, '&quot;')})" class="${btnClr} text-white px-4 py-1.5 rounded-lg text-[10px] font-black">${btnLabel}</button>
                                 `}
@@ -767,7 +864,7 @@
         }
 
         function deleteAd(adId) {
-            if(confirm('Delete this ad?')) {
+            if(confirm('Delete this ad permanently?')) {
                 db.ref('ads/' + adId).update({ status: 'deleted' });
                 showToast("Ad deleted!");
             }
@@ -782,14 +879,14 @@
                 filterPaymentMethods.push(method);
                 el.classList.add('active');
             }
-            loadMarketAds(); // ክፍያ ሲመረጥ ገበያው ወዲያውኑ እንዲታደስ
+            loadMarketAds();
         }
 
         function setMinTrades(count, el) {
             filterMinTrades = count;
             document.querySelectorAll('[onclick*="setMinTrades"]').forEach(e => e.classList.remove('active'));
             el.classList.add('active');
-            loadMarketAds(); // የትሬድ ብዛት ሲመረጥ ገበያው ወዲያውኑ እንዲታደስ
+            loadMarketAds();
         }
 
         function applyFilters() {
@@ -836,8 +933,8 @@
             const ref = db.ref('orders').push();
             ref.set({
                 adId: selectedAd.adId,
-                buyerId: currentMarketType === 'buy' ? user.id : selectedAd.creatorId,
-                sellerId: currentMarketType === 'sell' ? user.id : selectedAd.creatorId,
+                buyerId: currentMarketType === 'buy' ? String(user.id) : String(selectedAd.creatorId),
+                sellerId: currentMarketType === 'sell' ? String(user.id) : String(selectedAd.creatorId),
                 amountUsdt: amt,
                 amountEtb: amt * selectedAd.price,
                 price: selectedAd.price,
@@ -871,9 +968,9 @@
             db.ref('orders').on('value', snap => {
                 const orders = snap.val() || {};
                 const list = document.getElementById('user-orders-list');
-                list.innerHTML = '';
+                if(list) list.innerHTML = '';
+                
                 allTransactions = [];
-
                 let pricesArray = [];
                 let totalVolumeCounter = 0;
                 let totalOrdersCounter = 0;
@@ -882,17 +979,13 @@
                     const o = orders[id];
                     allTransactions.push({ id, ...o });
 
-                    // 1. የዋጋ ግራፍ ዳታ ማዘጋጀት (ከእውነተኛ ያለቁ ወይም ንቁ ትሬዶች)
-                    if(o.price) {
-                        pricesArray.push(o.price);
-                    }
-                    if(o.status === 'completed') {
-                        totalVolumeCounter += o.amountEtb;
-                    }
+                    if(o.price) { pricesArray.push(o.price); }
+                    if(o.status === 'completed') { totalVolumeCounter += o.amountEtb; }
                     totalOrdersCounter++;
 
-                    if(o.buyerId == user.id || o.sellerId == user.id) {
-                        if(o.status !== 'completed' && o.status !== 'cancelled') {
+                    // String safe conversion for matching orders correctly
+                    if(String(o.buyerId) == String(user.id) || String(o.sellerId) == String(user.id)) {
+                        if(o.status !== 'completed' && o.status !== 'cancelled' && list) {
                             const statusColor = o.dispute ? 'text-red-500' : o.status === 'pending' ? 'text-[#FCD535]' : 'text-[#0ECB81]';
                             const statusText = o.dispute ? 'DISPUTE' : o.status.toUpperCase();
                             
@@ -900,7 +993,7 @@
                             <div onclick="openTradeRoom('${id}')" class="bg-[#1e2329] p-3 rounded-lg border border-[#2b3139] flex justify-between items-center text-xs cursor-pointer mb-2">
                                 <div>
                                     <span class="font-bold text-white">${o.amountUsdt} USDT</span>
-                                    <p class="text-[10px] text-[#848E9C] mt-1">${o.amountEtb.toFixed(2)} ETB</p>
+                                    <p class="text-[10px] text-[#848E9C] mt-1">${o.amountEtb.toFixed(2)} ETB (Order ID: #${id.substring(1, 6)})</p>
                                 </div>
                                 <span class="${statusColor} uppercase font-bold text-[10px]">${statusText}</span>
                             </div>`;
@@ -908,13 +1001,9 @@
                     }
                 });
 
-                // እውነተኛ የዋጋ መረጃዎችን ወደ ግራፉ መላክ (Real Data Graph)
-                if(pricesArray.length > 0) {
-                    updateLiveChartData(pricesArray);
-                }
+                if(pricesArray.length > 0) { updateLiveChartData(pricesArray); }
 
-                // Super Admin Counters ማደስ
-                if(user.id == ADMIN_ID) {
+                if(String(user.id) == String(ADMIN_ID)) {
                     document.getElementById('admin-total-volume').innerText = totalVolumeCounter.toLocaleString() + " ETB";
                     document.getElementById('admin-fees').innerText = totalOrdersCounter + " Orders";
 
@@ -935,11 +1024,9 @@
 
         // ====== REAL LIVE GRAPH UPDATE ======
         function updateLiveChartData(prices) {
-            // የመጨረሻዎቹን 10 የትሬድ ዋጋዎች መውሰድ
             const lastPrices = prices.slice(-10);
             const currentRate = lastPrices[lastPrices.length - 1];
             
-            // የከፍተኛ እና ዝቅተኛ ዋጋዎችን መለያ
             const minPrice = Math.min(...prices).toFixed(2);
             const maxPrice = Math.max(...prices).toFixed(2);
             
@@ -1009,7 +1096,7 @@
                     }
                 }, 1000);
 
-                const partnerId = (o.buyerId == user.id) ? o.sellerId : o.buyerId;
+                const partnerId = (String(o.buyerId) == String(user.id)) ? o.sellerId : o.buyerId;
                 const p = usersCachedMap[partnerId] || { name: "Partner", totalTrades: 0 };
                 
                 document.getElementById('tr-partner-name').innerText = p.name;
@@ -1042,7 +1129,7 @@
                 document.getElementById('tr-payment-info').innerHTML = paymentHTML;
 
                 const btn = document.getElementById('btn-tr-accept');
-                const iAmBuyer = o.buyerId == user.id;
+                const iAmBuyer = String(o.buyerId) == String(user.id);
                 const myAcceptStatus = iAmBuyer ? o.buyerAccepted : o.sellerAccepted;
 
                 if(myAcceptStatus) {
@@ -1063,7 +1150,7 @@
         function acceptTrade() {
             db.ref('orders/' + activeTradeId).once('value', s => {
                 const o = s.val();
-                const iAmBuyer = o.buyerId == user.id;
+                const iAmBuyer = String(o.buyerId) == String(user.id);
                 const updates = {};
 
                 if(iAmBuyer) updates.buyerAccepted = true;
@@ -1074,7 +1161,6 @@
                     db.ref('orders/' + activeTradeId).update(updates).then(() => {
                         db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '✓ Trade completed successfully!', timestamp: Date.now() });
 
-                        // የሁለቱንም ሰዎች (የገዢ እና ሻጭ) የትሬድ ብዛት በ database ሪል-ታይም አንድ መጨመር (Increment Count)
                         db.ref('users/' + o.buyerId + '/totalTrades').transaction(current => (current || 0) + 1);
                         db.ref('users/' + o.sellerId + '/totalTrades').transaction(current => (current || 0) + 1);
 
@@ -1105,11 +1191,12 @@
         function loadChat(orderId) {
             db.ref('chats/' + orderId).on('value', s => {
                 const box = document.getElementById('chat-messages');
+                if(!box) return;
                 box.innerHTML = '';
                 const chats = s.val() || {};
 
                 Object.values(chats).forEach(c => {
-                    const isMe = c.sender == user.id;
+                    const isMe = String(c.sender) == String(user.id);
                     const isSys = c.sender == 'system';
                     const align = isMe ? 'justify-end' : isSys ? 'justify-center' : 'justify-start';
                     const bg = isMe ? 'bg-[#FCD535] text-black' : isSys ? 'text-[#848E9C] text-center' : 'bg-[#2b3139] text-white';
@@ -1152,7 +1239,7 @@
             list.innerHTML = '';
 
             let filtered = allTransactions.filter(t => {
-                if(t.buyerId != user.id && t.sellerId != user.id) return false;
+                if(String(t.buyerId) != String(user.id) && String(t.sellerId) != String(user.id)) return false;
                 if(currentTxnStatus !== 'all' && t.status !== currentTxnStatus) return false;
                 return true;
             });
@@ -1165,7 +1252,7 @@
             }
 
             filtered.forEach(t => {
-                const iAmBuyer = t.buyerId == user.id;
+                const iAmBuyer = String(t.buyerId) == String(user.id);
                 const isCompleted = t.status === 'completed';
                 const statusColor = t.dispute ? 'text-red-500' : isCompleted ? 'text-[#0ECB81]' : 'text-[#FCD535]';
 
@@ -1189,8 +1276,8 @@
         function exportTransactions() {
             let csv = 'Date,Amount (USDT),Price (ETB),Type,Status,Payment Method\n';
             allTransactions.forEach(t => {
-                if(t.buyerId == user.id || t.sellerId == user.id) {
-                    const type = t.buyerId == user.id ? 'Buy' : 'Sell';
+                if(String(t.buyerId) == String(user.id) || String(t.sellerId) == String(user.id)) {
+                    const type = String(t.buyerId) == String(user.id) ? 'Buy' : 'Sell';
                     csv += `"${new Date(t.startTime).toLocaleDateString()}","${t.amountUsdt}","${t.price}","${type}","${t.status}","${t.selectedPaymentMethod}"\n`;
                 }
             });
@@ -1231,7 +1318,7 @@
             panel.classList.toggle('hidden');
         }
 
-        // ====== ADMIN SYSTEM ======
+        // ====== SUPER ADMIN PANEL FUNCTIONS ======
         function switchAdminTab(id, btn) {
             document.querySelectorAll('.admin-panel').forEach(e => e.classList.add('hidden'));
             document.querySelectorAll('.admin-tab-btn').forEach(e => {
@@ -1246,8 +1333,31 @@
             }
         }
 
+        function openAdminChatMonitor(orderId) {
+            document.getElementById('admin-ch-id').innerText = "#" + orderId.substring(1, 6).toUpperCase();
+            openModal('adminChatModal');
+            
+            db.ref('chats/' + orderId).on('value', s => {
+                const box = document.getElementById('admin-chat-messages');
+                if(!box) return;
+                box.innerHTML = '';
+                const chats = s.val() || {};
+                
+                Object.values(chats).forEach(c => {
+                    const isSys = c.sender == 'system';
+                    const align = isSys ? 'justify-center' : 'justify-start';
+                    const bg = isSys ? 'text-[#848E9C] text-center' : 'bg-[#2b3139] text-white';
+                    let senderLabel = usersCachedMap[c.sender]?.name || c.sender;
+                    
+                    let content = c.image ? `<img src="${c.image}" class="chat-image">` : `<strong>${senderLabel}:</strong> ${c.text}`;
+                    box.innerHTML += `<div class="flex ${align} mb-1"><div class="${bg} px-2 py-1.5 rounded-lg text-[11px] max-w-[80%] break-words">${content}</div></div>`;
+                });
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+
         function loadAdminData() {
-            // Users Control
+            // 1. Users Control Dashboard
             db.ref('users').on('value', s => {
                 const users = s.val() || {};
                 document.getElementById('admin-user-count').innerText = Object.keys(users).length;
@@ -1258,20 +1368,20 @@
                 Object.keys(users).forEach(id => {
                     const u = users[id];
                     const trades = u.totalTrades || 0;
-                    const bBtn = u.isBanned ? `<button onclick="toggleBan('${id}', false)" class="bg-green-600 px-2 py-1 rounded text-[10px] text-white">UNBAN</button>` : `<button onclick="toggleBan('${id}', true)" class="bg-[#F6465D] px-2 py-1 rounded text-[10px] text-white">BAN</button>`;
+                    const bBtn = u.isBanned ? `<button onclick="toggleBan('${id}', false)" class="bg-green-600 px-3 py-1 rounded text-[10px] text-white font-bold">UNBAN</button>` : `<button onclick="toggleBan('${id}', true)" class="bg-[#F6465D] px-3 py-1 rounded text-[10px] text-white font-bold">BAN USER</button>`;
 
                     uList.innerHTML += `
                     <div class="bg-[#1e2329] p-2 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-1">
                         <div class="flex-1">
                             <p class="text-white font-medium">${u.name} (ID: ${id})</p>
-                            <p class="text-[10px] text-[#848E9C]">Status: ${u.status} | Trades: ${trades}</p>
+                            <p class="text-[10px] text-[#848E9C]">Status: ${u.status.toUpperCase()} | Trades: ${trades}</p>
                         </div>
-                        ${id != ADMIN_ID ? bBtn : ''}
+                        ${String(id) != String(ADMIN_ID) ? bBtn : ''}
                     </div>`;
                 });
             });
 
-            // KYC Verify
+            // 2. KYC Verification Pending Applications
             db.ref('users').on('value', s => {
                 const users = s.val() || {};
                 const kList = document.getElementById('admin-kyc');
@@ -1294,7 +1404,7 @@
                 if(kList.innerHTML === '') kList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No pending KYC applications</div>`;
             });
 
-            // Disputes Control
+            // 3. Disputes Control Window
             db.ref('orders').on('value', s => {
                 const dList = document.getElementById('admin-disputes');
                 dList.innerHTML = '';
@@ -1310,15 +1420,41 @@
                                 <span class="text-[#FCD535] font-bold">${o.amountUsdt} USDT</span>
                             </div>
                             <p class="text-[11px] text-gray-300">Buyer: ${o.buyerId} | Seller: ${o.sellerId}</p>
-                            <p class="text-[11px] text-gray-300">Total ETB: ${o.amountEtb.toFixed(2)}</p>
                             <div class="flex gap-2 pt-1">
-                                <button onclick="resolveDisputeAdmin('${id}', 'completed')" class="flex-1 bg-[#0ECB81] text-white py-1 rounded font-bold text-[10px]">Release to Buyer</button>
-                                <button onclick="resolveDisputeAdmin('${id}', 'cancelled')" class="flex-1 bg-[#F6465D] text-white py-1 rounded font-bold text-[10px]">Refund to Seller</button>
+                                <button onclick="openAdminChatMonitor('${id}')" class="bg-[#4285F4] text-white px-2 py-1 rounded text-[10px] font-bold">View Chat & Proof</button>
+                                <button onclick="resolveDisputeAdmin('${id}', 'completed')" class="bg-[#0ECB81] text-white px-2 py-1 rounded font-bold text-[10px]">Release USDT</button>
+                                <button onclick="resolveDisputeAdmin('${id}', 'cancelled')" class="bg-[#F6465D] text-white px-2 py-1 rounded font-bold text-[10px]">Refund Ad</button>
                             </div>
                         </div>`;
                     }
                 });
                 if(dList.innerHTML === '') dList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No active disputes</div>`;
+            });
+
+            // 4. Live Platform Orders & Monitoring Chat Rooms
+            db.ref('orders').on('value', s => {
+                const orders = s.val() || {};
+                const monitorList = document.getElementById('admin-orders');
+                if(!monitorList) return;
+                monitorList.innerHTML = '';
+
+                Object.keys(orders).forEach(id => {
+                    const o = orders[id];
+                    if(o.status !== 'completed' && o.status !== 'cancelled') {
+                        const bName = usersCachedMap[o.buyerId]?.name || 'Buyer';
+                        const sName = usersCachedMap[o.sellerId]?.name || 'Seller';
+                        
+                        monitorList.innerHTML += `
+                        <div class="bg-[#1e2329] p-3 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-1">
+                            <div>
+                                <p class="text-white font-bold">Order #${id.substring(1,6)} (${o.amountUsdt} USDT)</p>
+                                <p class="text-[10px] text-[#848E9C]">${bName} ➔ ${sName} | ${o.amountEtb.toFixed(2)} ETB</p>
+                            </div>
+                            <button onclick="openAdminChatMonitor('${id}')" class="bg-[#4285F4] text-white px-3 py-1 rounded text-[10px] font-bold"><i class="fa-solid fa-comments mr-1"></i> Live Chat</button>
+                        </div>`;
+                    }
+                });
+                if(monitorList.innerHTML === '') monitorList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No active trading rooms right now</div>`;
             });
         }
 
@@ -1352,12 +1488,11 @@
             const ctx = document.getElementById('adminChart');
             if(!ctx) return;
 
-            // ከሁሉ ርዝመት ያላቸውን የትሬድ መጠኖች መሰብሰብ
             let volumeData = [0, 0, 0, 0, 0, 0, 0]; 
             allTransactions.forEach(t => {
                 if(t.status === 'completed') {
-                    let day = new Date(t.startTime).getDay(); // 0 = Sunday, 1 = Monday...
-                    let index = day === 0 ? 6 : day - 1; // ሰኞ መጀመሪያ እንዲሆን ማስተካከል
+                    let day = new Date(t.startTime).getDay(); 
+                    let index = day === 0 ? 6 : day - 1; 
                     volumeData[index] += t.amountEtb;
                 }
             });
@@ -1402,7 +1537,6 @@
             if(id === 'history') loadTransactionHistory();
         }
 
-        // Modal Controls
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
 
