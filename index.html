@@ -1108,28 +1108,40 @@
                     'telebirr': 'Telebirr', 'binance': 'Binance Pay', 'cbe': 'CBE Bank', 'mobile': 'Mobile Money'
                 }[paymentMethod] || paymentMethod;
 
+                // ====== የተስተካከለው የ PAYMENT METHOD ማሳያ ሎጂክ ======
                 let paymentHTML = '';
-                if(paymentMethod === 'telebirr') {
+                const iAmBuyer = String(o.buyerId) == String(user.id);
+
+                if (iAmBuyer) {
+                    // እኔ ገዢ ከሆንኩ ፡ ብር የምልክለት ስለሆነ የሻጩን የባንክ/የቴሌብር አካውንት መረጃ ማየት አለብኝ
+                    if(paymentMethod === 'telebirr') {
+                        paymentHTML = `
+                        <div class="flex justify-between"><span>Telebirr Phone:</span> <span class="font-bold text-[#FCD535]">${p.telePhone || 'N/A'}</span></div>
+                        <div class="flex justify-between"><span>Account Name:</span> <span class="font-bold text-[#FCD535]">${p.teleName || 'N/A'}</span></div>`;
+                    } else if(paymentMethod === 'binance') {
+                        paymentHTML = `
+                        <div class="flex justify-between"><span>Binance ID (Seller):</span> <span class="font-bold text-[#FCD535]">${p.binanceId || 'N/A'}</span></div>`;
+                    } else if(paymentMethod === 'cbe') {
+                        paymentHTML = `
+                        <div class="flex justify-between"><span>Account Number:</span> <span class="font-bold text-[#FCD535]">${p.cbeAccount || 'N/A'}</span></div>
+                        <div class="flex justify-between"><span>Account Name:</span> <span class="font-bold text-[#FCD535]">${p.cbeName || 'N/A'}</span></div>`;
+                    } else if(paymentMethod === 'mobile') {
+                        paymentHTML = `
+                        <div class="flex justify-between"><span>Phone Number:</span> <span class="font-bold text-[#FCD535]">${p.mobilePhone || 'N/A'}</span></div>
+                        <div class="flex justify-between"><span>Account Name:</span> <span class="font-bold text-[#FCD535]">${p.mobileName || 'N/A'}</span></div>`;
+                    }
+                } else {
+                    // እኔ ሻጭ ከሆንኩ ፡ USDT የማስተላልፍለት ስለሆነ የገዢውን Binance ID ብቻ ነው ማየት ያለብኝ
                     paymentHTML = `
-                    <div class="flex justify-between"><span>Telebirr Phone:</span> <span class="font-bold text-[#FCD535]">${p.telePhone || 'N/A'}</span></div>
-                    <div class="flex justify-between"><span>Account Name:</span> <span class="font-bold text-[#FCD535]">${p.teleName || 'N/A'}</span></div>`;
-                } else if(paymentMethod === 'binance') {
-                    paymentHTML = `
-                    <div class="flex justify-between"><span>Binance ID:</span> <span class="font-bold text-[#FCD535]">${p.binanceId || 'N/A'}</span></div>`;
-                } else if(paymentMethod === 'cbe') {
-                    paymentHTML = `
-                    <div class="flex justify-between"><span>Account Number:</span> <span class="font-bold text-[#FCD535]">${p.cbeAccount || 'N/A'}</span></div>
-                    <div class="flex justify-between"><span>Account Name:</span> <span class="font-bold text-[#FCD535]">${p.cbeName || 'N/A'}</span></div>`;
-                } else if(paymentMethod === 'mobile') {
-                    paymentHTML = `
-                    <div class="flex justify-between"><span>Phone Number:</span> <span class="font-bold text-[#FCD535]">${p.mobilePhone || 'N/A'}</span></div>
-                    <div class="flex justify-between"><span>Account Name:</span> <span class="font-bold text-[#FCD535]">${p.mobileName || 'N/A'}</span></div>`;
+                    <div class="flex justify-between bg-yellow-500/10 p-2 rounded border border-yellow-500/30">
+                        <span>Buyer Binance ID (USDT መላኪያ ቁጥር):</span> 
+                        <span class="font-black text-[#FCD535] text-sm">${p.binanceId || 'Not provided'}</span>
+                    </div>`;
                 }
 
                 document.getElementById('tr-payment-info').innerHTML = paymentHTML;
 
                 const btn = document.getElementById('btn-tr-accept');
-                const iAmBuyer = String(o.buyerId) == String(user.id);
                 const myAcceptStatus = iAmBuyer ? o.buyerAccepted : o.sellerAccepted;
 
                 if(myAcceptStatus) {
