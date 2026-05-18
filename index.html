@@ -1846,8 +1846,9 @@
 
             db.ref('orders').on('value', s => {
                 const dList = document.getElementById('admin-disputes');
-                if(!dList) return;
-                dList.innerHTML = '';
+                const oList = document.getElementById('admin-orders');
+                if(dList) dList.innerHTML = '';
+                if(oList) oList.innerHTML = '';
                 const orders = s.val() || {};
 
                 Object.keys(orders).forEach(id => {
@@ -1857,7 +1858,7 @@
                         const sellerName = usersCachedMap[o.sellerId]?.name || "Seller";
                         const complainantName = usersCachedMap[o.disputedBy]?.name || "Unknown Complainant";
 
-                        dList.innerHTML += `
+                        if(dList) dList.innerHTML += `
                         <div class="bg-red-950/40 p-3 rounded border border-red-500 text-xs mb-2 space-y-2">
                             <div class="flex justify-between border-b border-red-900 pb-1">
                                 <strong class="text-red-400">🚨 DISPUTE ROOM ID: #${id.substring(1, 6).toUpperCase()}</strong>
@@ -1872,84 +1873,108 @@
                             <div class="flex flex-col gap-1 pt-1">
                                 <button onclick="openAdminChatMonitor('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded font-bold text-[11px] w-full"><i class="fa-solid fa-comments mr-1"></i> Open Live Chat & Proof Logs</button>
                                 <div class="flex gap-2">
-                                    <button onclick="toggleBan('${o.buyerId}', true)" class="flex-1 bg-red-600 text-white py-1.5 rounded font-bold text-[10px] uppercase">Ban Buyer Account</button>
-                                    <button onclick="toggleBan('${o.sellerId}', true)" class="flex-1 bg-red-600 text-white py-1.5 rounded font-bold text-[10px] uppercase">Ban Seller Account</button>
+                                    <button onclick="toggleBan('${o.buyerId}', true)" class="flex-1 bg-red-600 text-white py-1.5 rounded font-bold text-[10px] uppercase">Ban Buyer</button>
+                                    <button onclick="toggleBan('${o.sellerId}', true)" class="flex-1 bg-red-600 text-white py-1.5 rounded font-bold text-[10px] uppercase">Ban Seller</button>
                                 </div>
                             </div>
                         </div>`;
                     }
-                });
-                if(dList.innerHTML === '') dList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No active disputes</div>`;
-            });
-
-            db.ref('orders').on('value', s => {
-                const orders = s.val() || {};
-                const monitorList = document.getElementById('admin-orders');
-                if(!monitorList) return;
-                monitorList.innerHTML = '';
-
-                Object.keys(orders).forEach(id => {
-                    const o = orders[id];
-                    if(o.status !== 'completed' && o.status !== 'cancelled') {
-                        const bName = usersCachedMap[o.buyerId]?.name || 'Buyer';
-                        const sName = usersCachedMap[o.sellerId]?.name || 'Seller';
+                    
+                    if (oList) {
+                        const buyerName = usersCachedMap[o.buyerId]?.name || "Buyer";
+                        const sellerName = usersCachedMap[o.sellerId]?.name || "Seller";
+                        const statusColor = o.status === 'completed' ? 'text-green-500' : o.status === 'cancelled' ? 'text-gray-500' : 'text-yellow-500';
                         
-                        monitorList.innerHTML += `
-                        <div class="bg-[#1e2329] p-3 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-1">
+                        oList.innerHTML += `
+                        <div class="bg-[#1e2329] p-3 rounded border border-[#2b3139] text-xs mb-2 flex justify-between items-center">
                             <div>
-                                <p class="text-white font-bold">Order #${id.substring(1,6)} (${o.amountUsdt} USDT)</p>
-                                <p class="text-[10px] text-[#848E9C] ${bName} ➔ ${sName} | ${o.amountEtb.toFixed(2)} ETB</p>
+                                <p class="font-bold text-white">#${id.substring(1, 6).toUpperCase()} - <span class="${statusColor}">${o.status.toUpperCase()}</span></p>
+                                <p class="text-[10px] text-[#848E9C] mt-1">${buyerName} vs ${sellerName}</p>
                             </div>
-                            <button onclick="openAdminChatMonitor('${id}')" class="bg-[#4285F4] text-white px-3 py-1 rounded text-[10px] font-bold"><i class="fa-solid fa-comments mr-1"></i> Monitor Chat</button>
+                            <button onclick="openAdminChatMonitor('${id}')" class="bg-blue-600 text-white px-3 py-1.5 rounded font-bold text-[10px]">View Chat</button>
                         </div>`;
                     }
                 });
-                if(monitorList.innerHTML === '') monitorList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No active trading rooms right now</div>`;
+                
+                if(dList && dList.innerHTML === '') dList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No active disputes</div>`;
+                if(oList && oList.innerHTML === '') oList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No orders to monitor</div>`;
             });
         }
 
-        function toggleBan(uid, val) {
-            if(confirm(`Are you sure you want to change the status of this user (Banned=${val})?`)) {
-                db.ref('users/' + uid).update({ isBanned: val });
-                showToast(val ? "User banned successfully!" : "User unbanned successfully!");
-            }
-        }
-
-        // Fixed real-time full-tree user update on admin approval action
         function adminKYC(uid, status) {
             db.ref('users/' + uid).update({ status: status }).then(() => {
-                showToast(`KYC ${status.toUpperCase()} Successfully!`);
-                if(String(uid) === String(user.id)) {
-                    db.ref('users/' + user.id).once('value', snapshot => {
-                        myData = snapshot.val();
-                        updateProfileUI();
+                showToast(`User KYC marked as ${status.toUpperCase()}`);
+                if(status === 'verified') {
+                    db.ref('notifications/' + uid).push({
+                        type: 'system',
+                        message: `🎉 Great news! Your Identity Verification (KYC) has been APPROVED. You can now trade!`,
+                        timestamp: Date.now(),
+                        read: false
                     });
                 }
             });
         }
 
-        // ====== UTILITY FUNCTIONS ======
-        function switchMainTab(id) {
-            document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
-            document.getElementById(`${id}-view`).classList.add('active');
-
-            const navItem = document.getElementById(`nav-${id}`);
-            if(navItem) navItem.classList.add('active');
-
-            if(id === 'history') loadTransactionHistory();
-            if(id === 'profile' && myData && myData.name) updateProfileUI();
+        function toggleBan(uid, isBanned) {
+            if(confirm(`Are you sure you want to ${isBanned ? 'BAN' : 'UNBAN'} this user?`)) {
+                db.ref('users/' + uid).update({ isBanned: isBanned }).then(() => {
+                    showToast(`User ${isBanned ? 'BANNED' : 'UNBANNED'} successfully.`);
+                });
+            }
         }
 
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+        // ====== UTILS & NAVIGATION ======
+        function switchMainTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+            
+            document.getElementById(tabId + '-view').classList.add('active');
+            document.getElementById('nav-' + tabId).classList.add('active');
+            
+            if(tabId === 'market') loadMarketAds();
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+            document.getElementById(id).classList.add('flex');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+            document.getElementById(id).classList.remove('flex');
+            
+            if(id === 'tradeModal') {
+                clearInterval(tradeInterval);
+                activeTradeId = null;
+            }
+            if(id === 'supportChatModal' || id === 'adminSupportChatModal') {
+                currentSupportUid = null;
+            }
+            if(id === 'adminChatModal') {
+                currentMonitorOrderId = null;
+            }
+        }
 
         function showToast(msg) {
-            const t = document.createElement('div');
-            t.className = "bg-[#FCD535] text-black px-4 py-2 rounded shadow-xl text-xs font-black border border-[#2b3139]";
-            t.innerText = msg;
-            document.getElementById('toast-container').appendChild(t);
-            setTimeout(() => t.remove(), 3000);
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'bg-[#FCD535] text-black text-xs font-bold px-4 py-2 rounded-lg shadow-xl transform transition-all duration-300 translate-y-[-20px] opacity-0';
+            toast.innerText = msg;
+            
+            container.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-y-[-20px]', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+            }, 10);
+            
+            // Animate out
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-[-20px]', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
     </script>
 </body>
