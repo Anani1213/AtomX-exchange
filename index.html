@@ -282,7 +282,7 @@
             <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139]">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3 flex-1">
-                        <div id="prof-avatar" class="w-14 h-14 rounded-full bg-[#2b3139] flex items-center justify-center text-xl font-bold text-white border-2 border-[#FCD535]"></div>
+                        <div id="prof-avatar" class="w-14 h-14 rounded-full bg-[#2b3139] flex items-center justify-center text-xl font-bold text-white border-2 border-[#FCD535] overflow-hidden"></div>
                         <div class="flex-1">
                             <h2 id="prof-name" class="text-base font-bold text-white">Loading...</h2>
                             <p class="text-[10px] font-bold mt-1" id="prof-status-text">STATUS: UNVERIFIED</p>
@@ -503,7 +503,7 @@
             <div class="p-4 space-y-3">
                 <div class="bg-[#1e2329] p-3 rounded-xl border border-[#2b3139]">
                     <div class="flex items-center gap-2 mb-2 pb-2 border-b border-[#2b3139]">
-                        <div class="w-8 h-8 rounded-full bg-[#2b3139] flex items-center justify-center font-bold text-white text-sm" id="tr-partner-av"></div>
+                        <div class="w-8 h-8 rounded-full bg-[#2b3139] flex items-center justify-center font-bold text-white text-sm" id="tr-partner-av font-hidden overflow-hidden"></div>
                         <h3 id="tr-partner-name" class="font-bold text-sm text-white">Name</h3>
                         <span class="text-[#0ECB81] text-xs font-bold" id="tr-partner-trades">0 Trades</span>
                     </div>
@@ -607,10 +607,12 @@
                 document.getElementById('nav-admin').classList.remove('hidden');
             }
             
-            // Optimized caching structure to ensure fast rendering response
             db.ref('users').on('value', snap => {
                 usersCachedMap = snap.val() || {};
                 loadMarketAds(); 
+                if(myData && myData.status) {
+                    updateProfileUI();
+                }
             });
 
             initUser();
@@ -621,7 +623,6 @@
                 loadAdminData();
             }
 
-            // User Heartbeat Setup for Real-time Binance-style Online Dots
             updatePresence();
             setInterval(updatePresence, 20000);
         };
@@ -638,13 +639,18 @@
                 myData = snap.val();
                 if(!myData) {
                     db.ref('users/' + user.id).set({
-                        name: user.first_name,
+                        name: user.first_name || "User",
                         status: 'unverified',
                         isBanned: false,
                         completionRate: 100,
                         totalTrades: 0,
                         joinDate: Date.now(),
-                        lastSeen: Date.now()
+                        lastSeen: Date.now(),
+                        telePhone: "",
+                        teleName: "",
+                        binanceId: "",
+                        cbeAccount: "",
+                        cbeName: ""
                     });
                     return;
                 }
@@ -664,7 +670,7 @@
         function setupPMDisplay(idPrefix, val1, val2) {
             const displayEl = document.getElementById(idPrefix + '-display');
             const editEl = document.getElementById(idPrefix + '-edit');
-            if(val1) {
+            if(val1 && val1.trim() !== "") {
                 let masked = val1.toString().substring(0, 3) + "******" + val1.toString().slice(-2);
                 displayEl.innerText = masked + (val2 ? " (" + val2 + ")" : "");
                 displayEl.classList.remove('hidden');
@@ -677,14 +683,20 @@
         }
 
         function updateProfileUI() {
+            if(!myData || !myData.name) return;
             document.getElementById('prof-name').innerText = myData.name;
             const initLetter = myData.name.charAt(0).toUpperCase();
-            document.getElementById('prof-avatar').innerText = initLetter;
-
+            
+            // Fixed avatar loading logic
+            const avatarContainer = document.getElementById('prof-avatar');
+            const headerAvatar = document.getElementById('header-avatar');
+            
             if(user.photo_url) {
-                document.getElementById('header-avatar').innerHTML = `<img src="${user.photo_url}" class="w-full h-full object-cover">`;
+                avatarContainer.innerHTML = `<img src="${user.photo_url}" class="w-full h-full object-cover rounded-full">`;
+                headerAvatar.innerHTML = `<img src="${user.photo_url}" class="w-full h-full object-cover">`;
             } else {
-                document.getElementById('header-avatar').innerText = initLetter;
+                avatarContainer.innerText = initLetter;
+                headerAvatar.innerText = initLetter;
             }
 
             const sText = document.getElementById('prof-status-text');
@@ -767,7 +779,7 @@
         }
 
         function checkRequirements() {
-            if(!myData.binanceId || myData.status !== 'verified') {
+            if(!myData.binanceId || myData.binanceId.trim() === "" || myData.status !== 'verified') {
                 showToast("🔒 Binance ID & KYC Verification Required to Trade!");
                 switchMainTab('profile');
                 return false;
@@ -803,7 +815,7 @@
 
             db.ref('ads').push({
                 uid: user.id,
-                userName: user.first_name,
+                userName: user.first_name || "Unknown User",
                 type: document.getElementById('ad-form-type').value,
                 price: price,
                 amount: amount,
@@ -929,10 +941,16 @@
                 filteredAds = allAds.filter(a => {
                     if(a.type !== (currentMarketType === 'buy' ? 'sell' : 'buy')) return false;
                     if(a.price < filterPriceMin || a.price > filterPriceMax) return false;
-                    const methods = a.paymentMethods || [];
-                    const normalizedMethods = methods.map(m => (!m || m === 'undefined') ? 'cbe' : m);
-                    if(!filterPaymentMethods.some(m => normalizedMethods.includes(m))) return false;
-                    if(a.userName.toLowerCase().indexOf(filterSearch.toLowerCase()) === -1) return false;
+                    
+                    // Fixed string-based undefined issues
+                    let methods = a.paymentMethods || [];
+                    methods = methods.filter(m => m && m !== 'undefined');
+                    if(methods.length === 0) methods = ['cbe'];
+                    
+                    if(!filterPaymentMethods.some(m => methods.includes(m))) return false;
+                    
+                    const nameToSearch = a.userName ? a.userName.toLowerCase() : "";
+                    if(nameToSearch.indexOf(filterSearch.toLowerCase()) === -1) return false;
                     
                     const ownerData = usersCachedMap[a.uid] || {};
                     const ownerTradesCount = ownerData.totalTrades || 0;
@@ -956,14 +974,14 @@
 
                     const ownerData = usersCachedMap[ad.uid] || {};
                     const totalTrades = ownerData.totalTrades || 0;
-
-                    // Real-time Binance Style Presence Indicator (Within 60 sec window)
                     const isOnline = ownerData.lastSeen && (Date.now() - ownerData.lastSeen < 60000);
                     const presenceDot = isOnline ? '<span class="online-dot ml-1"></span>' : '<span class="offline-dot ml-1"></span>';
 
-                    const safePaymentMethods = ad.paymentMethods || [];
+                    let safePaymentMethods = ad.paymentMethods || [];
+                    safePaymentMethods = safePaymentMethods.filter(m => m && m !== 'undefined');
+                    if(safePaymentMethods.length === 0) safePaymentMethods = ['cbe'];
+
                     let paymentBadges = safePaymentMethods.map(m => {
-                        if(!m || m === 'undefined') m = 'cbe';
                         const icons = { 'telebirr': '📱 Telebirr', 'cbe': '🏦 CBE Bank' };
                         return icons[m] || '🏦 CBE Bank';
                     }).join(' ');
@@ -973,8 +991,8 @@
                         <div class="flex justify-between items-start mb-2">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-1">
-                                    <div class="w-5 h-5 rounded-full bg-[#2b3139] flex items-center justify-center text-[9px] text-white font-bold">${ad.userName.charAt(0)}</div>
-                                    <h4 class="text-[11px] font-bold text-white flex items-center gap-1">${ad.userName} ${presenceDot}</h4>
+                                    <div class="w-5 h-5 rounded-full bg-[#2b3139] flex items-center justify-center text-[9px] text-white font-bold">${(ad.userName || 'U').charAt(0)}</div>
+                                    <h4 class="text-[11px] font-bold text-white flex items-center gap-1">${ad.userName || 'User'} ${presenceDot}</h4>
                                     <span class="text-[#0ECB81] text-[10px] font-bold ml-1"><i class="fa-solid fa-handshake"></i> ${totalTrades} Trades</span>
                                 </div>
                                 <p class="text-[9px] text-[#848E9C] mb-1">Limit: ${ad.min} - ${ad.max} USDT</p>
@@ -1047,10 +1065,13 @@
             const select = document.getElementById('payment-method-select');
             select.innerHTML = '<option value="">Select method...</option>';
             
-            paymentMethods.forEach(m => {
-                const normalizedM = (!m || m === 'undefined') ? 'cbe' : m;
+            let safeMethods = paymentMethods || [];
+            safeMethods = safeMethods.filter(m => m && m !== 'undefined');
+            if(safeMethods.length === 0) safeMethods = ['cbe'];
+
+            safeMethods.forEach(m => {
                 const labels = { 'telebirr': 'Telebirr', 'cbe': 'CBE Bank' };
-                select.innerHTML += `<option value="${normalizedM}">${labels[normalizedM] || 'CBE Bank'}</option>`;
+                select.innerHTML += `<option value="${m}">${labels[m] || 'CBE Bank'}</option>`;
             });
 
             document.getElementById('purchase-amount').value = '';
@@ -1106,15 +1127,13 @@
                 if(list) list.innerHTML = '';
                 
                 allTransactions = [];
-                let pricesArray = [];
+                let rawPrices = [];
 
+                // Re-ordered and structured chart chronological data fetch
                 Object.keys(orders).forEach(id => {
                     const o = orders[id];
                     allTransactions.push({ id, ...o });
-
-                    if(o.price) { pricesArray.push(o.price); }
-
-                    // Automatic persistent 15-min background cancel execution block
+                    
                     const elapsed = Math.floor((Date.now() - o.startTime) / 1000);
                     if(o.status === 'pending' && elapsed >= 15 * 60) {
                         db.ref('orders/' + id).update({ status: 'cancelled' });
@@ -1139,7 +1158,19 @@
                     }
                 });
 
-                if(pricesArray.length > 0) { updateLiveChartData(pricesArray); }
+                // Fixed Graph chronological array logic
+                allTransactions.sort((a,b) => (a.startTime || 0) - (b.startTime || 0));
+                allTransactions.forEach(t => {
+                    if(t.price && (t.status === 'completed' || t.status === 'pending')) {
+                        rawPrices.push(t.price);
+                    }
+                });
+
+                if(rawPrices.length > 0) { 
+                    updateLiveChartData(rawPrices); 
+                } else {
+                    updateLiveChartData([120, 122, 125, 123, 126]); // Standby fallback data
+                }
 
                 if(String(user.id) == String(ADMIN_ID)) {
                     const badge = document.getElementById('dispute-badge');
@@ -1237,8 +1268,15 @@
                 const partnerId = (String(o.buyerId) == String(user.id)) ? o.sellerId : o.buyerId;
                 const p = usersCachedMap[partnerId] || { name: "Partner", totalTrades: 0 };
                 
-                document.getElementById('tr-partner-name').innerText = p.name;
-                document.getElementById('tr-partner-av').innerText = p.name.charAt(0).toUpperCase();
+                document.getElementById('tr-partner-name').innerText = p.name || "User";
+                
+                const avBox = document.getElementById('tr-partner-av');
+                if(p.idPhoto) {
+                     avBox.innerHTML = `<img src="${p.idPhoto}" class="w-full h-full object-cover">`;
+                } else {
+                     avBox.innerText = (p.name || 'P').charAt(0).toUpperCase();
+                }
+                
                 document.getElementById('tr-partner-trades').innerText = (p.totalTrades || 0) + " Trades";
 
                 let paymentMethod = (!o.selectedPaymentMethod || o.selectedPaymentMethod === 'undefined') ? 'cbe' : o.selectedPaymentMethod;
@@ -1277,7 +1315,6 @@
                     btn.className = "flex-[2] py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase";
                     btn.disabled = true;
                 } else {
-                    // Replaced "Release Crypto" to "I finished payment" as requested
                     btn.innerText = iAmBuyer ? "I Have Paid (Transferred ETB)" : "I finished payment";
                     btn.className = "flex-[2] py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase shadow-lg";
                     btn.disabled = false;
@@ -1310,7 +1347,7 @@
                     });
                 } else {
                     db.ref('orders/' + activeTradeId).update(updates);
-                    db.ref('chats/' + activeTradeId).push({ sender: 'system', text: `${user.first_name} confirmed action.`, timestamp: Date.now() });
+                    db.ref('chats/' + activeTradeId).push({ sender: 'system', text: `${user.first_name || 'User'} confirmed action.`, timestamp: Date.now() });
                 }
             });
         }
@@ -1676,8 +1713,8 @@
                     uList.innerHTML += `
                     <div class="bg-[#1e2329] p-2 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-1">
                         <div class="flex-1">
-                            <p class="text-white font-medium">${u.name} (TG ID: ${id})</p>
-                            <p class="text-[10px] text-[#848E9C]">Status: ${u.status.toUpperCase()} | Trades: ${trades}</p>
+                            <p class="text-white font-medium">${u.name || 'User'} (TG ID: ${id})</p>
+                            <p class="text-[10px] text-[#848E9C]">Status: ${(u.status || 'UNVERIFIED').toUpperCase()} | Trades: ${trades}</p>
                         </div>
                         ${String(id) != String(ADMIN_ID) ? bBtn : ''}
                     </div>`;
@@ -1795,7 +1832,7 @@
                     if(u.status === 'pending') {
                         kList.innerHTML += `
                         <div class="bg-[#1e2329] p-3 rounded border border-yellow-600 text-xs mb-2 space-y-2">
-                            <div class="text-white font-bold">User: <span class="text-[#FCD535]">${u.name}</span></div>
+                            <div class="text-white font-bold">User: <span class="text-[#FCD535]">${u.name || 'User'}</span></div>
                             ${u.idPhoto ? `<img src="${u.idPhoto}" class="w-full max-h-48 object-contain bg-black/50 border border-[#2b3139] rounded">` : ''}
                             <div class="flex gap-2">
                                 <button onclick="adminKYC('${id}','verified')" class="flex-1 bg-[#0ECB81] py-1.5 rounded font-black text-white text-[10px]">Approve</button>
@@ -1807,7 +1844,6 @@
                 if(kList.innerHTML === '') kList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No pending KYC applications</div>`;
             });
 
-            // Enhanced Dispute Log Structure with Telegram IDs, full chat logs access and direct Ban triggers
             db.ref('orders').on('value', s => {
                 const dList = document.getElementById('admin-disputes');
                 if(!dList) return;
@@ -1862,7 +1898,7 @@
                         <div class="bg-[#1e2329] p-3 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-1">
                             <div>
                                 <p class="text-white font-bold">Order #${id.substring(1,6)} (${o.amountUsdt} USDT)</p>
-                                <p class="text-[10px] text-[#848E9C]">${bName} ➔ ${sName} | ${o.amountEtb.toFixed(2)} ETB</p>
+                                <p class="text-[10px] text-[#848E9C] ${bName} ➔ ${sName} | ${o.amountEtb.toFixed(2)} ETB</p>
                             </div>
                             <button onclick="openAdminChatMonitor('${id}')" class="bg-[#4285F4] text-white px-3 py-1 rounded text-[10px] font-bold"><i class="fa-solid fa-comments mr-1"></i> Monitor Chat</button>
                         </div>`;
@@ -1879,9 +1915,17 @@
             }
         }
 
+        // Fixed real-time full-tree user update on admin approval action
         function adminKYC(uid, status) {
-            db.ref('users/' + uid).update({ status: status });
-            showToast(`KYC ${status}!`);
+            db.ref('users/' + uid).update({ status: status }).then(() => {
+                showToast(`KYC ${status.toUpperCase()} Successfully!`);
+                if(String(uid) === String(user.id)) {
+                    db.ref('users/' + user.id).once('value', snapshot => {
+                        myData = snapshot.val();
+                        updateProfileUI();
+                    });
+                }
+            });
         }
 
         // ====== UTILITY FUNCTIONS ======
@@ -1894,6 +1938,7 @@
             if(navItem) navItem.classList.add('active');
 
             if(id === 'history') loadTransactionHistory();
+            if(id === 'profile' && myData && myData.name) updateProfileUI();
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
