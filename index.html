@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ATOM X PRO P2P - Professional</title>
+    <title>Ethio p2p exchange - Professional</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -55,7 +55,6 @@
         @keyframes slideIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
         
         .notification-badge { position: absolute; top: 0; right: 0; background: #F6465D; color: white; font-size: 10px; padding: 2px 5px; border-radius: 10px; }
-        .rating-stars { color: #FCD535; font-size: 12px; }
         .chat-image { max-width: 200px; border-radius: 8px; margin-top: 5px; border: 1px solid #2b3139; }
         .slide-in { animation: slideIn 0.3s ease; }
         .badge-pro { background: #6C5CE7; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
@@ -82,12 +81,14 @@
             border-color: var(--primary-yellow);
         }
 
-        .price-input-group {
-            display: flex;
-            gap: 8px;
-        }
-        .price-input-group input {
-            flex: 1;
+        .price-input-group { display: flex; gap: 8px; }
+        .price-input-group input { flex: 1; }
+        
+        .obfuscated {
+            filter: blur(2px);
+            opacity: 0.7;
+            user-select: none;
+            transition: all 0.2s;
         }
     </style>
 </head>
@@ -115,8 +116,8 @@
                 <i class="fa-solid fa-user text-sm"></i>
             </div>
             <div class="flex items-center gap-2">
-                <div class="bg-[#FCD535] text-black font-black text-[10px] px-1.5 py-1 rounded">AX</div>
-                <h1 class="text-sm font-bold tracking-wide">ATOM X PRO</h1>
+                <div class="bg-[#FCD535] text-black font-black text-[10px] px-1.5 py-1 rounded">EP</div>
+                <h1 class="text-sm font-bold tracking-wide">Ethio p2p</h1>
             </div>
         </div>
         <div class="flex items-center gap-3">
@@ -133,7 +134,7 @@
         <section id="market-view" class="tab-content active p-0">
             <div class="bg-[#1e2329] border-b border-[#2b3139] p-4 sticky top-0 z-20">
                 <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-xs font-bold text-[#848E9C]">ETB/USDT Live Rate (Based on Orders)</h3>
+                    <h3 class="text-xs font-bold text-[#848E9C]">ETB/USDT Live Rate</h3>
                     <span id="live-rate-badge" class="text-sm font-bold text-[#0ECB81]">+0.0%</span>
                 </div>
                 <canvas id="priceChart" height="60"></canvas>
@@ -167,7 +168,7 @@
                     </div>
 
                     <div>
-                        <label class="text-[10px] text-[#848E9C] font-bold mb-2 block">Min Trades (የትሬድ ብዛት)</label>
+                        <label class="text-[10px] text-[#848E9C] font-bold mb-2 block">Min Trades</label>
                         <div class="flex gap-2">
                             <span class="filter-chip" onclick="setMinTrades(0, this)">All Users</span>
                             <span class="filter-chip active" onclick="setMinTrades(10, this)">10+ Trades</span>
@@ -191,12 +192,12 @@
             
             <div class="space-y-4">
                 <div>
-                    <h3 class="text-xs font-bold text-[#848E9C] mb-2 uppercase tracking-wider">🔄 My Active Trades (ክፍት የንግድ ልውውጦች)</h3>
+                    <h3 class="text-xs font-bold text-[#848E9C] mb-2 uppercase tracking-wider">🔄 My Active Trades</h3>
                     <div id="user-orders-list" class="space-y-2"></div>
                 </div>
                 <hr class="border-[#2b3139]">
                 <div>
-                    <h3 class="text-xs font-bold text-[#848E9C] mb-2 uppercase tracking-wider">📢 My Posted Ads (የለጠፍኳቸው ማስታወቂያዎች)</h3>
+                    <h3 class="text-xs font-bold text-[#848E9C] mb-2 uppercase tracking-wider">📢 My Posted Ads</h3>
                     <div id="user-ads-list" class="space-y-2"></div>
                 </div>
             </div>
@@ -290,24 +291,43 @@
                 </div>
             </div>
 
+            <!-- PAYMENT METHODS WITH EDIT/BLUR FEATURE -->
             <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139] space-y-4">
                 <h3 class="text-xs font-bold text-[#848E9C] uppercase border-b border-[#2b3139] pb-2">Payment Methods</h3>
                 
                 <div class="border-l-2 border-[#FCD535] pl-3">
-                    <label class="text-[10px] font-bold text-[#FCD535] block mb-2">TELEBIRR</label>
-                    <input type="number" id="pm-tele-phone" placeholder="Phone Number" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11] mb-2">
-                    <input type="text" id="pm-tele-name" placeholder="Account Name" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-[10px] font-bold text-[#FCD535] block">TELEBIRR</label>
+                        <button onclick="toggleEdit('pm-tele')" class="text-[#848E9C] hover:text-[#FCD535]"><i class="fa-solid fa-pen"></i></button>
+                    </div>
+                    <div id="pm-tele-display" class="text-sm font-bold text-[#848E9C] bg-[#0b0e11] p-2 rounded mb-2 obfuscated hidden">Not Set</div>
+                    <div id="pm-tele-edit">
+                        <input type="number" id="pm-tele-phone" placeholder="Phone Number" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11] mb-2">
+                        <input type="text" id="pm-tele-name" placeholder="Account Name" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
+                    </div>
                 </div>
 
                 <div class="border-l-2 border-[#F7931A] pl-3">
-                    <label class="text-[10px] font-bold text-[#F7931A] block mb-2">BINANCE PAY (REQUIRED FOR TRADING)</label>
-                    <input type="text" id="pm-binance-id" placeholder="Binance ID" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-[10px] font-bold text-[#F7931A] block">BINANCE PAY (REQUIRED)</label>
+                        <button onclick="toggleEdit('pm-binance')" class="text-[#848E9C] hover:text-[#F7931A]"><i class="fa-solid fa-pen"></i></button>
+                    </div>
+                    <div id="pm-binance-display" class="text-sm font-bold text-[#848E9C] bg-[#0b0e11] p-2 rounded mb-2 obfuscated hidden">Not Set</div>
+                    <div id="pm-binance-edit">
+                        <input type="text" id="pm-binance-id" placeholder="Binance ID" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
+                    </div>
                 </div>
 
                 <div class="border-l-2 border-[#4285F4] pl-3">
-                    <label class="text-[10px] font-bold text-[#4285F4] block mb-2">CBE BANK</label>
-                    <input type="text" id="pm-cbe-account" placeholder="Account Number" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11] mb-2">
-                    <input type="text" id="pm-cbe-name" placeholder="Account Name" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-[10px] font-bold text-[#4285F4] block">CBE BANK</label>
+                        <button onclick="toggleEdit('pm-cbe')" class="text-[#848E9C] hover:text-[#4285F4]"><i class="fa-solid fa-pen"></i></button>
+                    </div>
+                    <div id="pm-cbe-display" class="text-sm font-bold text-[#848E9C] bg-[#0b0e11] p-2 rounded mb-2 obfuscated hidden">Not Set</div>
+                    <div id="pm-cbe-edit">
+                        <input type="text" id="pm-cbe-account" placeholder="Account Number" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11] mb-2">
+                        <input type="text" id="pm-cbe-name" placeholder="Account Name" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
+                    </div>
                 </div>
 
                 <button onclick="saveProfile()" class="w-full bg-[#FCD535] text-black font-bold py-3 rounded-lg text-sm">Save Information</button>
@@ -322,44 +342,33 @@
 
         <section id="admin-view" class="tab-content p-4 space-y-4">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-black text-[#F6465D] uppercase">Super Admin Dashboard</h2>
+                <h2 class="text-lg font-black text-[#F6465D] uppercase">Admin Dashboard</h2>
                 <div class="text-xs bg-[#2b3139] px-3 py-1.5 rounded text-white font-bold">Users: <span id="admin-user-count" class="text-[#FCD535]">0</span></div>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 mb-4">
-                <div class="bg-[#1e2329] p-3 rounded border border-[#2b3139] text-center">
-                    <div class="text-lg font-bold text-[#0ECB81]" id="admin-total-volume">0 ETB</div>
-                    <p class="text-[10px] text-[#848E9C] mt-1">Total Volume Traded</p>
-                </div>
-                <div class="bg-[#1e2329] p-3 rounded border border-[#2b3139] text-center">
-                    <div class="text-lg font-bold text-[#FCD535]" id="admin-fees">0 USDT</div>
-                    <p class="text-[10px] text-[#848E9C] mt-1">Total Orders Counter</p>
-                </div>
-            </div>
+            <!-- Removed Admin Stats Block -->
 
             <div class="flex gap-2 overflow-x-auto pb-2 text-xs font-bold mb-4">
                 <button onclick="switchAdminTab('admin-users', this)" class="admin-tab-btn bg-[#FCD535] text-black px-4 py-2 rounded-lg whitespace-nowrap">Users</button>
                 <button onclick="switchAdminTab('admin-support', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap relative">
-                    Support Inbox <span id="support-badge" class="absolute -top-2 -right-2 bg-blue-500 text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center hidden font-bold">0</span>
+                    Support <span id="support-badge" class="absolute -top-2 -right-2 bg-blue-500 text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center hidden font-bold">0</span>
                 </button>
                 <button onclick="switchAdminTab('admin-ad-approvals', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap">Ads Pending</button>
+                <button onclick="switchAdminTab('admin-manage-ads', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap">Manage Ads</button>
                 <button onclick="switchAdminTab('admin-kyc', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap">KYC Pending</button>
                 <button onclick="switchAdminTab('admin-disputes', this)" class="admin-tab-btn relative bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap">
                     Disputes <span id="dispute-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center hidden font-bold">0</span>
                 </button>
                 <button onclick="switchAdminTab('admin-orders', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap">Monitor Chats</button>
-                <button onclick="switchAdminTab('admin-analytics', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap">Platform Volume</button>
             </div>
 
             <div id="admin-users" class="admin-panel space-y-2"></div>
             <div id="admin-support" class="admin-panel hidden space-y-2"></div>
             <div id="admin-ad-approvals" class="admin-panel hidden space-y-2"></div>
+            <div id="admin-manage-ads" class="admin-panel hidden space-y-2"></div>
             <div id="admin-kyc" class="admin-panel hidden space-y-2"></div>
             <div id="admin-disputes" class="admin-panel hidden space-y-2"></div>
             <div id="admin-orders" class="admin-panel hidden space-y-2"></div>
-            <div id="admin-analytics" class="admin-panel hidden space-y-4">
-                <canvas id="adminChart"></canvas>
-            </div>
         </section>
 
     </main>
@@ -393,12 +402,16 @@
     </div>
 
     <div id="adminSupportChatModal" class="fixed inset-0 bg-[#0b0e11] z-[90] hidden flex-col h-screen">
-        <div class="bg-[#1e2329] border-b border-[#2b3139] p-3 flex items-center gap-3 shrink-0">
-            <button onclick="closeModal('adminSupportChatModal')" class="text-white text-lg"><i class="fa-solid fa-arrow-left"></i></button>
-            <div class="flex-1">
-                <h2 id="adm-sup-name" class="text-sm font-bold text-white">User Name</h2>
-                <p id="adm-sup-details" class="text-[9px] text-[#FCD535] leading-tight mt-0.5"></p>
+        <div class="bg-[#1e2329] border-b border-[#2b3139] p-3 flex justify-between items-center shrink-0">
+            <div class="flex items-center gap-3">
+                <button onclick="closeModal('adminSupportChatModal')" class="text-white text-lg"><i class="fa-solid fa-arrow-left"></i></button>
+                <div>
+                    <h2 id="adm-sup-name" class="text-sm font-bold text-white">User Name</h2>
+                    <p id="adm-sup-details" class="text-[9px] text-[#FCD535] leading-tight mt-0.5"></p>
+                </div>
             </div>
+            <!-- Support Chat Clear Button added for Admin -->
+            <button onclick="clearSupportChat()" class="text-red-500 border border-red-500 px-3 py-1 rounded text-[10px] font-bold"><i class="fa-solid fa-trash mr-1"></i> Clear</button>
         </div>
         <div class="flex-1 overflow-y-auto bg-[#0b0e11] p-4">
             <div id="admin-support-chat-messages" class="space-y-2 text-xs"></div>
@@ -520,6 +533,8 @@
                     <h2 class="text-xs font-bold text-white">Admin Monitor Chat <span id="admin-ch-id" class="text-[#848E9C]">#000</span></h2>
                 </div>
             </div>
+            <!-- Trade Room Clear Button added for Admin -->
+            <button onclick="clearTradeChat()" class="text-red-500 border border-red-500 px-3 py-1 rounded text-[10px] font-bold"><i class="fa-solid fa-trash mr-1"></i> Clear</button>
         </div>
         <div id="admin-chat-messages" class="flex-1 overflow-y-auto p-4 space-y-2 text-xs bg-[#0b0e11]"></div>
     </div>
@@ -562,12 +577,12 @@
         let selectedAd = null;
         let tradeInterval;
         let priceChart = null;
-        let adminChart = null;
         let allAds = [];
         let filteredAds = [];
         let allTransactions = [];
         let usersCachedMap = {}; 
-        let currentSupportUid = null; // New for Support Chat
+        let currentSupportUid = null; 
+        let currentMonitorOrderId = null; // New for Trade Monitor Chat
 
         // Filter states
         let filterPaymentMethods = ['telebirr'];
@@ -618,6 +633,26 @@
                 }
                 updateProfileUI();
             });
+        }
+
+        function toggleEdit(idPrefix) {
+            document.getElementById(idPrefix + '-edit').classList.toggle('hidden');
+            document.getElementById(idPrefix + '-display').classList.toggle('hidden');
+        }
+
+        function setupPMDisplay(idPrefix, val1, val2) {
+            const displayEl = document.getElementById(idPrefix + '-display');
+            const editEl = document.getElementById(idPrefix + '-edit');
+            if(val1) {
+                let masked = val1.toString().substring(0, 3) + "******" + val1.toString().slice(-2);
+                displayEl.innerText = masked + (val2 ? " (" + val2 + ")" : "");
+                displayEl.classList.remove('hidden');
+                editEl.classList.add('hidden');
+            } else {
+                displayEl.innerText = "Not Set";
+                displayEl.classList.add('hidden');
+                editEl.classList.remove('hidden'); 
+            }
         }
 
         function updateProfileUI() {
@@ -672,9 +707,14 @@
 
             if(myData.telePhone) document.getElementById('pm-tele-phone').value = myData.telePhone;
             if(myData.teleName) document.getElementById('pm-tele-name').value = myData.teleName;
+            setupPMDisplay('pm-tele', myData.telePhone, myData.teleName);
+
             if(myData.binanceId) document.getElementById('pm-binance-id').value = myData.binanceId;
+            setupPMDisplay('pm-binance', myData.binanceId);
+
             if(myData.cbeAccount) document.getElementById('pm-cbe-account').value = myData.cbeAccount;
             if(myData.cbeName) document.getElementById('pm-cbe-name').value = myData.cbeName;
+            setupPMDisplay('pm-cbe', myData.cbeAccount, myData.cbeName);
         }
 
         function saveProfile() {
@@ -769,7 +809,6 @@
             document.getElementById('form-tab-sell').className = type === 'sell' ? "flex-1 py-2 text-sm font-bold bg-[#F6465D] text-white rounded-md" : "flex-1 py-2 text-sm font-bold text-[#848E9C] rounded-md";
         }
 
-        // ====== EDIT AD SYSTEM ======
         function openEditAdModal(id, price, min, max) {
             editingAdId = id;
             document.getElementById('edit-ad-price').value = price;
@@ -869,7 +908,6 @@
                 filteredAds = allAds.filter(a => {
                     if(a.type !== (currentMarketType === 'buy' ? 'sell' : 'buy')) return false;
                     if(a.price < filterPriceMin || a.price > filterPriceMax) return false;
-                    // Fix 'undefined' payment method in filtering
                     const methods = a.paymentMethods || [];
                     const normalizedMethods = methods.map(m => (!m || m === 'undefined') ? 'cbe' : m);
                     if(!filterPaymentMethods.some(m => normalizedMethods.includes(m))) return false;
@@ -899,7 +937,6 @@
                     const ownerData = usersCachedMap[ad.uid] || {};
                     const totalTrades = ownerData.totalTrades || 0;
 
-                    // Fixed: Replacing 'undefined' with 'CBE Bank' visually
                     const safePaymentMethods = ad.paymentMethods || [];
                     let paymentBadges = safePaymentMethods.map(m => {
                         if(!m || m === 'undefined') m = 'cbe';
@@ -986,7 +1023,6 @@
             const select = document.getElementById('payment-method-select');
             select.innerHTML = '<option value="">Select method...</option>';
             
-            // Fixed 'undefined' bug in dropdown
             paymentMethods.forEach(m => {
                 const normalizedM = (!m || m === 'undefined') ? 'cbe' : m;
                 const labels = { 'telebirr': 'Telebirr', 'cbe': 'CBE Bank' };
@@ -1047,7 +1083,6 @@
                 
                 allTransactions = [];
                 let pricesArray = [];
-                let totalVolumeCounter = 0;
                 let totalOrdersCounter = 0;
 
                 Object.keys(orders).forEach(id => {
@@ -1055,7 +1090,6 @@
                     allTransactions.push({ id, ...o });
 
                     if(o.price) { pricesArray.push(o.price); }
-                    if(o.status === 'completed') { totalVolumeCounter += o.amountEtb; }
                     totalOrdersCounter++;
 
                     if(String(o.buyerId) == String(user.id) || String(o.sellerId) == String(user.id)) {
@@ -1078,9 +1112,6 @@
                 if(pricesArray.length > 0) { updateLiveChartData(pricesArray); }
 
                 if(String(user.id) == String(ADMIN_ID)) {
-                    document.getElementById('admin-total-volume').innerText = totalVolumeCounter.toLocaleString() + " ETB";
-                    document.getElementById('admin-fees').innerText = totalOrdersCounter + " Orders";
-
                     const badge = document.getElementById('dispute-badge');
                     const dot = document.getElementById('nav-dispute-dot');
                     let disputeCount = Object.keys(orders).filter(id => orders[id].dispute && orders[id].status !== 'completed' && orders[id].status !== 'cancelled').length;
@@ -1176,13 +1207,11 @@
                 document.getElementById('tr-partner-av').innerText = p.name.charAt(0).toUpperCase();
                 document.getElementById('tr-partner-trades').innerText = (p.totalTrades || 0) + " Trades";
 
-                // Fixed 'undefined' bug in active trade room
                 let paymentMethod = (!o.selectedPaymentMethod || o.selectedPaymentMethod === 'undefined') ? 'cbe' : o.selectedPaymentMethod;
                 document.getElementById('tr-payment-method').innerText = {
                     'telebirr': 'Telebirr', 'cbe': 'CBE Bank'
                 }[paymentMethod] || 'CBE Bank';
 
-                // ====== VISIBILITY LOGIC (BINANCE P2P STYLE FIXED) ======
                 let paymentHTML = '';
                 const iAmBuyer = String(o.buyerId) == String(user.id);
 
@@ -1192,7 +1221,6 @@
                         <div class="flex justify-between p-1 bg-[#0b0e11] mb-1 px-2 rounded"><span>Telebirr Phone:</span> <span class="font-black text-[#FCD535]">${p.telePhone || 'N/A'}</span></div>
                         <div class="flex justify-between p-1 bg-[#0b0e11] px-2 rounded"><span>Account Name:</span> <span class="font-black text-[#FCD535]">${p.teleName || 'N/A'}</span></div>`;
                     } else {
-                        // Fallback to CBE Bank
                         paymentHTML = `
                         <div class="flex justify-between p-1 bg-[#0b0e11] mb-1 px-2 rounded"><span>CBE Account Number:</span> <span class="font-black text-[#FCD535]">${p.cbeAccount || 'N/A'}</span></div>
                         <div class="flex justify-between p-1 bg-[#0b0e11] px-2 rounded"><span>Account Name:</span> <span class="font-black text-[#FCD535]">${p.cbeName || 'N/A'}</span></div>`;
@@ -1304,7 +1332,7 @@
             }
         }
 
-        // ====== SUPPORT CHAT SYSTEM (NEW) ======
+        // ====== SUPPORT CHAT SYSTEM ======
         function openSupportChat() {
             currentSupportUid = user.id;
             openModal('supportChatModal');
@@ -1339,7 +1367,6 @@
                 box.scrollTop = box.scrollHeight;
             });
             
-            // Mark as read if admin opens it
             if(isAdminView) {
                 db.ref('support_threads/' + uid).update({ unreadByAdmin: false });
             }
@@ -1397,6 +1424,21 @@
                     showToast("Photo sent!");
                 };
                 reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // New feature: Clear Support Chat (Admin Only)
+        function clearSupportChat() {
+            if(!currentSupportUid) return;
+            if(confirm("Are you sure you want to completely wipe this support chat for both you and the user?")) {
+                db.ref('support_chats/' + currentSupportUid).remove().then(() => {
+                    db.ref('support_threads/' + currentSupportUid).update({
+                        lastMessage: "Chat cleared by Admin.",
+                        timestamp: Date.now(),
+                        unreadByAdmin: false
+                    });
+                    showToast("Support chat history cleared.");
+                });
             }
         }
 
@@ -1535,13 +1577,10 @@
 
             document.getElementById(id).classList.remove('hidden');
             btn.className = "admin-tab-btn bg-[#FCD535] text-black px-4 py-2 rounded-lg whitespace-nowrap font-bold";
-            
-            if(id === 'admin-analytics') {
-                setTimeout(initAdminChart, 100);
-            }
         }
 
         function openAdminChatMonitor(orderId) {
+            currentMonitorOrderId = orderId;
             document.getElementById('admin-ch-id').innerText = "#" + orderId.substring(1, 6).toUpperCase();
             openModal('adminChatModal');
             
@@ -1563,6 +1602,21 @@
                 box.scrollTop = box.scrollHeight;
             });
         }
+        
+        // New Feature: Clear Trade Room Chat (Admin Only)
+        function clearTradeChat() {
+            if(!currentMonitorOrderId) return;
+            if(confirm("Are you sure you want to completely wipe out this trade chat history for both traders?")) {
+                db.ref('chats/' + currentMonitorOrderId).remove().then(() => {
+                    db.ref('chats/' + currentMonitorOrderId).push({
+                        sender: 'system',
+                        text: 'Trade room chat history cleared by Admin.',
+                        timestamp: Date.now()
+                    });
+                    showToast("Trade chat history cleared!");
+                });
+            }
+        }
 
         function adminApproveAd(adId, status) {
             db.ref('ads/' + adId).update({ status: status }).then(() => {
@@ -1582,7 +1636,9 @@
                 Object.keys(users).forEach(id => {
                     const u = users[id];
                     const trades = u.totalTrades || 0;
-                    const bBtn = u.isBanned ? `<button onclick="toggleBan('${id}', false)" class="bg-green-600 px-3 py-1 rounded text-[10px] text-white font-bold">UNBAN</button>` : `<button onclick="toggleBan('${id}', true)" class="bg-[#F6465D] px-3 py-1 rounded text-[10px] text-white font-bold">BAN USER</button>`;
+                    const bBtn = u.isBanned 
+                        ? `<button onclick="toggleBan('${id}', false)" class="bg-green-600 px-3 py-1 rounded text-[10px] text-white font-bold">UNBAN</button>` 
+                        : `<button onclick="toggleBan('${id}', true)" class="bg-[#F6465D] px-3 py-1 rounded text-[10px] text-white font-bold">BAN USER</button>`;
 
                     uList.innerHTML += `
                     <div class="bg-[#1e2329] p-2 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-1">
@@ -1595,7 +1651,6 @@
                 });
             });
 
-            // NEW: Admin Support Inbox Listener
             db.ref('support_threads').on('value', s => {
                 const threads = s.val() || {};
                 const supList = document.getElementById('admin-support');
@@ -1634,16 +1689,23 @@
                 if(supList.innerHTML === '') supList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No support messages found</div>`;
             });
 
-            // Admin Ads pending approval list updates
             db.ref('ads').on('value', s => {
                 const adApprovalList = document.getElementById('admin-ad-approvals');
-                if(!adApprovalList) return;
+                const manageAdsList = document.getElementById('admin-manage-ads');
+                
+                if(!adApprovalList || !manageAdsList) return;
                 adApprovalList.innerHTML = '';
+                manageAdsList.innerHTML = '';
+                
                 const ads = s.val() || {};
 
                 let pendingCount = 0;
+                let manageCount = 0;
+
                 Object.keys(ads).forEach(id => {
                     const ad = ads[id];
+                    
+                    // Pending Ads
                     if(ad.status === 'pending_approval') {
                         pendingCount++;
                         let pmLabels = ad.paymentMethods ? ad.paymentMethods.map(m => m === 'undefined' ? 'cbe' : m).join(', ').toUpperCase() : 'NONE';
@@ -1666,10 +1728,31 @@
                             </div>
                         </div>`;
                     }
+                    
+                    // New Feature: Active/Paused Ads Management for Admin
+                    if(ad.status === 'active' || ad.status === 'paused') {
+                        manageCount++;
+                        const actionBtn = ad.status === 'active'
+                            ? `<button onclick="adminApproveAd('${id}', 'paused')" class="bg-amber-600 text-white px-3 py-1 rounded text-xs font-bold w-full"><i class="fa-solid fa-pause mr-1"></i> Stop Ad</button>`
+                            : `<button onclick="adminApproveAd('${id}', 'active')" class="bg-[#0ECB81] text-white px-3 py-1 rounded text-xs font-bold w-full"><i class="fa-solid fa-play mr-1"></i> Start Ad</button>`;
+                        
+                        manageAdsList.innerHTML += `
+                        <div class="bg-[#1e2329] p-3 rounded border ${ad.status==='active'?'border-[#0ECB81]':'border-amber-600'} text-xs mb-2 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-white font-bold">User: <span class="text-[#FCD535]">${ad.userName}</span></span>
+                                <span class="uppercase font-bold ${ad.type === 'buy' ? 'text-[#0ECB81]' : 'text-[#F6465D]'}">${ad.type} - ${ad.status}</span>
+                            </div>
+                            <div class="text-[#848E9C] text-[11px] space-y-1">
+                                <p>Price: <span class="text-white font-bold">${ad.price} ETB</span></p>
+                                <p>Limits: <span class="text-white">${ad.min} - ${ad.max} USDT</span></p>
+                            </div>
+                            <div class="pt-1">${actionBtn}</div>
+                        </div>`;
+                    }
                 });
-                if(pendingCount === 0) {
-                    adApprovalList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No ads pending approval right now</div>`;
-                }
+
+                if(pendingCount === 0) adApprovalList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No ads pending approval right now</div>`;
+                if(manageCount === 0) manageAdsList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No active or paused ads to manage</div>`;
             });
 
             db.ref('users').on('value', s => {
@@ -1769,47 +1852,6 @@
 
                 db.ref('chats/' + orderId).push({ sender: 'system', text: `⚖️ Admin resolved: ${finalStatus.toUpperCase()}`, timestamp: Date.now() });
                 showToast(`Dispute resolved: ${finalStatus}`);
-            });
-        }
-
-        function initAdminChart() {
-            const ctx = document.getElementById('adminChart');
-            if(!ctx) return;
-
-            let volumeData = [0, 0, 0, 0, 0, 0, 0]; 
-            allTransactions.forEach(t => {
-                if(t.status === 'completed') {
-                    let day = new Date(t.startTime).getDay(); 
-                    let index = day === 0 ? 6 : day - 1; 
-                    volumeData[index] += t.amountEtb;
-                }
-            });
-
-            if(adminChart) {
-                adminChart.data.datasets[0].data = volumeData;
-                adminChart.update();
-                return;
-            }
-
-            adminChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [{
-                        label: 'Real Trading Volume (ETB)',
-                        data: volumeData,
-                        backgroundColor: '#0ECB81',
-                        borderRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { labels: { color: '#EAECEF' } } },
-                    scales: {
-                        y: { grid: { color: '#2b3139' }, ticks: { color: '#848E9C' } },
-                        x: { grid: { display: false }, ticks: { color: '#848E9C' } }
-                    }
-                }
             });
         }
 
