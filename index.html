@@ -13,7 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700;800&display=swap');
         
         :root {
             --bg-dark: #0b0e11;
@@ -503,7 +503,7 @@
             <div class="p-4 space-y-3">
                 <div class="bg-[#1e2329] p-3 rounded-xl border border-[#2b3139]">
                     <div class="flex items-center gap-2 mb-2 pb-2 border-b border-[#2b3139]">
-                        <div class="w-8 h-8 rounded-full bg-[#2b3139] flex items-center justify-center font-bold text-white text-sm overflow-hidden" id="tr-partner-av"></div>
+                        <div class="w-8 h-8 rounded-full bg-[#2b3139] flex items-center justify-center font-bold text-white text-sm" id="tr-partner-av font-hidden overflow-hidden"></div>
                         <h3 id="tr-partner-name" class="font-bold text-sm text-white">Name</h3>
                         <span class="text-[#0ECB81] text-xs font-bold" id="tr-partner-trades">0 Trades</span>
                     </div>
@@ -575,7 +575,7 @@
         // ====== TELEGRAM & USER CONFIG ======
         const tg = window.Telegram.WebApp;
         tg.expand();
-        const user = tg.initDataUnsafe?.user || { id: 7798504269, first_name: "Admin", username: "admin_user" };
+        const user = tg.initDataUnsafe?.user || { id: 7798504269, first_name: "Admin" };
         const ADMIN_ID = 7798504269; 
 
         // ====== GLOBAL VARIABLES ======
@@ -638,11 +638,8 @@
             db.ref('users/' + user.id).on('value', snap => {
                 myData = snap.val();
                 if(!myData) {
-                    const initialData = {
-                        name: user.first_name || user.username || "User",
-                        username: user.username || "user_" + user.id,
-                        telegramId: user.id,
-                        telegramPhoto: user.photo_url || null,
+                    db.ref('users/' + user.id).set({
+                        name: user.first_name || "User",
                         status: 'unverified',
                         isBanned: false,
                         completionRate: 100,
@@ -654,8 +651,7 @@
                         binanceId: "",
                         cbeAccount: "",
                         cbeName: ""
-                    };
-                    db.ref('users/' + user.id).set(initialData);
+                    });
                     return;
                 }
                 if(myData.isBanned) {
@@ -674,7 +670,7 @@
         function setupPMDisplay(idPrefix, val1, val2) {
             const displayEl = document.getElementById(idPrefix + '-display');
             const editEl = document.getElementById(idPrefix + '-edit');
-            if(val1 && val1.toString().trim() !== "") {
+            if(val1 && val1.trim() !== "") {
                 let masked = val1.toString().substring(0, 3) + "******" + val1.toString().slice(-2);
                 displayEl.innerText = masked + (val2 ? " (" + val2 + ")" : "");
                 displayEl.classList.remove('hidden');
@@ -689,16 +685,16 @@
         function updateProfileUI() {
             if(!myData || !myData.name) return;
             document.getElementById('prof-name').innerText = myData.name;
+            const initLetter = myData.name.charAt(0).toUpperCase();
             
-            // FIXED: Proper avatar from Telegram photo
+            // Fixed avatar loading logic
             const avatarContainer = document.getElementById('prof-avatar');
             const headerAvatar = document.getElementById('header-avatar');
             
-            if(myData.telegramPhoto && myData.telegramPhoto.trim() !== "") {
-                avatarContainer.innerHTML = `<img src="${myData.telegramPhoto}" class="w-full h-full object-cover rounded-full">`;
-                headerAvatar.innerHTML = `<img src="${myData.telegramPhoto}" class="w-full h-full object-cover">`;
+            if(user.photo_url) {
+                avatarContainer.innerHTML = `<img src="${user.photo_url}" class="w-full h-full object-cover rounded-full">`;
+                headerAvatar.innerHTML = `<img src="${user.photo_url}" class="w-full h-full object-cover">`;
             } else {
-                const initLetter = (myData.name || "U").charAt(0).toUpperCase();
                 avatarContainer.innerText = initLetter;
                 headerAvatar.innerText = initLetter;
             }
@@ -707,21 +703,21 @@
             const kycArea = document.getElementById('kyc-action-area');
             
             if(myData.status === 'verified') {
-                sText.innerText = 'STATUS: VERIFIED ✓';
+                sText.innerText = 'STATUS: VERIFIED';
                 sText.className = "text-[10px] text-[#0ECB81] mt-1 uppercase font-bold";
-                kycArea.innerHTML = `<div class="text-center text-[#0ECB81] font-bold text-xs"><i class="fa-solid fa-circle-check text-lg mb-1"></i><br>Verified Successfully</div>`;
+                kycArea.innerHTML = `<div class="text-center text-[#0ECB81] font-bold text-xs"><i class="fa-solid fa-circle-check text-lg mb-1"></i><br>Verified</div>`;
             } else if(myData.status === 'pending') {
-                sText.innerText = 'STATUS: PENDING REVIEW';
+                sText.innerText = 'STATUS: PENDING';
                 sText.className = "text-[10px] text-[#FCD535] mt-1 uppercase font-bold";
-                kycArea.innerHTML = `<button disabled class="w-full bg-[#1e2329] border border-[#2b3139] text-[#FCD535] py-2.5 rounded-lg text-sm font-bold animate-pulse">⏳ Pending Admin Review...</button>`;
+                kycArea.innerHTML = `<button disabled class="w-full bg-[#1e2329] border border-[#2b3139] text-[#FCD535] py-2.5 rounded-lg text-sm font-bold animate-pulse">Pending Review...</button>`;
             } else if(myData.status === 'declined') {
                 sText.innerText = 'STATUS: DECLINED';
                 sText.className = "text-[10px] text-[#F6465D] mt-1 uppercase font-bold";
-                kycArea.innerHTML = `<div class="text-center mb-2 text-xs text-red-400 font-medium">❌ Verification Failed. Try again with clearer image.</div><button onclick="document.getElementById('kyc-file').click()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold">Upload Again</button><input type="file" id="kyc-file" class="hidden" accept="image/*" onchange="uploadKYC(this)">`;
+                kycArea.innerHTML = `<div class="text-center mb-2 text-xs text-red-400 font-medium">Verification Failed. Try again.</div><button onclick="document.getElementById('kyc-file').click()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold">Try Again</button><input type="file" id="kyc-file" class="hidden" accept="image/*" onchange="uploadKYC(this)">`;
             } else {
                 sText.innerText = 'STATUS: UNVERIFIED';
                 sText.className = "text-[10px] text-[#848E9C] mt-1 uppercase font-bold";
-                kycArea.innerHTML = `<button onclick="document.getElementById('kyc-file').click()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold">📸 Upload ID to Verify</button><input type="file" id="kyc-file" class="hidden" accept="image/*" onchange="uploadKYC(this)">`;
+                kycArea.innerHTML = `<button onclick="document.getElementById('kyc-file').click()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold">Upload ID to Verify</button><input type="file" id="kyc-file" class="hidden" accept="image/*" onchange="uploadKYC(this)">`;
             }
 
             document.getElementById('prof-completion').innerText = (myData.completionRate || 100) + '%';
@@ -763,33 +759,28 @@
                 cbeName: document.getElementById('pm-cbe-name').value
             };
             db.ref('users/' + user.id).update(updates);
-            showToast("✓ Profile Settings Saved!");
+            showToast("Profile Settings Saved!");
         }
 
         function uploadKYC(input) {
             if(input.files && input.files[0]) {
                 const reader = new FileReader();
-                document.getElementById('kyc-action-area').innerHTML = `<button disabled class="w-full bg-[#1e2329] border border-[#2b3139] text-[#FCD535] py-2.5 rounded-lg text-sm font-bold">⏳ Processing...</button>`;
+                document.getElementById('kyc-action-area').innerHTML = `<button disabled class="w-full bg-[#1e2329] border border-[#2b3139] text-[#FCD535] py-2.5 rounded-lg text-sm font-bold">Pending Review...</button>`;
                 
                 reader.onload = e => {
                     db.ref('users/' + user.id).update({
                         status: 'pending',
                         idPhoto: e.target.result
                     });
-                    showToast("✓ ID Uploaded! Admin will review soon.");
+                    showToast("ID Uploaded! Status is now Pending.");
                 };
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
         function checkRequirements() {
-            if(!myData.binanceId || myData.binanceId.trim() === "") {
-                showToast("⚠️ Binance ID Required! Add in Profile.");
-                switchMainTab('profile');
-                return false;
-            }
-            if(myData.status !== 'verified') {
-                showToast("🔒 KYC Verification Required to Trade! Upload your ID.");
+            if(!myData.binanceId || myData.binanceId.trim() === "" || myData.status !== 'verified') {
+                showToast("🔒 Binance ID & KYC Verification Required to Trade!");
                 switchMainTab('profile');
                 return false;
             }
@@ -806,14 +797,14 @@
             const max = parseFloat(document.getElementById('ad-max').value);
             const terms = document.getElementById('ad-terms').value || "No special terms.";
 
-            if(!price || !amount || !min || !max) return showToast("❌ Fill all fields!");
+            if(!price || !amount || !min || !max) return showToast("Fill all fields!");
 
             const paymentMethods = [
                 document.getElementById('pm-telebirr').checked ? 'telebirr' : null,
                 document.getElementById('pm-cbe').checked ? 'cbe' : null
-            ].filter(p => p !== null && p !== undefined && p !== 'undefined');
+            ].filter(p => p);
 
-            if(paymentMethods.length === 0) return showToast("❌ Select at least one payment method!");
+            if(paymentMethods.length === 0) return showToast("Select at least one payment method!");
 
             if(paymentMethods.includes('cbe') && (!myData.cbeAccount || !myData.cbeName)) {
                 return showToast("⚠️ Please fill CBE Account details in your profile first!");
@@ -824,7 +815,7 @@
 
             db.ref('ads').push({
                 uid: user.id,
-                userName: user.first_name || myData.name || "Unknown User",
+                userName: user.first_name || "Unknown User",
                 type: document.getElementById('ad-form-type').value,
                 price: price,
                 amount: amount,
@@ -835,7 +826,7 @@
                 timestamp: Date.now(),
                 status: 'pending_approval'
             }).then(() => {
-                showToast("✓ Ad submitted! Waiting for Admin Approval.");
+                showToast("Ad submitted! Waiting for Admin Approval.");
                 document.getElementById('ad-price').value = '';
                 document.getElementById('ad-amount').value = '';
                 document.getElementById('ad-min').value = '';
@@ -865,21 +856,21 @@
             const mn = parseFloat(document.getElementById('edit-ad-min').value);
             const mx = parseFloat(document.getElementById('edit-ad-max').value);
             
-            if(!p || !mn || !mx) return showToast("❌ Please fill all fields!");
+            if(!p || !mn || !mx) return showToast("Please fill all fields!");
             
             db.ref('ads/' + editingAdId).update({
                 price: p,
                 min: mn,
                 max: mx
             }).then(() => {
-                showToast("✓ Ad Updated Successfully!");
+                showToast("Ad Updated Successfully!");
                 closeModal('editAdModal');
             });
         }
 
         function toggleAdStatus(adId, newStatus) {
             db.ref('ads/' + adId).update({ status: newStatus }).then(() => {
-                showToast(`✓ Ad is now ${newStatus.toUpperCase()}`);
+                showToast(`Ad state updated to ${newStatus.toUpperCase()}`);
             });
         }
 
@@ -915,12 +906,12 @@
                             let actionToggleBtn = '';
 
                             if(ad.status === 'pending_approval') {
-                                badgeState = `<span class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-1.5 py-0.5 rounded text-[10px] font-bold">⏳ Pending Approval</span>`;
+                                badgeState = `<span class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-1.5 py-0.5 rounded text-[10px] font-bold">Pending Approval</span>`;
                             } else if(ad.status === 'active') {
-                                badgeState = `<span class="bg-green-500/20 text-green-400 border border-green-500/30 px-1.5 py-0.5 rounded text-[10px] font-bold">🟢 Live</span>`;
+                                badgeState = `<span class="bg-green-500/20 text-green-400 border border-green-500/30 px-1.5 py-0.5 rounded text-[10px] font-bold">Live</span>`;
                                 actionToggleBtn = `<button onclick="toggleAdStatus('${ad.id}', 'paused')" class="bg-amber-600 text-white px-2 py-1 rounded text-[10px] font-bold"><i class="fa-solid fa-pause"></i> Pause</button>`;
                             } else if(ad.status === 'paused') {
-                                badgeState = `<span class="bg-gray-500/20 text-gray-400 border border-gray-500/30 px-1.5 py-0.5 rounded text-[10px] font-bold">⏸ Paused</span>`;
+                                badgeState = `<span class="bg-gray-500/20 text-gray-400 border border-gray-500/30 px-1.5 py-0.5 rounded text-[10px] font-bold">Paused</span>`;
                                 actionToggleBtn = `<button onclick="toggleAdStatus('${ad.id}', 'active')" class="bg-green-600 text-white px-2 py-1 rounded text-[10px] font-bold"><i class="fa-solid fa-play"></i> Resume</button>`;
                             }
 
@@ -951,14 +942,14 @@
                     if(a.type !== (currentMarketType === 'buy' ? 'sell' : 'buy')) return false;
                     if(a.price < filterPriceMin || a.price > filterPriceMax) return false;
                     
-                    // FIXED: Properly clean payment methods
-                    let methods = Array.isArray(a.paymentMethods) ? a.paymentMethods : [];
-                    methods = methods.filter(m => m && typeof m === 'string' && m !== 'undefined');
+                    // Fixed string-based undefined issues
+                    let methods = a.paymentMethods || [];
+                    methods = methods.filter(m => m && m !== 'undefined');
                     if(methods.length === 0) methods = ['cbe'];
                     
                     if(!filterPaymentMethods.some(m => methods.includes(m))) return false;
                     
-                    const nameToSearch = (a.userName || "").toLowerCase();
+                    const nameToSearch = a.userName ? a.userName.toLowerCase() : "";
                     if(nameToSearch.indexOf(filterSearch.toLowerCase()) === -1) return false;
                     
                     const ownerData = usersCachedMap[a.uid] || {};
@@ -986,8 +977,8 @@
                     const isOnline = ownerData.lastSeen && (Date.now() - ownerData.lastSeen < 60000);
                     const presenceDot = isOnline ? '<span class="online-dot ml-1"></span>' : '<span class="offline-dot ml-1"></span>';
 
-                    let safePaymentMethods = Array.isArray(ad.paymentMethods) ? ad.paymentMethods : [];
-                    safePaymentMethods = safePaymentMethods.filter(m => m && typeof m === 'string' && m !== 'undefined');
+                    let safePaymentMethods = ad.paymentMethods || [];
+                    safePaymentMethods = safePaymentMethods.filter(m => m && m !== 'undefined');
                     if(safePaymentMethods.length === 0) safePaymentMethods = ['cbe'];
 
                     let paymentBadges = safePaymentMethods.map(m => {
@@ -1000,9 +991,7 @@
                         <div class="flex justify-between items-start mb-2">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-1">
-                                    <div class="w-5 h-5 rounded-full bg-[#2b3139] flex items-center justify-center text-[9px] text-white font-bold overflow-hidden">
-                                        ${ownerData.telegramPhoto ? `<img src="${ownerData.telegramPhoto}" class="w-full h-full object-cover">` : (ad.userName || 'U').charAt(0).toUpperCase()}
-                                    </div>
+                                    <div class="w-5 h-5 rounded-full bg-[#2b3139] flex items-center justify-center text-[9px] text-white font-bold">${(ad.userName || 'U').charAt(0)}</div>
                                     <h4 class="text-[11px] font-bold text-white flex items-center gap-1">${ad.userName || 'User'} ${presenceDot}</h4>
                                     <span class="text-[#0ECB81] text-[10px] font-bold ml-1"><i class="fa-solid fa-handshake"></i> ${totalTrades} Trades</span>
                                 </div>
@@ -1014,7 +1003,7 @@
                                 ${myAd ? `
                                     <span class="text-[10px] bg-gray-700 text-gray-300 px-2 py-1 rounded">My Ad</span>
                                 ` : `
-                                    <button onclick="openPurchaseModal('${ad.id}', '${ad.uid}', ${ad.price}, ${ad.min}, ${ad.max}, '${ad.terms.replace(/'/g, "\\'")}', ${JSON.stringify(safePaymentMethods).replace(/"/g, '&quot;')})" class="${btnClr} text-white px-4 py-1.5 rounded-lg text-[10px] font-black">${btnLabel}</button>
+                                    <button onclick="openPurchaseModal('${ad.id}', '${ad.uid}', ${ad.price}, ${ad.min}, ${ad.max}, '${ad.terms}', ${JSON.stringify(safePaymentMethods).replace(/"/g, '&quot;')})" class="${btnClr} text-white px-4 py-1.5 rounded-lg text-[10px] font-black">${btnLabel}</button>
                                 `}
                             </div>
                         </div>
@@ -1027,7 +1016,7 @@
         function deleteAd(adId) {
             if(confirm('Delete this ad permanently?')) {
                 db.ref('ads/' + adId).update({ status: 'deleted' });
-                showToast("✓ Ad deleted!");
+                showToast("Ad deleted!");
             }
         }
 
@@ -1056,7 +1045,7 @@
             filterPriceMax = parseFloat(document.getElementById('filter-price-max').value) || 100000;
             filterSearch = document.getElementById('filter-search').value;
             loadMarketAds();
-            showToast("✓ Filters applied!");
+            showToast("Filters applied!");
         }
 
         // ====== PURCHASE & TRADE ======
@@ -1076,8 +1065,8 @@
             const select = document.getElementById('payment-method-select');
             select.innerHTML = '<option value="">Select method...</option>';
             
-            let safeMethods = Array.isArray(paymentMethods) ? paymentMethods : [];
-            safeMethods = safeMethods.filter(m => m && typeof m === 'string' && m !== 'undefined');
+            let safeMethods = paymentMethods || [];
+            safeMethods = safeMethods.filter(m => m && m !== 'undefined');
             if(safeMethods.length === 0) safeMethods = ['cbe'];
 
             safeMethods.forEach(m => {
@@ -1094,8 +1083,8 @@
             const amt = parseFloat(document.getElementById('purchase-amount').value);
             const selectedPayment = document.getElementById('payment-method-select').value;
 
-            if(!selectedPayment) return showToast("❌ Select payment method!");
-            if(amt < selectedAd.min || amt > selectedAd.max) return showToast("❌ Amount out of limits!");
+            if(!selectedPayment) return showToast("Select payment method!");
+            if(amt < selectedAd.min || amt > selectedAd.max) return showToast("Amount out of limits!");
 
             const ref = db.ref('orders').push();
             ref.set({
@@ -1114,14 +1103,14 @@
             }).then(() => {
                 db.ref('chats/' + ref.key).push({
                     sender: 'system',
-                    text: '✓ Order started. 15 minutes remaining.',
+                    text: 'Order started. 15 minutes remaining.',
                     timestamp: Date.now()
                 });
                 
                 const partnerId = currentMarketType === 'buy' ? selectedAd.creatorId : user.id;
                 db.ref('notifications/' + partnerId).push({
                     type: 'new_order',
-                    message: `🚨 New Order: You received an order for ${amt} USDT!`,
+                    message: `🚨 New Order Notification Dashboard: You received an order for ${amt} USDT!`,
                     timestamp: Date.now(),
                     read: false
                 });
@@ -1140,6 +1129,7 @@
                 allTransactions = [];
                 let rawPrices = [];
 
+                // Re-ordered and structured chart chronological data fetch
                 Object.keys(orders).forEach(id => {
                     const o = orders[id];
                     allTransactions.push({ id, ...o });
@@ -1154,7 +1144,7 @@
                     if(String(o.buyerId) == String(user.id) || String(o.sellerId) == String(user.id)) {
                         if(o.status !== 'completed' && o.status !== 'cancelled' && list) {
                             const statusColor = o.dispute ? 'text-red-500' : o.status === 'pending' ? 'text-[#FCD535]' : 'text-[#0ECB81]';
-                            const statusText = o.dispute ? '⚠️ DISPUTE' : o.status.toUpperCase();
+                            const statusText = o.dispute ? 'DISPUTE' : o.status.toUpperCase();
                             
                             list.innerHTML += `
                             <div onclick="openTradeRoom('${id}')" class="bg-[#1e2329] p-3 rounded-lg border border-[#2b3139] flex justify-between items-center text-xs cursor-pointer mb-2">
@@ -1168,6 +1158,7 @@
                     }
                 });
 
+                // Fixed Graph chronological array logic
                 allTransactions.sort((a,b) => (a.startTime || 0) - (b.startTime || 0));
                 allTransactions.forEach(t => {
                     if(t.price && (t.status === 'completed' || t.status === 'pending')) {
@@ -1178,7 +1169,7 @@
                 if(rawPrices.length > 0) { 
                     updateLiveChartData(rawPrices); 
                 } else {
-                    updateLiveChartData([120, 122, 125, 123, 126]);
+                    updateLiveChartData([120, 122, 125, 123, 126]); // Standby fallback data
                 }
 
                 if(String(user.id) == String(ADMIN_ID)) {
@@ -1212,14 +1203,14 @@
             if(!ctx) return;
 
             if (priceChart) {
-                priceChart.data.labels = Array.from({length: lastPrices.length}, (_, i) => i);
+                priceChart.data.labels = Array.from({length: lastPrices.length}, (_, i) => 'T-' + i);
                 priceChart.data.datasets[0].data = lastPrices;
                 priceChart.update();
             } else {
                 priceChart = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: Array.from({length: lastPrices.length}, (_, i) => i),
+                        labels: Array.from({length: lastPrices.length}, (_, i) => 'T-' + i),
                         datasets: [{
                             label: 'Live ETB/USDT',
                             data: lastPrices,
@@ -1228,8 +1219,7 @@
                             borderWidth: 2,
                             fill: true,
                             tension: 0.4,
-                            pointRadius: 2,
-                            pointBackgroundColor: '#FCD535'
+                            pointRadius: 2
                         }]
                     },
                     options: {
@@ -1237,13 +1227,7 @@
                         maintainAspectRatio: true,
                         plugins: { legend: { display: false } },
                         scales: {
-                            y: { 
-                                beginAtZero: false, 
-                                grid: { color: '#2b3139' }, 
-                                ticks: { color: '#848E9C', font: { size: 9 } },
-                                min: Math.min(...prices) - 5,
-                                max: Math.max(...prices) + 5
-                            },
+                            y: { beginAtZero: false, grid: { color: '#2b3139' }, ticks: { color: '#848E9C', font: { size: 9 } } },
                             x: { grid: { display: false }, ticks: { color: '#848E9C', font: { size: 9 } } }
                         }
                     }
@@ -1273,7 +1257,7 @@
                         document.getElementById('tr-timer').innerText = "00:00";
                         db.ref('orders/' + orderId).update({ status: 'cancelled' });
                         closeModal('tradeModal');
-                        showToast("⏰ Order room expired!");
+                        showToast("Order room expired!");
                     } else {
                         const m = String(Math.floor(diff / 60)).padStart(2, '0');
                         const sec = String(diff % 60).padStart(2, '0');
@@ -1287,10 +1271,10 @@
                 document.getElementById('tr-partner-name').innerText = p.name || "User";
                 
                 const avBox = document.getElementById('tr-partner-av');
-                if(p.telegramPhoto && p.telegramPhoto.trim() !== "") {
-                    avBox.innerHTML = `<img src="${p.telegramPhoto}" class="w-full h-full object-cover rounded-full">`;
+                if(p.idPhoto) {
+                     avBox.innerHTML = `<img src="${p.idPhoto}" class="w-full h-full object-cover">`;
                 } else {
-                    avBox.innerText = (p.name || 'P').charAt(0).toUpperCase();
+                     avBox.innerText = (p.name || 'P').charAt(0).toUpperCase();
                 }
                 
                 document.getElementById('tr-partner-trades').innerText = (p.totalTrades || 0) + " Trades";
@@ -1327,11 +1311,11 @@
                 const myAcceptStatus = iAmBuyer ? o.buyerAccepted : o.sellerAccepted;
 
                 if(myAcceptStatus) {
-                    btn.innerText = "⏳ Waiting for Partner...";
+                    btn.innerText = "Waiting for Partner...";
                     btn.className = "flex-[2] py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase";
                     btn.disabled = true;
                 } else {
-                    btn.innerText = iAmBuyer ? "✓ I Have Paid (Transferred ETB)" : "✓ I finished payment";
+                    btn.innerText = iAmBuyer ? "I Have Paid (Transferred ETB)" : "I finished payment";
                     btn.className = "flex-[2] py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase shadow-lg";
                     btn.disabled = false;
                 }
@@ -1353,7 +1337,7 @@
                 if((iAmBuyer && o.sellerAccepted) || (!iAmBuyer && o.buyerAccepted)) {
                     updates.status = 'completed';
                     db.ref('orders/' + activeTradeId).update(updates).then(() => {
-                        db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '✅ Trade completed successfully!', timestamp: Date.now() });
+                        db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '✓ Trade completed successfully!', timestamp: Date.now() });
 
                         db.ref('users/' + o.buyerId + '/totalTrades').transaction(current => (current || 0) + 1);
                         db.ref('users/' + o.sellerId + '/totalTrades').transaction(current => (current || 0) + 1);
@@ -1363,7 +1347,7 @@
                     });
                 } else {
                     db.ref('orders/' + activeTradeId).update(updates);
-                    db.ref('chats/' + activeTradeId).push({ sender: 'system', text: `✓ ${user.first_name || 'User'} confirmed action.`, timestamp: Date.now() });
+                    db.ref('chats/' + activeTradeId).push({ sender: 'system', text: `${user.first_name || 'User'} confirmed action.`, timestamp: Date.now() });
                 }
             });
         }
@@ -1371,14 +1355,14 @@
         function cancelTrade() {
             if(confirm('Cancel this trade?')) {
                 db.ref('orders/' + activeTradeId).update({ status: 'cancelled' });
-                showToast("❌ Trade Cancelled");
+                showToast("Trade Cancelled");
             }
         }
 
         function reportDispute() {
             db.ref('orders/' + activeTradeId).update({ dispute: true, disputedBy: user.id });
-            db.ref('chats/' + activeTradeId).push({ sender: 'system', text: `⚠️ DISPUTE RAISED BY USER ID: ${user.id}. Admin has been notified.`, timestamp: Date.now() });
-            showToast("🚨 Dispute reported to Admin.");
+            db.ref('chats/' + activeTradeId).push({ sender: 'system', text: `⚠️ DISPUTE RAISED BY TG USER ID: ${user.id}. Admin has been notified with all logs.`, timestamp: Date.now() });
+            showToast("Dispute reported to Admin.");
         }
 
         // ====== CHAT SYSTEM ======
@@ -1414,7 +1398,7 @@
                 const reader = new FileReader();
                 reader.onload = e => {
                     db.ref('chats/' + activeTradeId).push({ sender: user.id, image: e.target.result, timestamp: Date.now() });
-                    showToast("✓ Screenshot Uploaded!");
+                    showToast("Screenshot Uploaded!");
                 };
                 reader.readAsDataURL(input.files[0]);
             }
@@ -1509,7 +1493,7 @@
                             unreadByAdmin: false
                         });
                     }
-                    showToast("✓ Photo sent!");
+                    showToast("Photo sent!");
                 };
                 reader.readAsDataURL(input.files[0]);
             }
@@ -1517,14 +1501,14 @@
 
         function clearSupportChat() {
             if(!currentSupportUid) return;
-            if(confirm("Are you sure you want to wipe this support chat?")) {
+            if(confirm("Are you sure you want to completely wipe this support chat for both you and the user?")) {
                 db.ref('support_chats/' + currentSupportUid).remove().then(() => {
                     db.ref('support_threads/' + currentSupportUid).update({
                         lastMessage: "Chat cleared by Admin.",
                         timestamp: Date.now(),
                         unreadByAdmin: false
                     });
-                    showToast("✓ Support chat history cleared.");
+                    showToast("Support chat history cleared.");
                 });
             }
         }
@@ -1581,7 +1565,7 @@
         }
 
         function deleteOrderHistory(orderId) {
-            if(confirm("Delete this transaction from your history?")) {
+            if(confirm("Are you sure you want to delete this transaction from your history?")) {
                 db.ref('orders/' + orderId).once('value', s => {
                     const o = s.val();
                     const updates = {};
@@ -1589,7 +1573,7 @@
                     if(String(o.sellerId) == String(user.id)) updates.hiddenBySeller = true;
                     
                     db.ref('orders/' + orderId).update(updates).then(() => {
-                        showToast("✓ Transaction removed from history!");
+                        showToast("Transaction history cleared!");
                     });
                 });
             }
@@ -1607,7 +1591,7 @@
             link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
             link.download = 'transactions.csv';
             link.click();
-            showToast("✓ CSV exported!");
+            showToast("CSV exported!");
         }
 
         // ====== NOTIFICATIONS MANAGEMENT ======
@@ -1646,7 +1630,7 @@
 
         function deleteNotification(key) {
             db.ref(`notifications/${user.id}/${key}`).remove().then(() => {
-                showToast("✓ Notification deleted!");
+                showToast("Notification deleted!");
             });
         }
 
@@ -1692,21 +1676,21 @@
         
         function clearTradeChat() {
             if(!currentMonitorOrderId) return;
-            if(confirm("Wipe out this room chat history?")) {
+            if(confirm("Wipe out this room chat history completely?")) {
                 db.ref('chats/' + currentMonitorOrderId).remove().then(() => {
                     db.ref('chats/' + currentMonitorOrderId).push({
                         sender: 'system',
                         text: 'Trade room chat history cleared by Admin.',
                         timestamp: Date.now()
                     });
-                    showToast("✓ Trade chat history cleared!");
+                    showToast("Trade chat history cleared!");
                 });
             }
         }
 
         function adminApproveAd(adId, status) {
             db.ref('ads/' + adId).update({ status: status }).then(() => {
-                showToast(`✓ Ad state updated to: ${status.toUpperCase()}`);
+                showToast(`Ad state updated to: ${status.toUpperCase()}`);
             });
         }
 
@@ -1723,8 +1707,8 @@
                     const u = users[id];
                     const trades = u.totalTrades || 0;
                     const bBtn = u.isBanned 
-                        ? `<button onclick="toggleBan('${id}', false)" class="bg-green-600 px-3 py-1 rounded text-[10px] text-white font-bold">✓ UNBAN</button>` 
-                        : `<button onclick="toggleBan('${id}', true)" class="bg-[#F6465D] px-3 py-1 rounded text-[10px] text-white font-bold">🔒 BAN</button>`;
+                        ? `<button onclick="toggleBan('${id}', false)" class="bg-green-600 px-3 py-1 rounded text-[10px] text-white font-bold">UNBAN</button>` 
+                        : `<button onclick="toggleBan('${id}', true)" class="bg-[#F6465D] px-3 py-1 rounded text-[10px] text-white font-bold">BAN USER</button>`;
 
                     uList.innerHTML += `
                     <div class="bg-[#1e2329] p-2 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-1">
@@ -1791,5 +1775,207 @@
                     
                     if(ad.status === 'pending_approval') {
                         pendingCount++;
-                        let pmLabels = Array.isArray(ad.paymentMethods) ? ad.paymentMethods.filter(m => m && m !== 'undefined').join(', ').toUpperCase() : 'NONE';
-                   
+                        let pmLabels = ad.paymentMethods ? ad.paymentMethods.map(m => m === 'undefined' ? 'cbe' : m).join(', ').toUpperCase() : 'NONE';
+                        adApprovalList.innerHTML += `
+                        <div class="bg-[#1e2329] p-3 rounded border border-yellow-500 text-xs mb-2 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-white font-bold">User: <span class="text-[#FCD535]">${ad.userName}</span></span>
+                                <span class="uppercase font-bold ${ad.type === 'buy' ? 'text-[#0ECB81]' : 'text-[#F6465D]'}">${ad.type}</span>
+                            </div>
+                            <div class="text-[#848E9C] text-[11px] space-y-1">
+                                <p>Price: <span class="text-white font-bold">${ad.price} ETB</span></p>
+                                <p>Amount: <span class="text-white font-bold">${ad.amount} USDT</span></p>
+                                <p>Limits: <span class="text-white">${ad.min} - ${ad.max} USDT</span></p>
+                                <p>Payments: <span class="text-yellow-400 font-bold">${pmLabels}</span></p>
+                                <p class="italic text-gray-400">Terms: "${ad.terms}"</p>
+                            </div>
+                            <div class="flex gap-2 pt-1">
+                                <button onclick="adminApproveAd('${id}', 'active')" class="flex-1 bg-[#0ECB81] py-1.5 rounded font-black text-white text-[10px]">Approve & Post Live</button>
+                                <button onclick="adminApproveAd('${id}', 'rejected')" class="flex-1 bg-[#F6465D] py-1.5 rounded font-black text-white text-[10px]">Reject</button>
+                            </div>
+                        </div>`;
+                    }
+                    
+                    if(ad.status === 'active' || ad.status === 'paused') {
+                        manageCount++;
+                        const actionBtn = ad.status === 'active'
+                            ? `<button onclick="adminApproveAd('${id}', 'paused')" class="bg-amber-600 text-white px-3 py-1 rounded text-xs font-bold w-full"><i class="fa-solid fa-pause mr-1"></i> Stop Ad</button>`
+                            : `<button onclick="adminApproveAd('${id}', 'active')" class="bg-[#0ECB81] text-white px-3 py-1 rounded text-xs font-bold w-full"><i class="fa-solid fa-play mr-1"></i> Start Ad</button>`;
+                        
+                        manageAdsList.innerHTML += `
+                        <div class="bg-[#1e2329] p-3 rounded border ${ad.status==='active'?'border-[#0ECB81]':'border-amber-600'} text-xs mb-2 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-white font-bold">User: <span class="text-[#FCD535]">${ad.userName}</span></span>
+                                <span class="uppercase font-bold ${ad.type === 'buy' ? 'text-[#0ECB81]' : 'text-[#F6465D]'}">${ad.type} - ${ad.status}</span>
+                            </div>
+                            <div class="text-[#848E9C] text-[11px] space-y-1">
+                                <p>Price: <span class="text-white font-bold">${ad.price} ETB</span></p>
+                                <p>Limits: <span class="text-white">${ad.min} - ${ad.max} USDT</span></p>
+                            </div>
+                            <div class="pt-1">${actionBtn}</div>
+                        </div>`;
+                    }
+                });
+
+                if(pendingCount === 0) adApprovalList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No ads pending approval right now</div>`;
+                if(manageCount === 0) manageAdsList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No active or paused ads to manage</div>`;
+            });
+
+            db.ref('users').on('value', s => {
+                const users = s.val() || {};
+                const kList = document.getElementById('admin-kyc');
+                if(!kList) return;
+                kList.innerHTML = '';
+
+                Object.keys(users).forEach(id => {
+                    const u = users[id];
+                    if(u.status === 'pending') {
+                        kList.innerHTML += `
+                        <div class="bg-[#1e2329] p-3 rounded border border-yellow-600 text-xs mb-2 space-y-2">
+                            <div class="text-white font-bold">User: <span class="text-[#FCD535]">${u.name || 'User'}</span></div>
+                            ${u.idPhoto ? `<img src="${u.idPhoto}" class="w-full max-h-48 object-contain bg-black/50 border border-[#2b3139] rounded">` : ''}
+                            <div class="flex gap-2">
+                                <button onclick="adminKYC('${id}','verified')" class="flex-1 bg-[#0ECB81] py-1.5 rounded font-black text-white text-[10px]">Approve</button>
+                                <button onclick="adminKYC('${id}','declined')" class="flex-1 bg-[#F6465D] py-1.5 rounded font-black text-white text-[10px]">Reject</button>
+                            </div>
+                        </div>`;
+                    }
+                });
+                if(kList.innerHTML === '') kList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No pending KYC applications</div>`;
+            });
+
+            db.ref('orders').on('value', s => {
+                const dList = document.getElementById('admin-disputes');
+                const oList = document.getElementById('admin-orders');
+                if(dList) dList.innerHTML = '';
+                if(oList) oList.innerHTML = '';
+                const orders = s.val() || {};
+
+                Object.keys(orders).forEach(id => {
+                    const o = orders[id];
+                    if(o.dispute && o.status !== 'completed' && o.status !== 'cancelled') {
+                        const buyerName = usersCachedMap[o.buyerId]?.name || "Buyer";
+                        const sellerName = usersCachedMap[o.sellerId]?.name || "Seller";
+                        const complainantName = usersCachedMap[o.disputedBy]?.name || "Unknown Complainant";
+
+                        if(dList) dList.innerHTML += `
+                        <div class="bg-red-950/40 p-3 rounded border border-red-500 text-xs mb-2 space-y-2">
+                            <div class="flex justify-between border-b border-red-900 pb-1">
+                                <strong class="text-red-400">🚨 DISPUTE ROOM ID: #${id.substring(1, 6).toUpperCase()}</strong>
+                                <span class="text-[#FCD535] font-bold">${o.amountUsdt} USDT</span>
+                            </div>
+                            <div class="text-gray-300 space-y-1 text-[11px]">
+                                <p>⚠️ <span class="text-red-400 font-bold">Raised By:</span> ${complainantName} (ID: ${o.disputedBy || 'N/A'})</p>
+                                <p>👥 <span class="text-blue-400 font-bold">Buyer Name:</span> ${buyerName} | <span class="text-yellow-400">TG ID:</span> ${o.buyerId}</p>
+                                <p>👥 <span class="text-purple-400 font-bold">Seller Name:</span> ${sellerName} | <span class="text-yellow-400">TG ID:</span> ${o.sellerId}</p>
+                                <p>💰 Value: ${o.amountEtb.toFixed(2)} ETB @ ${o.price} rate</p>
+                            </div>
+                            <div class="flex flex-col gap-1 pt-1">
+                                <button onclick="openAdminChatMonitor('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded font-bold text-[11px] w-full"><i class="fa-solid fa-comments mr-1"></i> Open Live Chat & Proof Logs</button>
+                                <div class="flex gap-2">
+                                    <button onclick="toggleBan('${o.buyerId}', true)" class="flex-1 bg-red-600 text-white py-1.5 rounded font-bold text-[10px] uppercase">Ban Buyer</button>
+                                    <button onclick="toggleBan('${o.sellerId}', true)" class="flex-1 bg-red-600 text-white py-1.5 rounded font-bold text-[10px] uppercase">Ban Seller</button>
+                                </div>
+                            </div>
+                        </div>`;
+                    }
+                    
+                    if (oList) {
+                        const buyerName = usersCachedMap[o.buyerId]?.name || "Buyer";
+                        const sellerName = usersCachedMap[o.sellerId]?.name || "Seller";
+                        const statusColor = o.status === 'completed' ? 'text-green-500' : o.status === 'cancelled' ? 'text-gray-500' : 'text-yellow-500';
+                        
+                        oList.innerHTML += `
+                        <div class="bg-[#1e2329] p-3 rounded border border-[#2b3139] text-xs mb-2 flex justify-between items-center">
+                            <div>
+                                <p class="font-bold text-white">#${id.substring(1, 6).toUpperCase()} - <span class="${statusColor}">${o.status.toUpperCase()}</span></p>
+                                <p class="text-[10px] text-[#848E9C] mt-1">${buyerName} vs ${sellerName}</p>
+                            </div>
+                            <button onclick="openAdminChatMonitor('${id}')" class="bg-blue-600 text-white px-3 py-1.5 rounded font-bold text-[10px]">View Chat</button>
+                        </div>`;
+                    }
+                });
+                
+                if(dList && dList.innerHTML === '') dList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No active disputes</div>`;
+                if(oList && oList.innerHTML === '') oList.innerHTML = `<div class="text-xs text-[#848E9C] text-center py-4">No orders to monitor</div>`;
+            });
+        }
+
+        function adminKYC(uid, status) {
+            db.ref('users/' + uid).update({ status: status }).then(() => {
+                showToast(`User KYC marked as ${status.toUpperCase()}`);
+                if(status === 'verified') {
+                    db.ref('notifications/' + uid).push({
+                        type: 'system',
+                        message: `🎉 Great news! Your Identity Verification (KYC) has been APPROVED. You can now trade!`,
+                        timestamp: Date.now(),
+                        read: false
+                    });
+                }
+            });
+        }
+
+        function toggleBan(uid, isBanned) {
+            if(confirm(`Are you sure you want to ${isBanned ? 'BAN' : 'UNBAN'} this user?`)) {
+                db.ref('users/' + uid).update({ isBanned: isBanned }).then(() => {
+                    showToast(`User ${isBanned ? 'BANNED' : 'UNBANNED'} successfully.`);
+                });
+            }
+        }
+
+        // ====== UTILS & NAVIGATION ======
+        function switchMainTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+            
+            document.getElementById(tabId + '-view').classList.add('active');
+            document.getElementById('nav-' + tabId).classList.add('active');
+            
+            if(tabId === 'market') loadMarketAds();
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+            document.getElementById(id).classList.add('flex');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+            document.getElementById(id).classList.remove('flex');
+            
+            if(id === 'tradeModal') {
+                clearInterval(tradeInterval);
+                activeTradeId = null;
+            }
+            if(id === 'supportChatModal' || id === 'adminSupportChatModal') {
+                currentSupportUid = null;
+            }
+            if(id === 'adminChatModal') {
+                currentMonitorOrderId = null;
+            }
+        }
+
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'bg-[#FCD535] text-black text-xs font-bold px-4 py-2 rounded-lg shadow-xl transform transition-all duration-300 translate-y-[-20px] opacity-0';
+            toast.innerText = msg;
+            
+            container.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-y-[-20px]', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+            }, 10);
+            
+            // Animate out
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-[-20px]', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
