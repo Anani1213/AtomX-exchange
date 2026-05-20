@@ -769,26 +769,15 @@
 
             // Load cache first for instant UI
             const cachedUsers = cacheGet(CACHE_KEY_USERS);
-            if (cachedUsers) {
-                usersCachedMap = cachedUsers;
-            }
+            if (cachedUsers) usersCachedMap = cachedUsers;
             const cachedAds = cacheGet(CACHE_KEY_ADS);
-            if (cachedAds) {
-                allAds = cachedAds;
-                loadMarketAdsUI();
-            }
+            if (cachedAds) { allAds = cachedAds; loadMarketAdsUI(); }
             const cachedMyData = cacheGet(CACHE_KEY_MYDATA);
-            if (cachedMyData) {
-                myData = cachedMyData;
-                updateProfileUI();
-            }
+            if (cachedMyData) { myData = cachedMyData; updateProfileUI(); }
             const cachedPrice = cacheGet(CACHE_KEY_PRICE_HISTORY);
-            if (cachedPrice) {
-                priceHistory = cachedPrice;
-                updateChart();
-            }
+            if (cachedPrice) { priceHistory = cachedPrice; updateChart(); }
 
-            // Then sync with Firebase
+            // Firebase sync
             db.ref('users').on('value', snap => {
                 usersCachedMap = snap.val() || {};
                 cacheSet(CACHE_KEY_USERS, usersCachedMap);
@@ -799,13 +788,12 @@
             initUser();
             listenToOrders();
             listenToNotifications();
-
-            if (String(user.id) === String(ADMIN_ID)) {
-                loadAdminData();
-            }
-
+            if (String(user.id) === String(ADMIN_ID)) loadAdminData();
             updatePresence();
             setInterval(updatePresence, 20000);
+
+            // Real-time price tracking from ads
+            listenToAdsForPrice();
             loadPriceHistory();
         });
 
@@ -815,62 +803,72 @@
             }
         }
 
-        // ====== PRICE HISTORY & CHART ======
-        function loadPriceHistory() {
-            db.ref('priceHistory').once('value', snap => {
-                const history = snap.val() || {};
-                priceHistory = Object.values(history).sort((a, b) => a.timestamp - b.timestamp);
-                
-                if (priceHistory.length === 0) {
-                    // Seed with current average ad price
-                    db.ref('ads').once('value', adsSnap => {
-                        const ads = adsSnap.val() || {};
-                        let totalPrice = 0, count = 0;
-                        Object.values(ads).forEach(ad => {
-                            if (ad.status === 'active' && ad.price) {
-                                totalPrice += ad.price;
-                                count++;
-                            }
-                        });
-                        const avgPrice = count > 0 ? totalPrice / count : 125; // fallback
-                        const now = Date.now();
-                        priceHistory = [{ price: avgPrice, timestamp: now }];
-                        db.ref('priceHistory').push({ price: avgPrice, timestamp: now });
-                        cacheSet(CACHE_KEY_PRICE_HISTORY, priceHistory);
-                        updateChart();
+        // ====== REAL‑TIME PRICE AVERAGING ======
+        function listenToAdsForPrice() {
+            db.ref('ads').on('value', snap => {
+                const ads = snap.val() || {};
+                let totalPrice = 0, count = 0;
+                Object.values(ads).forEach(ad => {
+                    if (ad.status === 'active' && ad.price) {
+                        totalPrice += ad.price;
+                        count++;
+                    }
+                });
+                const avgPrice = count > 0 ? parseFloat((totalPrice / count).toFixed(2)) : null;
+                if (avgPrice !== null) {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    // Find today's entry
+                    const existingIndex = priceHistory.findIndex(p => {
+                        const d = new Date(p.timestamp);
+                        d.setHours(0, 0, 0, 0);
+                        return d.getTime() === today.getTime();
                     });
-                } else {
+                    if (existingIndex >= 0) {
+                        priceHistory[existingIndex].price = avgPrice;
+                        // update Firebase (optional)
+                        // db.ref('priceHistory/' + existingKey).update({ price: avgPrice });
+                    } else {
+                        priceHistory.push({ price: avgPrice, timestamp: Date.now() });
+                        // limit array to last 30 entries
+                        if (priceHistory.length > 30) priceHistory.shift();
+                    }
                     cacheSet(CACHE_KEY_PRICE_HISTORY, priceHistory);
                     updateChart();
                 }
             });
+        }
 
-            // Daily update: if today's entry missing, compute average and add
-            setInterval(() => {
-                const today = new Date();
-                today.setHours(0,0,0,0);
-                const hasToday = priceHistory.some(p => {
-                    const d = new Date(p.timestamp);
-                    d.setHours(0,0,0,0);
-                    return d.getTime() === today.getTime();
-                });
-                if (!hasToday) {
-                    db.ref('ads').once('value', snap => {
-                        const ads = snap.val() || {};
-                        let totalPrice = 0, count = 0;
-                        Object.values(ads).forEach(ad => {
-                            if (ad.status === 'active' && ad.price) {
-                                totalPrice += ad.price;
-                                count++;
-                            }
-                        });
-                        if (count > 0) {
-                            const avgPrice = totalPrice / count;
-                            db.ref('priceHistory').push({ price: avgPrice, timestamp: Date.now() });
-                        }
-                    });
+        function loadPriceHistory() {
+            db.ref('priceHistory').once('value', snap => {
+                const history = snap.val() || {};
+                priceHistory = Object.values(history).sort((a, b) => a.timestamp - b.timestamp);
+                if (priceHistory.length === 0) {
+                    // fallback: compute from current ads immediately
+                    computeAndPushCurrentAverage();
                 }
-            }, 3600000); // check every hour
+                cacheSet(CACHE_KEY_PRICE_HISTORY, priceHistory);
+                updateChart();
+            });
+        }
+
+        function computeAndPushCurrentAverage() {
+            db.ref('ads').once('value', snap => {
+                const ads = snap.val() || {};
+                let totalPrice = 0, count = 0;
+                Object.values(ads).forEach(ad => {
+                    if (ad.status === 'active' && ad.price) {
+                        totalPrice += ad.price;
+                        count++;
+                    }
+                });
+                const avgPrice = count > 0 ? parseFloat((totalPrice / count).toFixed(2)) : 125;
+                const now = Date.now();
+                priceHistory.push({ price: avgPrice, timestamp: now });
+                db.ref('priceHistory').push({ price: avgPrice, timestamp: now });
+                cacheSet(CACHE_KEY_PRICE_HISTORY, priceHistory);
+                updateChart();
+            });
         }
 
         function updateChart() {
@@ -951,18 +949,18 @@
         }
 
         function addPriceToHistory(price) {
+            // Legacy, now real-time average overrides, but we still record on trade
             const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            today.setHours(0,0,0,0);
             const existingIndex = priceHistory.findIndex(p => {
                 const d = new Date(p.timestamp);
-                d.setHours(0, 0, 0, 0);
+                d.setHours(0,0,0,0);
                 return d.getTime() === today.getTime();
             });
             if (existingIndex >= 0) {
                 const existing = priceHistory[existingIndex];
-                existing.price = (existing.price + price) / 2;
-                const key = Object.keys(priceHistory)[existingIndex];
-                db.ref('priceHistory/' + key).update({ price: existing.price });
+                existing.price = parseFloat(((existing.price + price) / 2).toFixed(2));
+                db.ref('priceHistory/' + Object.keys(priceHistory)[existingIndex]).update({ price: existing.price });
             } else {
                 db.ref('priceHistory').push({ price, timestamp: Date.now() });
             }
@@ -997,9 +995,7 @@
                     const updates = {};
                     if (user.first_name && data.name !== user.first_name) updates.name = user.first_name;
                     if (user.username && data.username !== user.username) updates.username = user.username;
-                    if (Object.keys(updates).length > 0) {
-                        db.ref('users/' + user.id).update(updates);
-                    }
+                    if (Object.keys(updates).length > 0) db.ref('users/' + user.id).update(updates);
                 }
                 cacheSet(CACHE_KEY_MYDATA, myData);
                 if (myData.isBanned) {
@@ -1037,7 +1033,6 @@
             const displayName = user.first_name || myData.name || "User";
             document.getElementById('prof-name').innerText = displayName;
             const initLetter = displayName.charAt(0).toUpperCase();
-
             const avatarContainer = document.getElementById('prof-avatar');
             const headerAvatar = document.getElementById('header-avatar');
             if (tgPhotoUrl) {
@@ -1053,31 +1048,19 @@
             if (myData.status === 'verified') {
                 sText.innerText = '✅ STATUS: VERIFIED';
                 sText.className = "text-[10px] text-[#0ECB81] mt-1 uppercase font-bold";
-                kycArea.innerHTML = `<div class="text-center text-[#0ECB81] font-bold text-xs py-2">
-                    <i class="fa-solid fa-circle-check text-lg mb-1 block"></i>Verified
-                </div>`;
+                kycArea.innerHTML = `<div class="text-center text-[#0ECB81] font-bold text-xs py-2"><i class="fa-solid fa-circle-check text-lg mb-1 block"></i>Verified</div>`;
             } else if (myData.status === 'pending') {
                 sText.innerText = '⏳ STATUS: PENDING REVIEW';
                 sText.className = "text-[10px] text-[#FCD535] mt-1 uppercase font-bold";
-                kycArea.innerHTML = `<button disabled class="w-full bg-[#1e2329] border border-[#2b3139] text-[#FCD535] py-2.5 rounded-lg text-sm font-bold animate-pulse">
-                    <i class="fa-solid fa-clock mr-1"></i> Pending Review...
-                </button>`;
+                kycArea.innerHTML = `<button disabled class="w-full bg-[#1e2329] border border-[#2b3139] text-[#FCD535] py-2.5 rounded-lg text-sm font-bold animate-pulse"><i class="fa-solid fa-clock mr-1"></i> Pending Review...</button>`;
             } else if (myData.status === 'declined') {
                 sText.innerText = '❌ STATUS: DECLINED';
                 sText.className = "text-[10px] text-[#F6465D] mt-1 uppercase font-bold";
-                kycArea.innerHTML = `
-                    <div class="text-center mb-2 text-xs text-red-400 font-medium">Verification failed. Please try again.</div>
-                    <button onclick="document.getElementById('kyc-file').click()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold hover:bg-[#3367d6] transition-colors">
-                        <i class="fa-solid fa-redo mr-1"></i> Try Again
-                    </button>
-                    <input type="file" id="kyc-file" class="hidden" accept="image/*" onchange="uploadKYC(this)">`;
+                kycArea.innerHTML = `<div class="text-center mb-2 text-xs text-red-400 font-medium">Verification failed. Please try again.</div><button onclick="document.getElementById('kyc-file').click()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold hover:bg-[#3367d6] transition-colors"><i class="fa-solid fa-redo mr-1"></i> Try Again</button><input type="file" id="kyc-file" class="hidden" accept="image/*" onchange="uploadKYC(this)">`;
             } else {
                 sText.innerText = '⚠️ STATUS: UNVERIFIED';
                 sText.className = "text-[10px] text-[#848E9C] mt-1 uppercase font-bold";
-                kycArea.innerHTML = `<button onclick="document.getElementById('kyc-file').click()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold hover:bg-[#3367d6] transition-colors">
-                    <i class="fa-solid fa-upload mr-1"></i> Upload ID to Verify
-                </button>
-                <input type="file" id="kyc-file" class="hidden" accept="image/*" onchange="uploadKYC(this)">`;
+                kycArea.innerHTML = `<button onclick="document.getElementById('kyc-file').click()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold hover:bg-[#3367d6] transition-colors"><i class="fa-solid fa-upload mr-1"></i> Upload ID to Verify</button><input type="file" id="kyc-file" class="hidden" accept="image/*" onchange="uploadKYC(this)">`;
             }
 
             document.getElementById('prof-completion').innerText = (myData.completionRate || 100) + '%';
@@ -1110,27 +1093,15 @@
                 cbeAccount: document.getElementById('pm-cbe-account').value,
                 cbeName: document.getElementById('pm-cbe-name').value
             };
-            db.ref('users/' + user.id).update(updates).then(() => {
-                showToast("✅ Profile settings saved successfully!");
-            }).catch(() => {
-                showToast("❌ Error saving profile. Please try again.");
-            });
+            db.ref('users/' + user.id).update(updates).then(() => showToast("✅ Profile settings saved successfully!")).catch(() => showToast("❌ Error saving profile. Please try again."));
         }
 
         function uploadKYC(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                document.getElementById('kyc-action-area').innerHTML = `
-                    <button disabled class="w-full bg-[#1e2329] border border-[#2b3139] text-[#FCD535] py-2.5 rounded-lg text-sm font-bold animate-pulse">
-                        <i class="fa-solid fa-spinner fa-spin mr-1"></i> Uploading...
-                    </button>`;
+                document.getElementById('kyc-action-area').innerHTML = `<button disabled class="w-full bg-[#1e2329] border border-[#2b3139] text-[#FCD535] py-2.5 rounded-lg text-sm font-bold animate-pulse"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Uploading...</button>`;
                 reader.onload = e => {
-                    db.ref('users/' + user.id).update({
-                        status: 'pending',
-                        idPhoto: e.target.result
-                    }).then(() => {
-                        showToast("✅ ID uploaded! Awaiting admin verification.");
-                    });
+                    db.ref('users/' + user.id).update({ status: 'pending', idPhoto: e.target.result }).then(() => showToast("✅ ID uploaded! Awaiting admin verification."));
                 };
                 reader.readAsDataURL(input.files[0]);
             }
@@ -1153,14 +1124,12 @@
         // ====== AD SYSTEM ======
         function publishAd() {
             if (!checkRequirements()) return;
-
             const price = parseFloat(document.getElementById('ad-price').value);
             const amount = parseFloat(document.getElementById('ad-amount').value);
             const min = parseFloat(document.getElementById('ad-min').value);
             const max = parseFloat(document.getElementById('ad-max').value);
             const terms = document.getElementById('ad-terms').value || "No special terms.";
             const type = document.getElementById('ad-form-type').value;
-
             if (!price || !amount || !min || !max) return showToast("⚠️ Please fill all fields!");
             if (min > max) return showToast("⚠️ Min limit cannot be greater than Max limit!");
             if (min > amount || max > amount) return showToast("⚠️ Limits must be within total amount!");
@@ -1198,9 +1167,7 @@
                 document.getElementById('ad-max').value = '';
                 document.getElementById('ad-terms').value = '';
                 switchMainTab('myads');
-            }).catch(() => {
-                showToast("❌ Error publishing ad. Please try again.");
-            });
+            }).catch(() => showToast("❌ Error publishing ad. Please try again."));
         }
 
         function setAdForm(type) {
@@ -1238,14 +1205,14 @@
         }
 
         function toggleAdStatus(adId, newStatus) {
-            // Optimistic UI: update local ad object immediately
+            // Optimistic UI update
             const adIndex = allAds.findIndex(a => a.id === adId);
             if (adIndex !== -1) {
                 allAds[adIndex].status = newStatus;
                 cacheSet(CACHE_KEY_ADS, allAds);
-                loadMarketAdsUI(); // refresh both lists instantly
+                loadMarketAdsUI();
             }
-            // Also update the user-ads-list directly
+            // Also update the user-ads-list card directly for instant feedback
             const userAdCard = document.querySelector(`[data-ad-id="${adId}"]`);
             if (userAdCard) {
                 const badgeSpan = userAdCard.querySelector('.ad-status-badge');
@@ -1262,11 +1229,9 @@
                     toggleBtn.onclick = () => toggleAdStatus(adId, 'active');
                 }
             }
-            // Then sync with Firebase
             db.ref('ads/' + adId).update({ status: newStatus }).then(() => {
                 showToast(`Ad ${newStatus === 'active' ? 'resumed' : 'paused'} successfully!`);
             }).catch(() => {
-                // revert if failed
                 if (adIndex !== -1) allAds[adIndex].status = (newStatus === 'active' ? 'paused' : 'active');
                 cacheSet(CACHE_KEY_ADS, allAds);
                 loadMarketAdsUI();
@@ -1306,7 +1271,6 @@
             if (userAdsList) userAdsList.innerHTML = '';
 
             let myAdsCounter = 0;
-            // User's own ads (all statuses)
             allAds.forEach(ad => {
                 if (String(ad.uid) === String(user.id) && userAdsList) {
                     myAdsCounter++;
@@ -1352,7 +1316,6 @@
                 userAdsList.innerHTML = '<div class="text-center text-[#848E9C] text-xs py-4">No ads posted yet</div>';
             }
 
-            // Market list
             filteredAds = allAds.filter(ad => {
                 if (ad.type !== (currentMarketType === 'buy' ? 'sell' : 'buy')) return false;
                 if (ad.amount < filterUsdtMin || ad.amount > filterUsdtMax) return false;
@@ -1371,12 +1334,7 @@
 
             if (!list) return;
             if (filteredAds.length === 0) {
-                list.innerHTML = `
-                <div class="p-8 text-center text-[#848E9C]">
-                    <i class="fa-solid fa-inbox text-4xl mb-3 block opacity-50"></i>
-                    <p class="text-sm">No ads found matching your filters</p>
-                    <p class="text-xs mt-1 opacity-70">Try adjusting your search criteria</p>
-                </div>`;
+                list.innerHTML = `<div class="p-8 text-center text-[#848E9C]"><i class="fa-solid fa-inbox text-4xl mb-3 block opacity-50"></i><p class="text-sm">No ads found matching your filters</p><p class="text-xs mt-1 opacity-70">Try adjusting your search criteria</p></div>`;
                 return;
             }
 
@@ -1409,12 +1367,9 @@
                         </div>
                         <div class="text-right flex-shrink-0 ml-3 space-y-1">
                             <p class="text-sm font-black text-white">${ad.price.toFixed(2)} <span class="text-[8px] text-[#848E9C]">ETB</span></p>
-                            ${isMyAd ? `
-                                <span class="text-[10px] bg-gray-700 text-gray-300 px-2 py-1 rounded inline-block">My Ad</span>
-                            ` : `
-                                <button onclick="openPurchaseModal('${ad.id}', '${ad.uid}', ${ad.price}, ${ad.min}, ${ad.max}, '${ad.terms.replace(/'/g, "\\'")}', ${JSON.stringify(safePaymentMethods).replace(/"/g, '&quot;')})" 
-                                    class="${btnClr} text-white px-4 py-1.5 rounded-lg text-[10px] font-black transition-colors">${btnLabel}</button>
-                            `}
+                            ${isMyAd ? `<span class="text-[10px] bg-gray-700 text-gray-300 px-2 py-1 rounded inline-block">My Ad</span>` : 
+                            `<button onclick="openPurchaseModal('${ad.id}', '${ad.uid}', ${ad.price}, ${ad.min}, ${ad.max}, '${ad.terms.replace(/'/g, "\\'")}', ${JSON.stringify(safePaymentMethods).replace(/"/g, '&quot;')})" 
+                                class="${btnClr} text-white px-4 py-1.5 rounded-lg text-[10px] font-black transition-colors">${btnLabel}</button>`}
                         </div>
                     </div>
                 </div>`;
@@ -1424,9 +1379,7 @@
 
         function deleteAd(adId) {
             if (confirm('Are you sure you want to delete this ad permanently?')) {
-                db.ref('ads/' + adId).update({ status: 'deleted' }).then(() => {
-                    showToast("🗑️ Ad deleted!");
-                });
+                db.ref('ads/' + adId).update({ status: 'deleted' }).then(() => showToast("🗑️ Ad deleted!"));
             }
         }
 
@@ -1591,14 +1544,9 @@
             db.ref('orders/' + orderId).off();
             db.ref('orders/' + orderId).on('value', s => {
                 const o = s.val();
-                if (!o) {
-                    closeModal('tradeModal');
-                    clearInterval(tradeInterval);
-                    return;
-                }
+                if (!o) { closeModal('tradeModal'); clearInterval(tradeInterval); return; }
                 if (o.status === 'completed' || o.status === 'cancelled') {
-                    closeModal('tradeModal');
-                    clearInterval(tradeInterval);
+                    closeModal('tradeModal'); clearInterval(tradeInterval);
                     if (o.status === 'completed') openModal('ratingModal');
                     return;
                 }
@@ -1838,8 +1786,7 @@
             currentSupportUid = uid;
             const u = usersCachedMap[uid] || {};
             document.getElementById('adm-sup-name').innerText = u.name || "Unknown User";
-            document.getElementById('adm-sup-details').innerText = 
-                `TG ID: ${uid} | 📱 ${u.telePhone || 'N/A'} | 🔶 ${u.binanceId || 'N/A'}`;
+            document.getElementById('adm-sup-details').innerText = `TG ID: ${uid} | 📱 ${u.telePhone || 'N/A'} | 🔶 ${u.binanceId || 'N/A'}`;
             openModal('adminSupportChatModal');
             loadSupportChat('admin-support-chat-messages', currentSupportUid, true);
             setTimeout(() => {
@@ -1974,41 +1921,24 @@
             });
             filtered.sort((a, b) => (b.startTime || 0) - (a.startTime || 0));
             if (filtered.length === 0) {
-                list.innerHTML = `
-                <div class="text-center text-[#848E9C] py-8">
-                    <i class="fa-solid fa-receipt text-3xl mb-2 block opacity-50"></i>
-                    <p>No transactions found</p>
-                </div>`;
+                list.innerHTML = `<div class="text-center text-[#848E9C] py-8"><i class="fa-solid fa-receipt text-3xl mb-2 block opacity-50"></i><p>No transactions found</p></div>`;
                 return;
             }
             filtered.forEach(t => {
                 const iAmBuyer = String(t.buyerId) === String(user.id);
-                const statusColor = t.dispute ? 'text-red-500' : 
-                    t.status === 'completed' ? 'text-[#0ECB81]' : 
-                    t.status === 'cancelled' ? 'text-gray-500' : 'text-[#FCD535]';
-                const typeLabel = iAmBuyer ? 
-                    '<span class="text-[#0ECB81] font-bold">BUY</span>' : 
-                    '<span class="text-[#F6465D] font-bold">SELL</span>';
+                const statusColor = t.dispute ? 'text-red-500' : t.status === 'completed' ? 'text-[#0ECB81]' : t.status === 'cancelled' ? 'text-gray-500' : 'text-[#FCD535]';
+                const typeLabel = iAmBuyer ? '<span class="text-[#0ECB81] font-bold">BUY</span>' : '<span class="text-[#F6465D] font-bold">SELL</span>';
                 const dateStr = t.startTime ? new Date(t.startTime).toLocaleDateString() : 'N/A';
                 list.innerHTML += `
                 <div class="bg-[#1e2329] p-3 rounded-lg border border-[#2b3139] flex justify-between items-center mb-2 hover:bg-[#2b3139] transition-colors">
                     <div>
-                        <div class="flex items-center gap-2">
-                            ${typeLabel}
-                            <p class="text-xs font-bold text-white">${t.amountUsdt || 0} USDT</p>
-                        </div>
-                        <p class="text-[10px] text-[#848E9C] mt-1">
-                            Rate: ${(t.price || 0).toFixed(2)} ETB | Total: ${(t.amountEtb || 0).toFixed(2)} ETB
-                        </p>
+                        <div class="flex items-center gap-2">${typeLabel}<p class="text-xs font-bold text-white">${t.amountUsdt || 0} USDT</p></div>
+                        <p class="text-[10px] text-[#848E9C] mt-1">Rate: ${(t.price || 0).toFixed(2)} ETB | Total: ${(t.amountEtb || 0).toFixed(2)} ETB</p>
                         <p class="text-[9px] text-[#848E9C]">${dateStr}</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="${statusColor} text-xs font-bold uppercase">${t.dispute ? 'DISPUTE' : t.status}</span>
-                        <button onclick="deleteOrderHistory('${t.id}')" 
-                            class="text-red-400 p-2 hover:text-red-500 text-xs transition-colors" 
-                            title="Hide from history">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
+                        <button onclick="deleteOrderHistory('${t.id}')" class="text-red-400 p-2 hover:text-red-500 text-xs transition-colors" title="Hide from history"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
                 </div>`;
             });
@@ -2070,10 +2000,7 @@
                             <p class="text-white font-medium">${n.message || 'Notification'}</p>
                             <p class="text-[10px] text-[#848E9C] mt-1">${n.timestamp ? new Date(n.timestamp).toLocaleString() : ''}</p>
                         </div>
-                        <button onclick="deleteNotification('${key}')" 
-                            class="text-red-400 p-1 hover:text-red-500 transition-colors flex-shrink-0">
-                            <i class="fa-solid fa-trash-can text-[10px]"></i>
-                        </button>
+                        <button onclick="deleteNotification('${key}')" class="text-red-400 p-1 hover:text-red-500 transition-colors flex-shrink-0"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
                     </div>`;
                 });
             });
@@ -2114,12 +2041,7 @@
                     let content = '';
                     if (c.image) content = `<img src="${c.image}" class="chat-image cursor-pointer" onclick="window.open(this.src)">`;
                     else content = `<strong class="text-[#FCD535]">${senderName}:</strong> ${c.text || ''}`;
-                    box.innerHTML += `
-                    <div class="flex ${align} mb-1">
-                        <div class="${bg} px-3 py-1.5 rounded-lg text-[11px] max-w-[80%] break-words">
-                            ${content}
-                        </div>
-                    </div>`;
+                    box.innerHTML += `<div class="flex ${align} mb-1"><div class="${bg} px-3 py-1.5 rounded-lg text-[11px] max-w-[80%] break-words">${content}</div></div>`;
                 });
                 box.scrollTop = box.scrollHeight;
             });
@@ -2159,9 +2081,7 @@
                     <div class="bg-[#1e2329] p-3 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-1 hover:bg-[#2b3139] transition-colors">
                         <div class="flex-1 min-w-0">
                             <p class="text-white font-medium truncate">${u.name || 'User'}</p>
-                            <p class="text-[10px] text-[#848E9C]">
-                                TG ID: ${id} | Status: ${(u.status || 'UNVERIFIED').toUpperCase()} | Trades: ${u.totalTrades || 0}
-                            </p>
+                            <p class="text-[10px] text-[#848E9C]">TG ID: ${id} | Status: ${(u.status || 'UNVERIFIED').toUpperCase()} | Trades: ${u.totalTrades || 0}</p>
                         </div>
                         ${String(id) !== String(ADMIN_ID) ? bBtn : '<span class="text-[#FCD535] text-xs font-bold">ADMIN</span>'}
                     </div>`;
@@ -2181,26 +2101,18 @@
                     if (t.unreadByAdmin) unreadCount++;
                     const unreadIndicator = t.unreadByAdmin ? '<span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse inline-block ml-1"></span>' : '';
                     supList.innerHTML += `
-                    <div onclick="openAdminSupportChat('${uid}')" 
-                        class="bg-[#1e2329] p-3 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-2 cursor-pointer hover:bg-[#2b3139] transition-colors">
+                    <div onclick="openAdminSupportChat('${uid}')" class="bg-[#1e2329] p-3 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-2 cursor-pointer hover:bg-[#2b3139] transition-colors">
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2">
                                 <span class="text-white font-bold">${u.name || 'User'}${unreadIndicator}</span>
                             </div>
                             <p class="text-[10px] text-[#848E9C] mt-1 truncate">${t.lastMessage || 'New message...'}</p>
                         </div>
-                        <button class="bg-[#3b82f6] text-white px-3 py-1 rounded text-[10px] font-bold hover:bg-[#2563eb] transition-colors flex-shrink-0 ml-2">
-                            <i class="fa-solid fa-reply"></i>
-                        </button>
+                        <button class="bg-[#3b82f6] text-white px-3 py-1 rounded text-[10px] font-bold hover:bg-[#2563eb] transition-colors flex-shrink-0 ml-2"><i class="fa-solid fa-reply"></i></button>
                     </div>`;
                 });
-                if (unreadCount > 0) {
-                    badge.innerText = unreadCount;
-                    badge.classList.remove('hidden');
-                } else badge.classList.add('hidden');
-                if (supList.innerHTML === '') {
-                    supList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No support messages</div>';
-                }
+                if (unreadCount > 0) { badge.innerText = unreadCount; badge.classList.remove('hidden'); } else badge.classList.add('hidden');
+                if (supList.innerHTML === '') supList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No support messages</div>';
             });
 
             db.ref('ads').on('value', s => {
@@ -2210,11 +2122,9 @@
                 adApprovalList.innerHTML = '';
                 manageAdsList.innerHTML = '';
                 const ads = s.val() || {};
-                let pendingCount = 0, manageCount = 0;
                 Object.keys(ads).forEach(id => {
                     const ad = ads[id];
                     if (ad.status === 'pending_approval') {
-                        pendingCount++;
                         const pmLabels = (ad.paymentMethods || []).filter(m => m !== 'undefined').join(', ').toUpperCase() || 'NONE';
                         const typeColor = ad.type === 'buy' ? 'text-[#0ECB81]' : 'text-[#F6465D]';
                         adApprovalList.innerHTML += `
@@ -2231,19 +2141,12 @@
                                 <p class="italic text-gray-400">Terms: "${ad.terms || 'None'}"</p>
                             </div>
                             <div class="flex gap-2 pt-1">
-                                <button onclick="adminApproveAd('${id}', 'active')" 
-                                    class="flex-1 bg-[#0ECB81] py-1.5 rounded font-black text-white text-[10px] hover:bg-green-600 transition-colors">
-                                    ✓ Approve
-                                </button>
-                                <button onclick="adminApproveAd('${id}', 'rejected')" 
-                                    class="flex-1 bg-[#F6465D] py-1.5 rounded font-black text-white text-[10px] hover:bg-red-700 transition-colors">
-                                    ✗ Reject
-                                </button>
+                                <button onclick="adminApproveAd('${id}', 'active')" class="flex-1 bg-[#0ECB81] py-1.5 rounded font-black text-white text-[10px] hover:bg-green-600 transition-colors">✓ Approve</button>
+                                <button onclick="adminApproveAd('${id}', 'rejected')" class="flex-1 bg-[#F6465D] py-1.5 rounded font-black text-white text-[10px] hover:bg-red-700 transition-colors">✗ Reject</button>
                             </div>
                         </div>`;
                     }
                     if (ad.status === 'active' || ad.status === 'paused') {
-                        manageCount++;
                         const borderColor = ad.status === 'active' ? 'border-[#0ECB81]' : 'border-amber-600';
                         const actionBtn = ad.status === 'active'
                             ? `<button onclick="adminApproveAd('${id}', 'paused')" class="bg-amber-600 text-white px-3 py-1 rounded text-xs font-bold w-full hover:bg-amber-700 transition-colors"><i class="fa-solid fa-pause mr-1"></i> Pause</button>`
@@ -2262,40 +2165,30 @@
                         </div>`;
                     }
                 });
-                if (pendingCount === 0) adApprovalList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No ads pending approval</div>';
-                if (manageCount === 0) manageAdsList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No active or paused ads</div>';
+                if (adApprovalList.innerHTML === '') adApprovalList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No ads pending approval</div>';
+                if (manageAdsList.innerHTML === '') manageAdsList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No active or paused ads</div>';
             });
 
             db.ref('users').on('value', s => {
-                const users = s.val() || {};
                 const kList = document.getElementById('admin-kyc');
                 if (!kList) return;
                 kList.innerHTML = '';
-                let kycCount = 0;
+                const users = s.val() || {};
                 Object.keys(users).forEach(id => {
                     const u = users[id];
                     if (u.status === 'pending') {
-                        kycCount++;
                         kList.innerHTML += `
                         <div class="bg-[#1e2329] p-3 rounded border border-yellow-600 text-xs mb-2 space-y-2">
-                            <div class="text-white font-bold">
-                                User: <span class="text-[#FCD535]">${u.name || 'User'}</span> (ID: ${id})
-                            </div>
+                            <div class="text-white font-bold">User: <span class="text-[#FCD535]">${u.name || 'User'}</span> (ID: ${id})</div>
                             ${u.idPhoto ? `<img src="${u.idPhoto}" class="w-full max-h-48 object-contain bg-black/50 border border-[#2b3139] rounded cursor-pointer" onclick="window.open(this.src)">` : '<p class="text-red-400">No ID image</p>'}
                             <div class="flex gap-2">
-                                <button onclick="adminKYC('${id}', 'verified')" 
-                                    class="flex-1 bg-[#0ECB81] py-1.5 rounded font-black text-white text-[10px] hover:bg-green-600 transition-colors">
-                                    ✓ Approve
-                                </button>
-                                <button onclick="adminKYC('${id}', 'declined')" 
-                                    class="flex-1 bg-[#F6465D] py-1.5 rounded font-black text-white text-[10px] hover:bg-red-700 transition-colors">
-                                    ✗ Reject
-                                </button>
+                                <button onclick="adminKYC('${id}', 'verified')" class="flex-1 bg-[#0ECB81] py-1.5 rounded font-black text-white text-[10px] hover:bg-green-600 transition-colors">✓ Approve</button>
+                                <button onclick="adminKYC('${id}', 'declined')" class="flex-1 bg-[#F6465D] py-1.5 rounded font-black text-white text-[10px] hover:bg-red-700 transition-colors">✗ Reject</button>
                             </div>
                         </div>`;
                     }
                 });
-                if (kycCount === 0) kList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No pending KYC applications</div>';
+                if (kList.innerHTML === '') kList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No pending KYC applications</div>';
             });
 
             db.ref('orders').on('value', s => {
@@ -2308,8 +2201,6 @@
                     const o = orders[id];
                     if (o.dispute && o.status !== 'completed' && o.status !== 'cancelled' && dList) {
                         const complainant = usersCachedMap[o.disputedBy] || {};
-                        const buyer = usersCachedMap[o.buyerId] || {};
-                        const seller = usersCachedMap[o.sellerId] || {};
                         dList.innerHTML += `
                         <div class="bg-red-950/40 p-3 rounded border border-red-500 text-xs mb-2 space-y-2">
                             <div class="flex justify-between border-b border-red-900 pb-1">
@@ -2321,19 +2212,10 @@
                                 <p>💰 Value: ${(o.amountEtb || 0).toFixed(2)} ETB @ ${o.price} rate</p>
                             </div>
                             <div class="flex flex-col gap-1 pt-1">
-                                <button onclick="openAdminChatMonitor('${id}')" 
-                                    class="bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded font-bold text-[11px] w-full transition-colors">
-                                    <i class="fa-solid fa-comments mr-1"></i> View Chat Logs
-                                </button>
+                                <button onclick="openAdminChatMonitor('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded font-bold text-[11px] w-full transition-colors"><i class="fa-solid fa-comments mr-1"></i> View Chat Logs</button>
                                 <div class="flex gap-2">
-                                    <button onclick="resolveDispute('${id}', 'buyer')" 
-                                        class="flex-1 bg-green-600 text-white py-1.5 rounded font-bold text-[10px] hover:bg-green-700 transition-colors">
-                                        Release to Buyer
-                                    </button>
-                                    <button onclick="resolveDispute('${id}', 'seller')" 
-                                        class="flex-1 bg-red-600 text-white py-1.5 rounded font-bold text-[10px] hover:bg-red-700 transition-colors">
-                                        Return to Seller
-                                    </button>
+                                    <button onclick="resolveDispute('${id}', 'buyer')" class="flex-1 bg-green-600 text-white py-1.5 rounded font-bold text-[10px] hover:bg-green-700 transition-colors">Release to Buyer</button>
+                                    <button onclick="resolveDispute('${id}', 'seller')" class="flex-1 bg-red-600 text-white py-1.5 rounded font-bold text-[10px] hover:bg-red-700 transition-colors">Return to Seller</button>
                                 </div>
                             </div>
                         </div>`;
@@ -2345,18 +2227,10 @@
                         oList.innerHTML += `
                         <div class="bg-[#1e2329] p-3 rounded border border-[#2b3139] text-xs mb-2 flex justify-between items-center hover:bg-[#2b3139] transition-colors">
                             <div>
-                                <p class="font-bold text-white">
-                                    #${id.substring(1, 6).toUpperCase()} - 
-                                    <span class="${statusColor}">${o.dispute ? 'DISPUTE' : o.status.toUpperCase()}</span>
-                                </p>
-                                <p class="text-[10px] text-[#848E9C] mt-1">
-                                    ${buyerName} ↔ ${sellerName} | ${o.amountUsdt} USDT
-                                </p>
+                                <p class="font-bold text-white">#${id.substring(1, 6).toUpperCase()} - <span class="${statusColor}">${o.dispute ? 'DISPUTE' : o.status.toUpperCase()}</span></p>
+                                <p class="text-[10px] text-[#848E9C] mt-1">${buyerName} ↔ ${sellerName} | ${o.amountUsdt} USDT</p>
                             </div>
-                            <button onclick="openAdminChatMonitor('${id}')" 
-                                class="bg-blue-600 text-white px-3 py-1.5 rounded font-bold text-[10px] hover:bg-blue-700 transition-colors">
-                                View
-                            </button>
+                            <button onclick="openAdminChatMonitor('${id}')" class="bg-blue-600 text-white px-3 py-1.5 rounded font-bold text-[10px] hover:bg-blue-700 transition-colors">View</button>
                         </div>`;
                     }
                 });
@@ -2461,4 +2335,4 @@
         });
     </script>
 </body>
-    </html>
+                </html>
