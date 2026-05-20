@@ -545,6 +545,8 @@
                 <label class="text-[#848E9C] block mb-2">Select Payment Method:</label>
                 <select id="payment-method-select" class="w-full p-2 rounded text-xs">
                     <option value="">Select method...</option>
+                    <option value="telebirr">📱 Telebirr</option>
+                    <option value="cbe">🏦 CBE Bank</option>
                 </select>
             </div>
             <input type="number" id="purchase-amount" placeholder="Enter amount in USDT" class="w-full p-3 rounded-lg font-bold mb-4">
@@ -1187,7 +1189,7 @@
                         <div class="text-right flex-shrink-0 ml-3 space-y-1">
                             <p class="text-sm font-black text-white">${ad.price.toFixed(2)} <span class="text-[8px] text-[#848E9C]">ETB</span></p>
                             ${isMyAd ? `<span class="text-[10px] bg-gray-700 text-gray-300 px-2 py-1 rounded inline-block">My Ad</span>` : 
-                            `<button onclick="openPurchaseModal('${ad.id}', '${ad.uid}', ${ad.price}, ${ad.min}, ${ad.max}, '${ad.terms.replace(/'/g, "\\'")}', ${JSON.stringify(safePaymentMethods).replace(/"/g, '&quot;')})" 
+                            `<button onclick="openPurchaseModal('${ad.id}', '${ad.uid}', ${ad.price}, ${ad.min}, ${ad.max}, '${ad.terms.replace(/'/g, "\\'")}')" 
                                 class="${btnClr} text-white px-4 py-1.5 rounded-lg text-[10px] font-black transition-colors">${btnLabel}</button>`}
                         </div>
                     </div>
@@ -1231,23 +1233,19 @@
         }
 
         function resetFilters() {
-            // Reset all filter states to default
             filterPaymentMethods = ['telebirr'];
             filterMinTrades = 10;
             filterUsdtMin = 0;
             filterUsdtMax = 100000;
             filterSearch = '';
-            // Update UI
             document.getElementById('filter-usdt-min').value = '0';
             document.getElementById('filter-usdt-max').value = '100000';
             document.getElementById('filter-search').value = '';
-            // Reset payment method chips
             document.querySelectorAll('.filter-chip').forEach(chip => {
                 const method = chip.getAttribute('onclick')?.match(/'(\w+)'/)?.[1];
                 if (method === 'telebirr') chip.classList.add('active');
                 else if (method === 'cbe') chip.classList.remove('active');
             });
-            // Reset trader experience chips
             document.querySelectorAll('[onclick*="setMinTrades"]').forEach(chip => {
                 const count = parseInt(chip.getAttribute('onclick')?.match(/setMinTrades\((\d+)/)?.[1]);
                 if (count === 10) chip.classList.add('active');
@@ -1257,26 +1255,18 @@
             showToast("🔄 Filters reset to default.");
         }
 
-        // ====== PURCHASE & TRADE (with partner payment validation) ======
-        function openPurchaseModal(adId, creatorId, price, min, max, terms, paymentMethodsStr) {
+        // ====== PURCHASE & TRADE ======
+        function openPurchaseModal(adId, creatorId, price, min, max, terms) {
             if (!checkRequirements()) return;
-            let paymentMethods = [];
-            try { paymentMethods = JSON.parse(paymentMethodsStr.replace(/&quot;/g, '"')); } catch (e) { paymentMethods = ['cbe']; }
-            paymentMethods = paymentMethods.filter(m => m && m !== 'undefined');
-            if (paymentMethods.length === 0) paymentMethods = ['cbe'];
-            selectedAd = { adId, creatorId, price, min, max, paymentMethods };
+            selectedAd = { adId, creatorId, price, min, max };
             document.getElementById('pm-title').innerText = `${currentMarketType === 'buy' ? 'Buy' : 'Sell'} USDT`;
             document.getElementById('pm-limit').innerText = `${min} - ${max} USDT`;
             document.getElementById('pm-terms').innerText = terms;
             const sellerData = usersCachedMap[creatorId] || {};
             document.getElementById('pm-seller-name').innerText = sellerData.name || "User";
             document.getElementById('pm-seller-trades').innerText = (sellerData.totalTrades || 0) + " Trades";
-            const select = document.getElementById('payment-method-select');
-            select.innerHTML = '<option value="">Select method...</option>';
-            paymentMethods.forEach(m => {
-                const labels = { 'telebirr': '📱 Telebirr', 'cbe': '🏦 CBE Bank' };
-                select.innerHTML += `<option value="${m}">${labels[m] || '🏦 CBE Bank'}</option>`;
-            });
+            // Payment method select already has both options hardcoded
+            document.getElementById('payment-method-select').value = '';
             document.getElementById('purchase-amount').value = '';
             document.getElementById('btn-confirm-purchase').onclick = confirmPurchase;
             openModal('purchaseModal');
@@ -1290,11 +1280,17 @@
                 return showToast(`⚠️ Amount must be between ${selectedAd.min} and ${selectedAd.max} USDT`);
             }
 
-            // Determine partner (ad owner)
-            const partnerId = currentMarketType === 'buy' ? selectedAd.creatorId : user.id; // actually if selling, partner is buyer? wait correct logic
-            // In the market: if currentMarketType is 'buy', user is buying from the ad owner (seller). So partner is seller.
-            // If currentMarketType is 'sell', user is selling to ad owner (buyer). Partner is buyer, but we need to check buyer's binanceId (which is always required for any user). 
-            // However the selected payment method is chosen by the buyer. The buyer's payment details are irrelevant for the seller; the seller will see the buyer's binanceId in trade room. So we only need to verify that the ad owner (seller) has the necessary payment details for the method the buyer selected.
+            // Fetch the ad's actual payment methods to validate
+            const ad = allAds.find(a => a.id === selectedAd.adId);
+            const adPaymentMethods = ad ? (ad.paymentMethods || []).filter(m => m && m !== 'undefined') : [];
+            // If ad's methods are empty (should not happen), default to both for flexibility
+            if (adPaymentMethods.length === 0) adPaymentMethods.push('telebirr', 'cbe');
+            
+            if (!adPaymentMethods.includes(selectedPayment)) {
+                return showToast(`⚠️ Seller does not accept ${selectedPayment === 'telebirr' ? '📱 Telebirr' : '🏦 CBE Bank'}. Please choose another method.`);
+            }
+
+            // Determine seller (ad owner) and verify they have the required payment details
             const sellerId = currentMarketType === 'buy' ? selectedAd.creatorId : String(user.id);
             const seller = usersCachedMap[sellerId] || {};
             if (selectedPayment === 'telebirr' && (!seller.telePhone || !seller.teleName)) {
@@ -2201,4 +2197,4 @@
         }
     </script>
 </body>
-            </html>
+                    </html>
