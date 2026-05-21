@@ -23,32 +23,15 @@
             --sell-red: #F6465D;
         }
 
-        * {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; overflow-x: hidden; margin: 0; padding: 0; }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.25s ease; }
         .nav-item { color: var(--text-muted); transition: all 0.2s; cursor: pointer; position: relative; }
         .nav-item.active { color: var(--text-main); font-weight: 700; }
         
-        input, select, textarea {
-            background-color: var(--bg-dark) !important;
-            border: 1px solid #2b3139 !important;
-            color: var(--text-main) !important;
-            outline: none;
-        }
+        input, select, textarea { background-color: var(--bg-dark) !important; border: 1px solid #2b3139 !important; color: var(--text-main) !important; outline: none; }
         input:focus, select:focus, textarea:focus { border-color: var(--primary-yellow) !important; }
-
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: var(--bg-dark); }
         ::-webkit-scrollbar-thumb { background: #2b3139; border-radius: 4px; }
@@ -71,64 +54,26 @@
         .banned-screen { background: var(--bg-dark); z-index: 10000; }
         
         .filter-chip {
-            display: inline-block;
-            background: #2b3139;
-            border: 1px solid #2b3139;
-            color: var(--text-main);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
+            display: inline-block; background: #2b3139; border: 1px solid #2b3139;
+            color: var(--text-main); padding: 6px 12px; border-radius: 20px;
+            font-size: 12px; cursor: pointer; transition: all 0.2s; white-space: nowrap;
         }
-        .filter-chip.active {
-            background: var(--primary-yellow);
-            color: black;
-            border-color: var(--primary-yellow);
-        }
+        .filter-chip.active { background: var(--primary-yellow); color: black; border-color: var(--primary-yellow); }
 
         .online-dot {
-            width: 8px; height: 8px;
-            background-color: #0ECB81;
-            border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 8px #0ECB81;
-            animation: pulse 2s infinite;
+            width: 8px; height: 8px; background-color: #0ECB81; border-radius: 50%;
+            display: inline-block; box-shadow: 0 0 8px #0ECB81; animation: pulse 2s infinite;
         }
-        .offline-dot {
-            width: 8px; height: 8px;
-            background-color: #848E9C;
-            border-radius: 50%;
-            display: inline-block;
-        }
+        .offline-dot { width: 8px; height: 8px; background-color: #848E9C; border-radius: 50%; display: inline-block; }
 
-        .delete-chat-btn {
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        .chat-message:hover .delete-chat-btn {
-            opacity: 1;
-        }
+        .delete-chat-btn { opacity: 0; transition: opacity 0.2s; }
+        .chat-message:hover .delete-chat-btn { opacity: 1; }
 
-        .modal-overlay {
-            animation: fadeIn 0.2s ease;
-        }
-
+        .modal-overlay { animation: fadeIn 0.2s ease; }
         .nav-badge {
-            position: absolute;
-            top: -2px;
-            right: -6px;
-            background: #F6465D;
-            color: white;
-            font-size: 9px;
-            min-width: 16px;
-            height: 16px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 3px;
+            position: absolute; top: -2px; right: -6px; background: #F6465D; color: white;
+            font-size: 9px; min-width: 16px; height: 16px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; padding: 0 3px;
         }
     </style>
 </head>
@@ -205,10 +150,12 @@
 
                     <div>
                         <label class="text-[10px] text-[#848E9C] font-bold mb-2 block">Trader Experience</label>
-                        <div class="flex gap-2 flex-wrap">
-                            <span class="filter-chip" onclick="setMinTrades(0, this)">All Users</span>
-                            <span class="filter-chip active" onclick="setMinTrades(10, this)">10+ Trades</span>
+                        <div class="flex gap-2 flex-wrap items-center">
+                            <span class="filter-chip active" onclick="setMinTrades(0, this)">All Users</span>
+                            <span class="filter-chip" onclick="setMinTrades(10, this)">10+ Trades</span>
                             <span class="filter-chip" onclick="setMinTrades(50, this)">50+ Trades</span>
+                            <span class="filter-chip" onclick="setMinTradesCustom()" id="custom-trades-chip">Custom</span>
+                            <input type="number" id="custom-trades-input" placeholder="Min trades" class="p-2 rounded text-xs w-24 hidden" onchange="applyCustomTrades()">
                         </div>
                     </div>
 
@@ -443,7 +390,10 @@
                 </button>
                 <button onclick="switchAdminTab('admin-ad-approvals', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">📋 Ads Pending</button>
                 <button onclick="switchAdminTab('admin-manage-ads', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">⚙️ Manage Ads</button>
-                <button onclick="switchAdminTab('admin-kyc', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">🆔 KYC</button>
+                <button onclick="switchAdminTab('admin-kyc', this)" class="admin-tab-btn relative bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">
+                    🆔 KYC 
+                    <span id="kyc-tab-badge" class="hidden bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">0</span>
+                </button>
                 <button onclick="switchAdminTab('admin-disputes', this)" class="admin-tab-btn relative bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">
                     🚨 Disputes 
                     <span id="dispute-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center hidden font-bold">0</span>
@@ -486,6 +436,7 @@
             <i class="fa-solid fa-crown text-lg"></i>
             <span class="text-[10px] font-bold">Admin</span>
             <div id="nav-dispute-dot" class="absolute top-0 right-1 w-2 h-2 bg-red-500 rounded-full hidden"></div>
+            <span id="nav-kyc-badge" class="notification-badge hidden" style="top:-5px;right:-15px;">0</span>
         </button>
     </nav>
 
@@ -758,6 +709,7 @@
         let currentSupportUid = null;
         let currentMonitorOrderId = null;
         let supportUnread = false;
+        let pendingKycCount = 0;
 
         let filterPaymentMethods = ['telebirr'];
         let filterMinTrades = 10;
@@ -792,6 +744,7 @@
                 cacheSet(CACHE_KEY_USERS, usersCachedMap);
                 if (myData && myData.name) updateProfileUI();
                 loadMarketAds();
+                updateKycBadges();
             });
 
             initUser();
@@ -806,6 +759,26 @@
         function updatePresence() {
             if (user && user.id) {
                 db.ref('users/' + user.id).update({ lastSeen: Date.now() });
+            }
+        }
+
+        // ====== KYC BADGES ======
+        function updateKycBadges() {
+            let count = 0;
+            Object.values(usersCachedMap).forEach(u => {
+                if (u.status === 'pending') count++;
+            });
+            pendingKycCount = count;
+            const navBadge = document.getElementById('nav-kyc-badge');
+            const tabBadge = document.getElementById('kyc-tab-badge');
+            if (count > 0) {
+                navBadge.innerText = count;
+                navBadge.classList.remove('hidden');
+                tabBadge.innerText = count;
+                tabBadge.classList.remove('hidden');
+            } else {
+                navBadge.classList.add('hidden');
+                tabBadge.classList.add('hidden');
             }
         }
 
@@ -942,7 +915,10 @@
                 const reader = new FileReader();
                 document.getElementById('kyc-action-area').innerHTML = `<button disabled class="w-full bg-[#1e2329] border border-[#2b3139] text-[#FCD535] py-2.5 rounded-lg text-sm font-bold animate-pulse"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Uploading...</button>`;
                 reader.onload = e => {
-                    db.ref('users/' + user.id).update({ status: 'pending', idPhoto: e.target.result }).then(() => showToast("✅ ID uploaded! Awaiting admin verification."));
+                    db.ref('users/' + user.id).update({ status: 'pending', idPhoto: e.target.result }).then(() => {
+                        showToast("✅ ID uploaded! Awaiting admin verification.");
+                        updateKycBadges();
+                    });
                 };
                 reader.readAsDataURL(input.files[0]);
             }
@@ -965,50 +941,67 @@
         // ====== AD SYSTEM ======
         function publishAd() {
             if (!checkRequirements()) return;
-            const price = parseFloat(document.getElementById('ad-price').value);
-            const amount = parseFloat(document.getElementById('ad-amount').value);
-            const min = parseFloat(document.getElementById('ad-min').value);
-            const max = parseFloat(document.getElementById('ad-max').value);
-            const terms = document.getElementById('ad-terms').value || "No special terms.";
             const type = document.getElementById('ad-form-type').value;
-            if (!price || !amount || !min || !max) return showToast("⚠️ Please fill all fields!");
-            if (min > max) return showToast("⚠️ Min limit cannot be greater than Max limit!");
-            if (min > amount || max > amount) return showToast("⚠️ Limits must be within total amount!");
+            
+            // Check existing active ads of same type
+            db.ref('ads').orderByChild('uid').equalTo(user.id).once('value', snap => {
+                let hasActive = false;
+                snap.forEach(child => {
+                    const ad = child.val();
+                    if (ad.type === type && (ad.status === 'active' || ad.status === 'paused')) {
+                        hasActive = true;
+                        return true;
+                    }
+                });
+                if (hasActive) {
+                    showToast(`⚠️ You already have an active ${type} ad. Please pause or delete it first.`);
+                    return;
+                }
+                
+                const price = parseFloat(document.getElementById('ad-price').value);
+                const amount = parseFloat(document.getElementById('ad-amount').value);
+                const min = parseFloat(document.getElementById('ad-min').value);
+                const max = parseFloat(document.getElementById('ad-max').value);
+                const terms = document.getElementById('ad-terms').value || "No special terms.";
+                if (!price || !amount || !min || !max) return showToast("⚠️ Please fill all fields!");
+                if (min > max) return showToast("⚠️ Min limit cannot be greater than Max limit!");
+                if (min > amount || max > amount) return showToast("⚠️ Limits must be within total amount!");
 
-            const paymentMethods = [
-                document.getElementById('pm-telebirr').checked ? 'telebirr' : null,
-                document.getElementById('pm-cbe').checked ? 'cbe' : null
-            ].filter(p => p !== null);
+                const paymentMethods = [
+                    document.getElementById('pm-telebirr').checked ? 'telebirr' : null,
+                    document.getElementById('pm-cbe').checked ? 'cbe' : null
+                ].filter(p => p !== null);
 
-            if (paymentMethods.length === 0) return showToast("⚠️ Select at least one payment method!");
-            if (paymentMethods.includes('cbe') && (!myData.cbeAccount || !myData.cbeName)) {
-                return showToast("⚠️ Please fill CBE Account details in your profile first!");
-            }
-            if (paymentMethods.includes('telebirr') && (!myData.telePhone || !myData.teleName)) {
-                return showToast("⚠️ Please fill Telebirr details in your profile first!");
-            }
+                if (paymentMethods.length === 0) return showToast("⚠️ Select at least one payment method!");
+                if (paymentMethods.includes('cbe') && (!myData.cbeAccount || !myData.cbeName)) {
+                    return showToast("⚠️ Please fill CBE Account details in your profile first!");
+                }
+                if (paymentMethods.includes('telebirr') && (!myData.telePhone || !myData.teleName)) {
+                    return showToast("⚠️ Please fill Telebirr details in your profile first!");
+                }
 
-            db.ref('ads').push({
-                uid: String(user.id),
-                userName: user.first_name || myData.name || "User",
-                type: type,
-                price: price,
-                amount: amount,
-                min: min,
-                max: max,
-                terms: terms,
-                paymentMethods: paymentMethods,
-                timestamp: Date.now(),
-                status: 'pending_approval'
-            }).then(() => {
-                showToast("✅ Ad submitted! Waiting for admin approval.");
-                document.getElementById('ad-price').value = '';
-                document.getElementById('ad-amount').value = '';
-                document.getElementById('ad-min').value = '';
-                document.getElementById('ad-max').value = '';
-                document.getElementById('ad-terms').value = '';
-                switchMainTab('myads');
-            }).catch(() => showToast("❌ Error publishing ad. Please try again."));
+                db.ref('ads').push({
+                    uid: String(user.id),
+                    userName: user.first_name || myData.name || "User",
+                    type: type,
+                    price: price,
+                    amount: amount,
+                    min: min,
+                    max: max,
+                    terms: terms,
+                    paymentMethods: paymentMethods,
+                    timestamp: Date.now(),
+                    status: 'pending_approval'
+                }).then(() => {
+                    showToast("✅ Ad submitted! Waiting for admin approval.");
+                    document.getElementById('ad-price').value = '';
+                    document.getElementById('ad-amount').value = '';
+                    document.getElementById('ad-min').value = '';
+                    document.getElementById('ad-max').value = '';
+                    document.getElementById('ad-terms').value = '';
+                    switchMainTab('myads');
+                }).catch(() => showToast("❌ Error publishing ad. Please try again."));
+            });
         }
 
         function setAdForm(type) {
@@ -1237,8 +1230,24 @@
 
         function setMinTrades(count, el) {
             filterMinTrades = count;
-            document.querySelectorAll('[onclick*="setMinTrades"]').forEach(e => e.classList.remove('active'));
+            document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
             el.classList.add('active');
+            document.getElementById('custom-trades-input').classList.add('hidden');
+            document.getElementById('custom-trades-chip').classList.remove('active');
+            loadMarketAds();
+        }
+
+        function setMinTradesCustom() {
+            const input = document.getElementById('custom-trades-input');
+            input.classList.toggle('hidden');
+            document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+            document.getElementById('custom-trades-chip').classList.add('active');
+            loadMarketAds();
+        }
+
+        function applyCustomTrades() {
+            const val = parseInt(document.getElementById('custom-trades-input').value) || 0;
+            filterMinTrades = val;
             loadMarketAds();
         }
 
@@ -1259,15 +1268,15 @@
             document.getElementById('filter-usdt-min').value = '0';
             document.getElementById('filter-usdt-max').value = '100000';
             document.getElementById('filter-search').value = '';
+            document.getElementById('custom-trades-input').value = '';
+            document.getElementById('custom-trades-input').classList.add('hidden');
             document.querySelectorAll('.filter-chip').forEach(chip => {
                 const method = chip.getAttribute('onclick')?.match(/'(\w+)'/)?.[1];
                 if (method === 'telebirr') chip.classList.add('active');
                 else if (method === 'cbe') chip.classList.remove('active');
-            });
-            document.querySelectorAll('[onclick*="setMinTrades"]').forEach(chip => {
-                const count = parseInt(chip.getAttribute('onclick')?.match(/setMinTrades\((\d+)/)?.[1]);
-                if (count === 10) chip.classList.add('active');
-                else chip.classList.remove('active');
+                const onclickAttr = chip.getAttribute('onclick');
+                if (onclickAttr && onclickAttr.includes('setMinTrades(10,')) chip.classList.add('active');
+                else if (onclickAttr && onclickAttr.includes('setMinTrades')) chip.classList.remove('active');
             });
             loadMarketAds();
             showToast("🔄 Filters reset to default.");
@@ -1277,7 +1286,6 @@
         function openPurchaseModal(adId, creatorId, price, min, max, terms) {
             if (!checkRequirements()) return;
 
-            // Check if user already has an active pending order (as either buyer or seller)
             if (hasActivePendingOrder()) {
                 showToast("⚠️ You have an active order pending. Complete or wait for it to expire before placing a new order.");
                 return;
@@ -1297,7 +1305,6 @@
         }
 
         function hasActivePendingOrder() {
-            // Check all orders for current user where status is 'pending' and not cancelled/completed
             for (let t of allTransactions) {
                 if ((String(t.buyerId) === String(user.id) || String(t.sellerId) === String(user.id)) &&
                     t.status === 'pending') {
@@ -1413,7 +1420,6 @@
                     }
                 });
 
-                // Update orders badge
                 const ordersBadge = document.getElementById('orders-badge');
                 if (ordersBadge) {
                     if (activeCount > 0) {
@@ -1538,11 +1544,8 @@
             });
         }
 
-        // New function to leave trade room without cancelling
         function leaveTradeRoom() {
-            // Just close the modal, order remains active in background
             closeModal('tradeModal');
-            // Optionally navigate to orders tab
             switchMainTab('myads');
         }
 
@@ -1582,23 +1585,6 @@
                     });
                 }
             });
-        }
-
-        function cancelTrade() {
-            // This function is no longer called from the trade room UI, but kept for admin/dispute resolution
-            if (!activeTradeId) return;
-            if (confirm('Are you sure you want to cancel this trade? This cannot be undone.')) {
-                db.ref('orders/' + activeTradeId).update({ status: 'cancelled' }).then(() => {
-                    db.ref('chats/' + activeTradeId).push({
-                        sender: 'system',
-                        text: `❌ Trade cancelled by ${user.first_name || 'User'}.`,
-                        timestamp: Date.now()
-                    });
-                    clearInterval(tradeInterval);
-                    closeModal('tradeModal');
-                    showToast("Trade cancelled.");
-                });
-            }
         }
 
         function reportDispute() {
@@ -1697,7 +1683,6 @@
         }
 
         function markSupportRead() {
-            // Save current timestamp as last read
             cacheSet(CACHE_KEY_SUPPORT_LAST_READ, Date.now());
             supportUnread = false;
             updateSupportBadge();
@@ -1719,8 +1704,8 @@
         }
 
         function updateSupportBadge() {
-            const badge1 = document.getElementById('support-unread-badge'); // inside profile button
-            const badge2 = document.getElementById('profile-unread-badge'); // on nav profile
+            const badge1 = document.getElementById('support-unread-badge');
+            const badge2 = document.getElementById('profile-unread-badge');
             if (supportUnread) {
                 if (badge1) badge1.classList.remove('hidden');
                 if (badge2) badge2.classList.remove('hidden');
@@ -1989,7 +1974,17 @@
                     let content = '';
                     if (c.image) content = `<img src="${c.image}" class="chat-image cursor-pointer" onclick="window.open(this.src)">`;
                     else content = `<strong class="text-[#FCD535]">${senderName}:</strong> ${c.text || ''}`;
-                    box.innerHTML += `<div class="flex ${align} mb-1"><div class="${bg} px-3 py-1.5 rounded-lg text-[11px] max-w-[80%] break-words">${content}</div></div>`;
+                    box.innerHTML += `
+                    <div class="flex ${align} mb-1 chat-message group relative">
+                        <div class="${bg} px-3 py-1.5 rounded-lg text-[11px] max-w-[80%] break-words">
+                            ${content}
+                        </div>
+                        <button onclick="deleteChatMessage('${orderId}', '${key}')" 
+                            class="delete-chat-btn absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center hover:bg-red-600 transition-all" 
+                            title="Delete message">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>`;
                 });
                 box.scrollTop = box.scrollHeight;
             });
@@ -2044,6 +2039,7 @@
                         ${String(id) !== String(ADMIN_ID) ? bBtn : '<span class="text-[#FCD535] text-xs font-bold">ADMIN</span>'}
                     </div>`;
                 });
+                updateKycBadges();
             });
 
             db.ref('support_threads').on('value', s => {
@@ -2175,6 +2171,10 @@
                                     <button onclick="resolveDispute('${id}', 'buyer')" class="flex-1 bg-green-600 text-white py-1.5 rounded font-bold text-[10px] hover:bg-green-700 transition-colors">Release to Buyer</button>
                                     <button onclick="resolveDispute('${id}', 'seller')" class="flex-1 bg-red-600 text-white py-1.5 rounded font-bold text-[10px] hover:bg-red-700 transition-colors">Return to Seller</button>
                                 </div>
+                                <div class="flex gap-2">
+                                    <button onclick="toggleBan('${o.buyerId}', true)" class="flex-1 bg-red-700 text-white py-1.5 rounded font-bold text-[10px] hover:bg-red-800 transition-colors"><i class="fa-solid fa-gavel mr-1"></i> Ban Buyer</button>
+                                    <button onclick="toggleBan('${o.sellerId}', true)" class="flex-1 bg-red-700 text-white py-1.5 rounded font-bold text-[10px] hover:bg-red-800 transition-colors"><i class="fa-solid fa-gavel mr-1"></i> Ban Seller</button>
+                                </div>
                             </div>
                         </div>`;
                     }
@@ -2200,6 +2200,7 @@
         function adminKYC(uid, status) {
             db.ref('users/' + uid).update({ status: status }).then(() => {
                 showToast(`User KYC ${status === 'verified' ? 'approved' : 'declined'}!`);
+                updateKycBadges();
                 if (status === 'verified') {
                     db.ref('notifications/' + uid).push({
                         type: 'system',
@@ -2289,4 +2290,4 @@
         }
     </script>
 </body>
-            </html>
+                                                                                           </html>
