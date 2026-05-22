@@ -45,7 +45,7 @@
             background: #F6465D; color: white; font-size: 9px; 
             padding: 2px 5px; border-radius: 10px; min-width: 18px; text-align: center;
         }
-        .chat-image { max-width: 200px; border-radius: 8px; margin-top: 5px; border: 1px solid #2b3139; }
+        .chat-image { max-width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; margin-top: 5px; border: 1px solid #2b3139; cursor: pointer; }
         .badge-pro { background: #6C5CE7; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
         .badge-trusted { background: #00B894; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
         .badge-verified { background: #0ECB81; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
@@ -767,12 +767,8 @@
         let currentTxnStatus = 'all';
 
         // ====== CACHE HELPERS ======
-        function cacheSet(key, value) {
-            try { localStorage.setItem(key, JSON.stringify(value)); } catch(e) {}
-        }
-        function cacheGet(key) {
-            try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch(e) { return null; }
-        }
+        function cacheSet(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch(e) {} }
+        function cacheGet(key) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch(e) { return null; } }
 
         // ====== INITIALIZATION ======
         window.addEventListener('DOMContentLoaded', () => {
@@ -811,41 +807,25 @@
         });
 
         function updatePresence() {
-            if (user && user.id) {
-                db.ref('users/' + user.id).update({ lastSeen: Date.now() });
-            }
+            if (user && user.id) db.ref('users/' + user.id).update({ lastSeen: Date.now() });
         }
 
-        // ====== KYC BADGES ======
         function updateKycBadges() {
             let count = 0;
-            Object.values(usersCachedMap).forEach(u => {
-                if (u.status === 'pending') count++;
-            });
+            Object.values(usersCachedMap).forEach(u => { if (u.status === 'pending') count++; });
             pendingKycCount = count;
             const navBadge = document.getElementById('nav-kyc-badge');
             const tabBadge = document.getElementById('kyc-tab-badge');
-            if (count > 0) {
-                navBadge.innerText = count;
-                navBadge.classList.remove('hidden');
-                tabBadge.innerText = count;
-                tabBadge.classList.remove('hidden');
-            } else {
-                navBadge.classList.add('hidden');
-                tabBadge.classList.add('hidden');
-            }
+            if (count > 0) { navBadge.innerText = count; navBadge.classList.remove('hidden'); tabBadge.innerText = count; tabBadge.classList.remove('hidden'); }
+            else { navBadge.classList.add('hidden'); tabBadge.classList.add('hidden'); }
         }
 
         function updateDepositBadge() {
             db.ref('deposits').orderByChild('status').equalTo('pending').once('value', s => {
                 pendingDepositCount = s.numChildren();
                 const badge = document.getElementById('deposit-badge');
-                if (pendingDepositCount > 0) {
-                    badge.innerText = pendingDepositCount;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                }
+                if (pendingDepositCount > 0) { badge.innerText = pendingDepositCount; badge.classList.remove('hidden'); }
+                else { badge.classList.add('hidden'); }
             });
         }
 
@@ -880,10 +860,7 @@
                     if (Object.keys(updates).length > 0) db.ref('users/' + user.id).update(updates);
                 }
                 cacheSet(CACHE_KEY_MYDATA, myData);
-                if (myData.isBanned) {
-                    document.getElementById('banned-screen').classList.remove('hidden');
-                    return;
-                }
+                if (myData.isBanned) { document.getElementById('banned-screen').classList.remove('hidden'); return; }
                 updateProfileUI();
             });
         }
@@ -949,13 +926,8 @@
             document.getElementById('prof-trades').innerText = myData.totalTrades || 0;
 
             const badge = document.getElementById('prof-badge');
-            if (myData.status === 'verified') {
-                badge.className = 'badge-verified flex-shrink-0';
-                badge.innerText = '✓ VERIFIED';
-            } else {
-                badge.className = 'text-[#848E9C] text-xs flex-shrink-0';
-                badge.innerText = 'UNVERIFIED';
-            }
+            if (myData.status === 'verified') { badge.className = 'badge-verified flex-shrink-0'; badge.innerText = '✓ VERIFIED'; }
+            else { badge.className = 'text-[#848E9C] text-xs flex-shrink-0'; badge.innerText = 'UNVERIFIED'; }
 
             document.getElementById('balance-display').innerText = (myData.depositBalance || 0).toFixed(2) + ' USDT';
             document.getElementById('balance-amount').innerText = (myData.depositBalance || 0).toFixed(2);
@@ -1037,23 +1009,12 @@
         function adminApproveDeposit(depId, uid, amount) {
             db.ref('deposits/' + depId).update({ status: 'approved' }).then(() => {
                 db.ref('users/' + uid + '/depositBalance').transaction(current => (current || 0) + amount);
-                db.ref('notifications/' + uid).push({
-                    type: 'system',
-                    message: `💰 Deposit of ${amount} USDT approved! Your balance has been updated.`,
-                    timestamp: Date.now(),
-                    read: false
-                });
+                db.ref('notifications/' + uid).push({ type:'system', message:`💰 Deposit of ${amount} USDT approved! Your balance has been updated.`, timestamp:Date.now(), read:false });
                 showToast("✅ Deposit approved and balance updated!");
             });
         }
-
-        function adminRejectDeposit(depId) {
-            db.ref('deposits/' + depId).update({ status: 'rejected' }).then(() => showToast("❌ Deposit rejected."));
-        }
-
-        function adminAdjustBalance(uid, delta) {
-            db.ref('users/' + uid + '/depositBalance').transaction(current => (current || 0) + delta).then(() => showToast("Balance adjusted."));
-        }
+        function adminRejectDeposit(depId) { db.ref('deposits/' + depId).update({ status: 'rejected' }).then(() => showToast("❌ Deposit rejected.")); }
+        function adminAdjustBalance(uid, delta) { db.ref('users/' + uid + '/depositBalance').transaction(current => (current || 0) + delta).then(() => showToast("Balance adjusted.")); }
 
         // ====== AD SYSTEM (with pause/resume by user and admin) ======
         function publishAd() {
@@ -1065,7 +1026,6 @@
             const min = parseFloat(document.getElementById('ad-min').value);
             const max = parseFloat(document.getElementById('ad-max').value);
             const terms = document.getElementById('ad-terms').value || "No special terms.";
-
             if (!price || !amount || !min || !max) return showToast("⚠️ Please fill all fields!");
             if (amount > balance) return showToast("⚠️ Total amount exceeds your available deposit balance!");
             if (min > max) return showToast("⚠️ Min limit cannot be greater than Max limit!");
@@ -1075,28 +1035,15 @@
                 let hasActive = false;
                 snap.forEach(child => {
                     const ad = child.val();
-                    if (ad.type === type && (ad.status === 'active' || ad.status === 'paused')) {
-                        hasActive = true;
-                        return true;
-                    }
+                    if (ad.type === type && (ad.status === 'active' || ad.status === 'paused')) { hasActive = true; return true; }
                 });
-                if (hasActive) {
-                    showToast(`⚠️ You already have an active ${type} ad. Please pause or delete it first.`);
-                    return;
-                }
+                if (hasActive) { showToast(`⚠️ You already have an active ${type} ad. Please pause or delete it first.`); return; }
                 
                 const paymentMethods = [
                     document.getElementById('pm-telebirr').checked ? 'telebirr' : null,
                     document.getElementById('pm-cbe').checked ? 'cbe' : null
                 ].filter(p => p !== null);
-
                 if (paymentMethods.length === 0) return showToast("⚠️ Select at least one payment method!");
-                if (paymentMethods.includes('cbe') && (!myData.cbeAccount || !myData.cbeName)) {
-                    return showToast("⚠️ Please fill CBE Account details in your profile first!");
-                }
-                if (paymentMethods.includes('telebirr') && (!myData.telePhone || !myData.teleName)) {
-                    return showToast("⚠️ Please fill Telebirr details in your profile first!");
-                }
 
                 db.ref('ads').push({
                     uid: String(user.id),
@@ -1160,9 +1107,7 @@
         }
 
         // Admin approval for pending ads
-        function adminApproveAd(adId, status) {
-            db.ref('ads/' + adId).update({ status: status }).then(() => showToast(`Ad ${status === 'active' ? 'approved' : 'rejected'}!`));
-        }
+        function adminApproveAd(adId, status) { db.ref('ads/' + adId).update({ status: status }).then(() => showToast(`Ad ${status === 'active' ? 'approved' : 'rejected'}!`)); }
 
         function openEditAdModal(id, price, min, max) {
             editingAdId = id;
@@ -1202,8 +1147,8 @@
                 allAds = [];
                 snap.forEach(child => {
                     const ad = { id: child.key, ...child.val() };
-                    if (ad.status === 'deleted' || ad.status === 'rejected') return;
-                    if (ad.status === 'active') allAds.push(ad);
+                    // Include all non-deleted/rejected ads so that user can see their paused ones
+                    if (ad.status !== 'deleted' && ad.status !== 'rejected') allAds.push(ad);
                 });
                 cacheSet(CACHE_KEY_ADS, allAds);
                 loadMarketAdsUI();
@@ -1220,8 +1165,7 @@
             allAds.forEach(ad => {
                 if (String(ad.uid) === String(user.id) && userAdsList) {
                     myAdsCounter++;
-                    let badgeState = '';
-                    let actionToggleBtn = '';
+                    let badgeState = '', actionToggleBtn = '';
                     if (ad.status === 'pending_approval') {
                         badgeState = `<span class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-2 py-0.5 rounded text-[10px] font-bold">Pending</span>`;
                     } else if (ad.status === 'active') {
@@ -1259,7 +1203,9 @@
             });
             if (myAdsCounter === 0 && userAdsList) userAdsList.innerHTML = '<div class="text-center text-[#848E9C] text-xs py-4">No ads posted yet</div>';
 
+            // Market list: only show active ads
             filteredAds = allAds.filter(ad => {
+                if (ad.status !== 'active') return false; // critical: only active ads shown in market
                 if (ad.type !== (currentMarketType === 'buy' ? 'sell' : 'buy')) return false;
                 if (ad.amount < filterUsdtMin || ad.amount > filterUsdtMax) return false;
                 let methods = (ad.paymentMethods || []).filter(m => m && m !== 'undefined');
@@ -1306,11 +1252,7 @@
             });
         }
 
-        function deleteAd(adId) {
-            if (confirm('Delete this ad permanently?')) {
-                db.ref('ads/' + adId).update({ status: 'deleted' }).then(() => showToast("🗑️ Ad deleted!"));
-            }
-        }
+        function deleteAd(adId) { if (confirm('Delete this ad permanently?')) db.ref('ads/' + adId).update({ status: 'deleted' }).then(() => showToast("🗑️ Ad deleted!")); }
 
         // ====== FILTERS ======
         function togglePaymentFilter(method, el) {
@@ -1324,7 +1266,6 @@
             }
             loadMarketAds();
         }
-
         function setMinTrades(count, el) {
             filterMinTrades = count;
             document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
@@ -1333,16 +1274,8 @@
             document.getElementById('custom-trades-chip').classList.remove('active');
             loadMarketAds();
         }
-
-        function setMinTradesCustom() {
-            document.getElementById('custom-trades-input').classList.toggle('hidden');
-        }
-
-        function applyCustomTrades() {
-            filterMinTrades = parseInt(document.getElementById('custom-trades-input').value) || 0;
-            loadMarketAds();
-        }
-
+        function setMinTradesCustom() { document.getElementById('custom-trades-input').classList.toggle('hidden'); }
+        function applyCustomTrades() { filterMinTrades = parseInt(document.getElementById('custom-trades-input').value) || 0; loadMarketAds(); }
         function applyFilters() {
             filterUsdtMin = parseFloat(document.getElementById('filter-usdt-min').value) || 0;
             filterUsdtMax = parseFloat(document.getElementById('filter-usdt-max').value) || 100000;
@@ -1350,7 +1283,6 @@
             loadMarketAds();
             showToast("🔍 Filters applied!");
         }
-
         function resetFilters() {
             filterPaymentMethods = ['telebirr', 'cbe'];
             filterMinTrades = 0;
@@ -1375,10 +1307,7 @@
         // ====== PURCHASE & ORDER FLOW (ad type based trade steps) ======
         function openPurchaseModal(adId, creatorId, price, min, max, terms) {
             if (!checkRequirements()) return;
-            if (hasActivePendingOrder()) {
-                showToast("⚠️ You have an active order. Complete or cancel it first.");
-                return;
-            }
+            if (hasActivePendingOrder()) { showToast("⚠️ You have an active order. Complete or cancel it first."); return; }
             selectedAd = { adId, creatorId, price, min, max };
             document.getElementById('pm-title').innerText = currentMarketType === 'buy' ? 'Buy USDT' : 'Sell USDT';
             document.getElementById('pm-limit').innerText = `${min} - ${max} USDT`;
@@ -1393,9 +1322,7 @@
         }
 
         function hasActivePendingOrder() {
-            return allTransactions.some(t => 
-                (String(t.buyerId)===String(user.id) || String(t.sellerId)===String(user.id)) && t.status==='pending'
-            );
+            return allTransactions.some(t => (String(t.buyerId)===String(user.id) || String(t.sellerId)===String(user.id)) && t.status==='pending');
         }
 
         function confirmPurchase() {
@@ -1532,59 +1459,30 @@
                 }
                 document.getElementById('tr-payment-info').innerHTML = infoHTML;
 
-                // Determine trade button based on ad type and role
-                const adType = o.adType; // 'buy' or 'sell'
+                const adType = o.adType;
                 const iAmAdOwner = String(user.id) === String(o.adOwnerId);
                 const btn = document.getElementById('btn-tr-accept');
                 let label = '', action = null, disabled = false;
 
-                if (adType === 'sell') { // ad poster is seller
-                    if (iAmBuyer) { // I'm the buyer (not ad owner)
-                        if (!o.buyerPaidEtb) {
-                            label = "✅ I Paid ETB";
-                            action = () => db.ref('orders/'+orderId).update({buyerPaidEtb:true}).then(()=> sendSysMsg(orderId,'Buyer paid ETB.'));
-                        } else if (o.sellerReleasedUsdt && !o.buyerReceivedUsdt) {
-                            label = "✅ I Received USDT";
-                            action = () => completeSellOrder(orderId, o);
-                        } else {
-                            label = "⏳ Waiting for seller...";
-                            disabled = true;
-                        }
-                    } else { // I'm the seller (ad owner)
-                        if (!o.sellerReceivedEtb && o.buyerPaidEtb) {
-                            label = "✅ I Received ETB";
-                            action = () => db.ref('orders/'+orderId).update({sellerReceivedEtb:true});
-                        } else if (o.sellerReceivedEtb && !o.sellerReleasedUsdt) {
-                            label = "🚀 Release USDT";
-                            action = () => db.ref('orders/'+orderId).update({sellerReleasedUsdt:true});
-                        } else {
-                            label = "⏳ Waiting for buyer...";
-                            disabled = true;
-                        }
+                if (adType === 'sell') {
+                    if (iAmBuyer) {
+                        if (!o.buyerPaidEtb) { label = "✅ I Paid ETB"; action = () => db.ref('orders/'+orderId).update({buyerPaidEtb:true}); }
+                        else if (o.sellerReleasedUsdt && !o.buyerReceivedUsdt) { label = "✅ I Received USDT"; action = () => completeSellOrder(orderId, o); }
+                        else { label = "⏳ Waiting for seller..."; disabled = true; }
+                    } else {
+                        if (!o.sellerReceivedEtb && o.buyerPaidEtb) { label = "✅ I Received ETB"; action = () => db.ref('orders/'+orderId).update({sellerReceivedEtb:true}); }
+                        else if (o.sellerReceivedEtb && !o.sellerReleasedUsdt) { label = "🚀 Release USDT"; action = () => db.ref('orders/'+orderId).update({sellerReleasedUsdt:true}); }
+                        else { label = "⏳ Waiting for buyer..."; disabled = true; }
                     }
-                } else { // adType === 'buy' (ad poster is buyer)
-                    if (!iAmBuyer) { // I'm the seller (not ad owner)
-                        if (!o.sellerPaidUsdt) {
-                            label = "✅ I Paid USDT";
-                            action = () => db.ref('orders/'+orderId).update({sellerPaidUsdt:true});
-                        } else if (o.buyerPaidEtb && !o.sellerReceivedEtb) {
-                            label = "✅ I Received ETB";
-                            action = () => completeBuyOrder(orderId, o);
-                        } else {
-                            label = "⏳ Waiting for buyer...";
-                            disabled = true;
-                        }
-                    } else { // I'm the buyer (ad owner)
-                        if (o.sellerPaidUsdt && !o.buyerReceivedUsdt) {
-                            label = "✅ I Received USDT";
-                            action = () => db.ref('orders/'+orderId).update({buyerReceivedUsdt:true});
-                        } else if (o.buyerReceivedUsdt && !o.buyerPaidEtb) {
-                            label = "✅ I Paid ETB";
-                            action = () => db.ref('orders/'+orderId).update({buyerPaidEtb:true});
-                        } else {
-                            label = "⏳ Waiting for seller...";
-                            disabled = true;
-                        }
+                } else { // adType 'buy'
+                    if (!iAmBuyer) {
+                        if (!o.sellerPaidUsdt) { label = "✅ I Paid USDT"; action = () => db.ref('orders/'+orderId).update({sellerPaidUsdt:true}); }
+                        else if (o.buyerPaidEtb && !o.sellerReceivedEtb) { label = "✅ I Received ETB"; action = () => completeBuyOrder(orderId, o); }
+                        else { label = "⏳ Waiting for buyer..."; disabled = true; }
+                    } else {
+                        if (o.sellerPaidUsdt && !o.buyerReceivedUsdt) { label = "✅ I Received USDT"; action = () => db.ref('orders/'+orderId).update({buyerReceivedUsdt:true}); }
+                        else if (o.buyerReceivedUsdt && !o.buyerPaidEtb) { label = "✅ I Paid ETB"; action = () => db.ref('orders/'+orderId).update({buyerPaidEtb:true}); }
+                        else { label = "⏳ Waiting for seller..."; disabled = true; }
                     }
                 }
 
@@ -1611,11 +1509,8 @@
                 db.ref('users/'+o.sellerId+'/totalTrades').transaction(cur=>(cur||0)+1);
             });
         }
-        function sendSysMsg(orderId, text) {
-            db.ref('chats/'+orderId).push({sender:'system', text, timestamp:Date.now()});
-        }
         function leaveTradeRoom() { closeModal('tradeModal'); switchMainTab('myads'); }
-        function acceptTrade() {} // handled by dynamic button
+        function acceptTrade() {}
         function reportDispute() {
             if (!activeTradeId) return;
             if (confirm('Report dispute?')) {
@@ -1637,8 +1532,8 @@
                     const isMe = String(c.sender)===String(user.id), isSys = c.sender==='system';
                     const align = isMe ? 'justify-end' : isSys ? 'justify-center' : 'justify-start';
                     const bg = isMe ? 'bg-[#FCD535] text-black' : isSys ? 'text-[#848E9C] text-center' : 'bg-[#2b3139] text-white';
-                    let content = c.image ? `<img src="${c.image}" class="chat-image cursor-pointer" onclick="window.open(this.src)">` : c.text||'';
-                    box.innerHTML += `<div class="flex ${align} mb-1 chat-message group relative"><div class="${bg} px-3 py-1.5 rounded-lg text-[11px] max-w-[80%] break-words">${content}<div class="text-[8px] opacity-50 mt-0.5 text-right">${new Date(c.timestamp).toLocaleTimeString()}</div></div>${!isSys?`<button onclick="deleteChatMessage('${orderId}','${key}')" class="delete-chat-btn absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>`:''}</div>`;
+                    let content = c.image ? `<img src="${c.image}" class="chat-image" onclick="window.open(this.src)">` : c.text||'';
+                    box.innerHTML += `<div class="flex ${align} mb-1 chat-message group relative"><div class="${bg} px-3 py-1.5 rounded-lg text-[11px] max-w-[80%] break-words">${content}<div class="text-[8px] opacity-50 mt-0.5 text-right">${new Date(c.timestamp).toLocaleTimeString()}</div></div>${!isSys?`<button onclick="deleteChatMessage('${orderId}','${key}')" class="delete-chat-btn absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-[10px]"><i class="fa-solid fa-xmark"></i></button>`:''}</div>`;
                 });
                 box.scrollTop = box.scrollHeight;
             });
@@ -1659,7 +1554,7 @@
                 Object.entries(s.val()||{}).sort((a,b)=>a[1].timestamp-b[1].timestamp).forEach(([key,c])=>{
                     const isMe = isAdmin ? c.sender==='admin' : String(c.sender)===String(uid);
                     const bg = isMe ? 'bg-[#FCD535] text-black' : c.sender==='system' ? 'text-[#848E9C]' : 'bg-[#2b3139] text-white';
-                    box.innerHTML += `<div class="flex ${isMe?'justify-end':c.sender==='system'?'justify-center':'justify-start'} mb-1 chat-message"><div class="${bg} px-3 py-1.5 rounded-lg text-[11px] max-w-[80%]">${c.image?`<img src="${c.image}" class="chat-image">`:c.text||''}</div></div>`;
+                    box.innerHTML += `<div class="flex ${isMe?'justify-end':c.sender==='system'?'justify-center':'justify-start'} mb-1 chat-message"><div class="${bg} px-3 py-1.5 rounded-lg text-[11px] max-w-[80%]">${c.image?`<img src="${c.image}" class="chat-image" onclick="window.open(this.src)">`:c.text||''}</div></div>`;
                 });
             });
             if(isAdmin) db.ref('support_threads/'+uid).update({unreadByAdmin:false});
@@ -1821,7 +1716,6 @@
 
             loadAdminDeposits();
         }
-
         function adminKYC(uid, status) {
             db.ref('users/'+uid).update({status:status}).then(()=>{
                 showToast(`User KYC ${status==='verified'?'approved':'declined'}!`);
@@ -1830,9 +1724,7 @@
                 else db.ref('notifications/'+uid).push({type:'system', message:'❌ Your KYC was declined.', timestamp:Date.now(), read:false});
             });
         }
-        function toggleBan(uid, isBanned) {
-            if(confirm(`${isBanned?'Ban':'Unban'} user?`)) db.ref('users/'+uid).update({isBanned}).then(()=>showToast(`User ${isBanned?'banned':'unbanned'}.`));
-        }
+        function toggleBan(uid, isBanned) { if(confirm(`${isBanned?'Ban':'Unban'} user?`)) db.ref('users/'+uid).update({isBanned}).then(()=>showToast(`User ${isBanned?'banned':'unbanned'}.`)); }
         function resolveDispute(oid, winner) {
             if(confirm(`Resolve in favor of ${winner}?`)) {
                 db.ref('orders/'+oid).update({status:'completed', disputeResolved:true, disputeResolvedBy:String(user.id), disputeResolutionTime:Date.now(), disputeWinner:winner}).then(()=>{
@@ -1855,7 +1747,6 @@
                 if (dList.innerHTML === '') dList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No pending deposits</div>';
             });
         }
-
         function updateDisputeBadges(orders) {
             const badge = document.getElementById('dispute-badge');
             const dot = document.getElementById('nav-dispute-dot');
@@ -1863,7 +1754,6 @@
             if (count > 0) { badge.innerText = count; badge.classList.remove('hidden'); dot.classList.remove('hidden'); }
             else { badge.classList.add('hidden'); dot.classList.add('hidden'); }
         }
-
         function openAdminChatMonitor(orderId) {
             currentMonitorOrderId = orderId;
             document.getElementById('admin-ch-id').innerText = "#" + orderId.substring(1,6).toUpperCase();
@@ -1878,7 +1768,7 @@
                     const align = isSys ? 'justify-center' : 'justify-start';
                     const bg = isSys ? 'text-[#848E9C] text-center' : 'bg-[#2b3139] text-white';
                     const senderName = usersCachedMap[c.sender]?.name||c.sender||'Unknown';
-                    let content = c.image ? `<img src="${c.image}" class="chat-image">` : `<strong class="text-[#FCD535]">${senderName}:</strong> ${c.text||''}`;
+                    let content = c.image ? `<img src="${c.image}" class="chat-image" onclick="window.open(this.src)">` : `<strong class="text-[#FCD535]">${senderName}:</strong> ${c.text||''}`;
                     box.innerHTML += `<div class="flex ${align} mb-1 chat-message group relative"><div class="${bg} px-3 py-1.5 rounded-lg text-[11px] max-w-[80%] break-words">${content}</div><button onclick="deleteChatMessage('${orderId}','${key}')" class="delete-chat-btn absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-[10px]"><i class="fa-solid fa-trash"></i></button></div>`;
                 });
                 box.scrollTop = box.scrollHeight;
