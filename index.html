@@ -111,6 +111,9 @@
             </div>
         </div>
         <div class="flex items-center gap-3">
+            <a href="https://t.me/Ethio_p2p_Exchange" target="_blank" class="text-[#FCD535] text-xs font-bold hover:underline">
+                <i class="fa-brands fa-telegram mr-1"></i> Join Channel
+            </a>
             <button onclick="toggleNotificationPanel()" class="relative text-lg text-[#FCD535]">
                 <i class="fa-solid fa-bell"></i>
                 <span id="notification-count" class="notification-badge hidden">0</span>
@@ -213,6 +216,9 @@
                     <button onclick="setAdForm('sell')" id="form-tab-sell" class="flex-1 py-2 text-sm font-bold text-[#848E9C] rounded-md transition-all">Sell USDT</button>
                 </div>
                 <input type="hidden" id="ad-form-type" value="buy">
+                <div id="sell-balance-info" class="hidden bg-yellow-500/10 p-2 rounded text-xs text-[#FCD535]">
+                    <i class="fa-solid fa-wallet mr-1"></i> Available Balance: <span id="sell-balance-amount" class="font-bold">0.00</span> USDT
+                </div>
 
                 <div>
                     <label class="text-xs text-[#848E9C] mb-1 block">Price per USDT (ETB)</label>
@@ -257,6 +263,30 @@
             </div>
         </section>
 
+        <!-- Deposit Modal (User) -->
+        <div id="depositModal" class="modal-overlay fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
+            <div class="bg-[#1e2329] w-full max-w-sm rounded-xl p-5 border border-[#2b3139] space-y-4">
+                <h3 class="text-white font-bold text-base">Deposit USDT</h3>
+                <p class="text-xs text-[#848E9C]">Send USDT to the admin's Binance ID below and submit proof.</p>
+                <div class="bg-[#0b0e11] p-3 rounded-lg border border-[#2b3139] text-center">
+                    <p class="text-[10px] text-[#848E9C]">Admin Binance ID</p>
+                    <p class="text-2xl font-black text-[#FCD535] tracking-wider">895035355</p>
+                    <button onclick="navigator.clipboard.writeText('895035355'); showToast('📋 Copied!')" class="text-xs text-[#4285F4] mt-1 hover:underline">
+                        <i class="fa-solid fa-copy mr-1"></i> Copy
+                    </button>
+                </div>
+                <input type="number" id="deposit-amount" placeholder="Amount in USDT" class="w-full p-3 rounded-lg font-bold">
+                <div>
+                    <label class="text-[10px] text-[#848E9C] mb-1 block">Payment Screenshot</label>
+                    <input type="file" id="deposit-screenshot" accept="image/*" class="w-full text-xs text-white">
+                </div>
+                <button onclick="submitDeposit()" class="w-full bg-[#FCD535] text-black font-bold py-3 rounded-lg text-sm hover:opacity-90 transition-opacity">
+                    <i class="fa-solid fa-paper-plane mr-1"></i> Submit Deposit
+                </button>
+                <button onclick="closeModal('depositModal')" class="w-full py-2 border border-[#2b3139] text-[#848E9C] text-xs rounded-lg hover:bg-[#2b3139] transition-colors">Cancel</button>
+            </div>
+        </div>
+
         <!-- Transaction History View -->
         <section id="history-view" class="tab-content p-4 space-y-4">
             <h2 class="text-xl font-bold text-white mb-4">Transaction History</h2>
@@ -296,6 +326,18 @@
                         <p class="text-[#848E9C] mt-1">Total Trades</p>
                     </div>
                 </div>
+            </div>
+
+            <!-- Balance Card -->
+            <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139]">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-bold text-[#848E9C] uppercase">Sell Limit Balance</h3>
+                    <button onclick="openModal('depositModal')" class="bg-[#FCD535] text-black px-3 py-1 rounded text-[10px] font-bold hover:opacity-90 transition-opacity">
+                        <i class="fa-solid fa-plus mr-1"></i> Deposit
+                    </button>
+                </div>
+                <div class="text-2xl font-black text-white" id="balance-display">0.00 USDT</div>
+                <p class="text-[10px] text-[#848E9C] mt-1">Maximum you can offer when selling USDT</p>
             </div>
 
             <!-- KYC Section -->
@@ -390,6 +432,10 @@
                 </button>
                 <button onclick="switchAdminTab('admin-ad-approvals', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">📋 Ads Pending</button>
                 <button onclick="switchAdminTab('admin-manage-ads', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">⚙️ Manage Ads</button>
+                <button onclick="switchAdminTab('admin-deposits', this)" class="admin-tab-btn relative bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">
+                    💰 Deposits
+                    <span id="deposit-badge" class="hidden bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">0</span>
+                </button>
                 <button onclick="switchAdminTab('admin-kyc', this)" class="admin-tab-btn relative bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">
                     🆔 KYC 
                     <span id="kyc-tab-badge" class="hidden bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">0</span>
@@ -405,6 +451,7 @@
             <div id="admin-support" class="admin-panel hidden space-y-2"></div>
             <div id="admin-ad-approvals" class="admin-panel hidden space-y-2"></div>
             <div id="admin-manage-ads" class="admin-panel hidden space-y-2"></div>
+            <div id="admin-deposits" class="admin-panel hidden space-y-2"></div>
             <div id="admin-kyc" class="admin-panel hidden space-y-2"></div>
             <div id="admin-disputes" class="admin-panel hidden space-y-2"></div>
             <div id="admin-orders" class="admin-panel hidden space-y-2"></div>
@@ -614,7 +661,6 @@
             </div>
         </div>
 
-        <!-- Only accept button, cancel removed -->
         <div class="fixed bottom-0 w-full bg-[#1e2329] border-t border-[#2b3139] p-3 flex gap-2 z-[60]">
             <button onclick="acceptTrade()" id="btn-tr-accept" class="flex-1 py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase hover:opacity-90 transition-opacity">
                 I Have Paid
@@ -710,6 +756,7 @@
         let currentMonitorOrderId = null;
         let supportUnread = false;
         let pendingKycCount = 0;
+        let pendingDepositCount = 0;
 
         let filterPaymentMethods = ['telebirr'];
         let filterMinTrades = 10;
@@ -745,6 +792,12 @@
                 if (myData && myData.name) updateProfileUI();
                 loadMarketAds();
                 updateKycBadges();
+                updateDepositBadge();
+            });
+
+            db.ref('deposits').on('value', snap => {
+                updateDepositBadge();
+                if (String(user.id) === String(ADMIN_ID)) loadAdminDeposits();
             });
 
             initUser();
@@ -753,7 +806,7 @@
             listenToSupportChat();
             if (String(user.id) === String(ADMIN_ID)) loadAdminData();
             updatePresence();
-            setInterval(updatePresence, 20000);
+            setInterval(updatePresence, 15000);
         });
 
         function updatePresence() {
@@ -782,6 +835,19 @@
             }
         }
 
+        function updateDepositBadge() {
+            db.ref('deposits').orderByChild('status').equalTo('pending').once('value', s => {
+                pendingDepositCount = s.numChildren();
+                const badge = document.getElementById('deposit-badge');
+                if (pendingDepositCount > 0) {
+                    badge.innerText = pendingDepositCount;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            });
+        }
+
         // ====== USER SYSTEM ======
         function initUser() {
             db.ref('users/' + user.id).on('value', snap => {
@@ -800,7 +866,8 @@
                         teleName: "",
                         binanceId: "",
                         cbeAccount: "",
-                        cbeName: ""
+                        cbeName: "",
+                        depositBalance: 0
                     };
                     db.ref('users/' + user.id).set(newUser);
                     myData = newUser;
@@ -889,6 +956,8 @@
                 badge.innerText = 'UNVERIFIED';
             }
 
+            document.getElementById('balance-display').innerText = (myData.depositBalance || 0).toFixed(2) + ' USDT';
+
             if (myData.telePhone) document.getElementById('pm-tele-phone').value = myData.telePhone;
             if (myData.teleName) document.getElementById('pm-tele-name').value = myData.teleName;
             setupPMDisplay('pm-tele', myData.telePhone, myData.teleName);
@@ -938,12 +1007,57 @@
             return true;
         }
 
+        // ====== DEPOSIT SYSTEM ======
+        function submitDeposit() {
+            const amount = parseFloat(document.getElementById('deposit-amount').value);
+            const file = document.getElementById('deposit-screenshot').files[0];
+            if (!amount || amount <= 0) return showToast("⚠️ Please enter a valid amount!");
+            if (!file) return showToast("⚠️ Please attach a payment screenshot!");
+            const reader = new FileReader();
+            reader.onload = e => {
+                db.ref('deposits').push({
+                    uid: String(user.id),
+                    userName: myData.name || user.first_name || "User",
+                    amount: amount,
+                    screenshot: e.target.result,
+                    status: 'pending',
+                    timestamp: Date.now()
+                }).then(() => {
+                    showToast("✅ Deposit submitted! Waiting for admin approval.");
+                    closeModal('depositModal');
+                    document.getElementById('deposit-amount').value = '';
+                    document.getElementById('deposit-screenshot').value = '';
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function adminApproveDeposit(depId, uid, amount) {
+            db.ref('deposits/' + depId).update({ status: 'approved' }).then(() => {
+                db.ref('users/' + uid + '/depositBalance').transaction(current => (current || 0) + amount);
+                db.ref('notifications/' + uid).push({
+                    type: 'system',
+                    message: `💰 Deposit of ${amount} USDT approved! Your balance has been updated.`,
+                    timestamp: Date.now(),
+                    read: false
+                });
+                showToast("✅ Deposit approved and balance updated!");
+            });
+        }
+
+        function adminRejectDeposit(depId) {
+            db.ref('deposits/' + depId).update({ status: 'rejected' }).then(() => showToast("❌ Deposit rejected."));
+        }
+
+        function adminAdjustBalance(uid, delta) {
+            db.ref('users/' + uid + '/depositBalance').transaction(current => (current || 0) + delta).then(() => showToast("Balance adjusted."));
+        }
+
         // ====== AD SYSTEM ======
         function publishAd() {
             if (!checkRequirements()) return;
             const type = document.getElementById('ad-form-type').value;
             
-            // Check existing active ads of same type
             db.ref('ads').orderByChild('uid').equalTo(user.id).once('value', snap => {
                 let hasActive = false;
                 snap.forEach(child => {
@@ -966,6 +1080,9 @@
                 if (!price || !amount || !min || !max) return showToast("⚠️ Please fill all fields!");
                 if (min > max) return showToast("⚠️ Min limit cannot be greater than Max limit!");
                 if (min > amount || max > amount) return showToast("⚠️ Limits must be within total amount!");
+                if (type === 'sell' && amount > (myData.depositBalance || 0)) {
+                    return showToast("⚠️ Amount exceeds your available deposit balance! Deposit more USDT first.");
+                }
 
                 const paymentMethods = [
                     document.getElementById('pm-telebirr').checked ? 'telebirr' : null,
@@ -1008,12 +1125,16 @@
             document.getElementById('ad-form-type').value = type;
             const buyBtn = document.getElementById('form-tab-buy');
             const sellBtn = document.getElementById('form-tab-sell');
+            const balanceInfo = document.getElementById('sell-balance-info');
             if (type === 'buy') {
                 buyBtn.className = "flex-1 py-2 text-sm font-bold bg-[#0ECB81] text-white rounded-md transition-all";
                 sellBtn.className = "flex-1 py-2 text-sm font-bold text-[#848E9C] rounded-md transition-all";
+                balanceInfo.classList.add('hidden');
             } else {
                 sellBtn.className = "flex-1 py-2 text-sm font-bold bg-[#F6465D] text-white rounded-md transition-all";
                 buyBtn.className = "flex-1 py-2 text-sm font-bold text-[#848E9C] rounded-md transition-all";
+                balanceInfo.classList.remove('hidden');
+                document.getElementById('sell-balance-amount').innerText = (myData.depositBalance || 0).toFixed(2);
             }
         }
 
@@ -1045,28 +1166,10 @@
                 cacheSet(CACHE_KEY_ADS, allAds);
                 loadMarketAdsUI();
             }
-            const userAdCard = document.querySelector(`[data-ad-id="${adId}"]`);
-            if (userAdCard) {
-                const badgeSpan = userAdCard.querySelector('.ad-status-badge');
-                const toggleBtn = userAdCard.querySelector('.ad-toggle-btn');
-                if (newStatus === 'active') {
-                    badgeSpan.innerHTML = `<span class="bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded text-[10px] font-bold">Live</span>`;
-                    toggleBtn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
-                    toggleBtn.className = "bg-amber-600 text-white px-2 py-1 rounded text-[10px] font-bold hover:bg-amber-700 transition-colors ad-toggle-btn";
-                    toggleBtn.onclick = () => toggleAdStatus(adId, 'paused');
-                } else {
-                    badgeSpan.innerHTML = `<span class="bg-gray-500/20 text-gray-400 border border-gray-500/30 px-2 py-0.5 rounded text-[10px] font-bold">Paused</span>`;
-                    toggleBtn.innerHTML = `<i class="fa-solid fa-play"></i>`;
-                    toggleBtn.className = "bg-green-600 text-white px-2 py-1 rounded text-[10px] font-bold hover:bg-green-700 transition-colors ad-toggle-btn";
-                    toggleBtn.onclick = () => toggleAdStatus(adId, 'active');
-                }
-            }
             db.ref('ads/' + adId).update({ status: newStatus }).then(() => {
                 showToast(`Ad ${newStatus === 'active' ? 'resumed' : 'paused'} successfully!`);
             }).catch(() => {
-                if (adIndex !== -1) allAds[adIndex].status = (newStatus === 'active' ? 'paused' : 'active');
-                cacheSet(CACHE_KEY_ADS, allAds);
-                loadMarketAdsUI();
+                loadMarketAds();
                 showToast("❌ Failed to update ad status. Please try again.");
             });
         }
@@ -1325,7 +1428,6 @@
             const ad = allAds.find(a => a.id === selectedAd.adId);
             const adPaymentMethods = ad ? (ad.paymentMethods || []).filter(m => m && m !== 'undefined') : [];
             if (adPaymentMethods.length === 0) adPaymentMethods.push('telebirr', 'cbe');
-            
             if (!adPaymentMethods.includes(selectedPayment)) {
                 return showToast(`⚠️ Seller does not accept ${selectedPayment === 'telebirr' ? '📱 Telebirr' : '🏦 CBE Bank'}. Please choose another method.`);
             }
@@ -1342,6 +1444,14 @@
             const buyerId = currentMarketType === 'buy' ? String(user.id) : String(selectedAd.creatorId);
             if (buyerId === sellerId) return showToast("⚠️ You cannot trade with yourself!");
 
+            // Decrease ad amount
+            db.ref('ads/' + selectedAd.adId + '/amount').transaction(current => {
+                if (current == null) return current;
+                const newAmount = current - amt;
+                if (newAmount < 0) return; // abort
+                return newAmount > 0 ? newAmount : 0;
+            });
+
             const ref = db.ref('orders').push();
             const orderData = {
                 adId: selectedAd.adId,
@@ -1352,15 +1462,17 @@
                 price: selectedAd.price,
                 selectedPaymentMethod: selectedPayment,
                 status: 'pending',
-                buyerAccepted: false,
-                sellerAccepted: false,
+                buyerPaid: false,
+                sellerReceivedEtb: false,
+                sellerReleasedUsdt: false,
+                buyerReceivedUsdt: false,
                 startTime: Date.now(),
                 dispute: false
             };
             ref.set(orderData).then(() => {
                 db.ref('chats/' + ref.key).push({
                     sender: 'system',
-                    text: `🔵 Order #${ref.key.substring(1, 6).toUpperCase()} started. You have 15 minutes to complete the trade.`,
+                    text: `🔵 Order #${ref.key.substring(1, 6).toUpperCase()} started. Follow the steps carefully.`,
                     timestamp: Date.now()
                 });
                 const partnerNotifId = currentMarketType === 'buy' ? selectedAd.creatorId : user.id;
@@ -1527,20 +1639,63 @@
                     </div>`;
                 }
                 document.getElementById('tr-payment-info').innerHTML = paymentHTML;
+
                 const btn = document.getElementById('btn-tr-accept');
-                const myAcceptStatus = iAmBuyer ? o.buyerAccepted : o.sellerAccepted;
-                const partnerAccepted = iAmBuyer ? o.sellerAccepted : o.buyerAccepted;
-                if (myAcceptStatus) {
-                    btn.innerText = partnerAccepted ? "✅ Trade Complete!" : "⏳ Waiting for Partner...";
-                    btn.className = "flex-1 py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase";
-                    btn.disabled = true;
-                } else {
-                    btn.innerText = iAmBuyer ? "✅ I Have Paid (ETB Sent)" : "✅ I Have Released USDT";
-                    btn.className = "flex-1 py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity";
-                    btn.disabled = false;
+                let buttonText = '';
+                let onClickAction = null;
+                let disabled = false;
+
+                if (iAmBuyer) {
+                    if (!o.buyerPaid) {
+                        buttonText = "✅ I Paid ETB";
+                        onClickAction = () => db.ref('orders/' + orderId).update({ buyerPaid: true });
+                    } else if (o.sellerReleasedUsdt && !o.buyerReceivedUsdt) {
+                        buttonText = "✅ I Received USDT";
+                        onClickAction = () => completeTrade(orderId, o);
+                    } else {
+                        buttonText = "⏳ Waiting...";
+                        disabled = true;
+                    }
+                } else { // seller
+                    if (!o.sellerReceivedEtb && o.buyerPaid) {
+                        buttonText = "✅ I Received ETB";
+                        onClickAction = () => db.ref('orders/' + orderId).update({ sellerReceivedEtb: true });
+                    } else if (o.sellerReceivedEtb && !o.sellerReleasedUsdt) {
+                        buttonText = "🚀 Release USDT";
+                        onClickAction = () => db.ref('orders/' + orderId).update({ sellerReleasedUsdt: true });
+                    } else {
+                        buttonText = "⏳ Waiting...";
+                        disabled = true;
+                    }
                 }
+
+                btn.innerText = buttonText;
+                btn.className = disabled 
+                    ? "flex-1 py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase" 
+                    : "flex-1 py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity";
+                btn.disabled = disabled;
+                btn.onclick = onClickAction;
                 loadChat(orderId);
                 openModal('tradeModal');
+            });
+        }
+
+        function completeTrade(orderId, o) {
+            db.ref('orders/' + orderId).update({
+                buyerReceivedUsdt: true,
+                status: 'completed'
+            }).then(() => {
+                db.ref('chats/' + orderId).push({
+                    sender: 'system',
+                    text: '🎉 Trade completed successfully! Both parties confirmed.',
+                    timestamp: Date.now()
+                });
+                db.ref('users/' + o.buyerId + '/totalTrades').transaction(current => (current || 0) + 1);
+                db.ref('users/' + o.sellerId + '/totalTrades').transaction(current => (current || 0) + 1);
+                clearInterval(tradeInterval);
+                closeModal('tradeModal');
+                openModal('ratingModal');
+                showToast("🎉 Trade completed successfully!");
             });
         }
 
@@ -1550,41 +1705,7 @@
         }
 
         function acceptTrade() {
-            if (!activeTradeId) return;
-            db.ref('orders/' + activeTradeId).once('value', s => {
-                const o = s.val();
-                if (!o) return;
-                const iAmBuyer = String(o.buyerId) === String(user.id);
-                const updates = {};
-                if (iAmBuyer) updates.buyerAccepted = true;
-                else updates.sellerAccepted = true;
-                const partnerAccepted = iAmBuyer ? o.sellerAccepted : o.buyerAccepted;
-                if (partnerAccepted) {
-                    updates.status = 'completed';
-                    db.ref('orders/' + activeTradeId).update(updates).then(() => {
-                        db.ref('chats/' + activeTradeId).push({
-                            sender: 'system',
-                            text: '🎉 Trade completed successfully! Both parties confirmed.',
-                            timestamp: Date.now()
-                        });
-                        db.ref('users/' + o.buyerId + '/totalTrades').transaction(current => (current || 0) + 1);
-                        db.ref('users/' + o.sellerId + '/totalTrades').transaction(current => (current || 0) + 1);
-                        clearInterval(tradeInterval);
-                        closeModal('tradeModal');
-                        openModal('ratingModal');
-                        showToast("🎉 Trade completed successfully!");
-                    });
-                } else {
-                    db.ref('orders/' + activeTradeId).update(updates).then(() => {
-                        db.ref('chats/' + activeTradeId).push({
-                            sender: 'system',
-                            text: `✅ ${user.first_name || 'User'} has confirmed their part. Waiting for partner.`,
-                            timestamp: Date.now()
-                        });
-                        showToast("✅ Confirmed! Waiting for partner to confirm.");
-                    });
-                }
-            });
+            // This function is now handled by the dynamic button assignment above.
         }
 
         function reportDispute() {
@@ -1719,7 +1840,7 @@
             currentSupportUid = uid;
             const u = usersCachedMap[uid] || {};
             document.getElementById('adm-sup-name').innerText = u.name || "Unknown User";
-            document.getElementById('adm-sup-details').innerText = `TG ID: ${uid} | 📱 ${u.telePhone || 'N/A'} | 🔶 ${u.binanceId || 'N/A'}`;
+            document.getElementById('adm-sup-details').innerText = `TG ID: ${uid} | 📱 ${u.telePhone || 'N/A'} | 🏦 ${u.cbeAccount || 'N/A'} | 🔶 ${u.binanceId || 'N/A'}`;
             openModal('adminSupportChatModal');
             loadSupportChat('admin-support-chat-messages', currentSupportUid, true);
             setTimeout(() => {
@@ -2018,6 +2139,33 @@
             db.ref('ads/' + adId).update({ status: status }).then(() => showToast(`Ad ${status === 'active' ? 'approved' : 'rejected'}!`));
         }
 
+        function loadAdminDeposits() {
+            db.ref('deposits').on('value', s => {
+                const dList = document.getElementById('admin-deposits');
+                if (!dList) return;
+                dList.innerHTML = '';
+                const deposits = s.val() || {};
+                Object.keys(deposits).forEach(id => {
+                    const d = deposits[id];
+                    if (d.status === 'pending') {
+                        dList.innerHTML += `
+                        <div class="bg-[#1e2329] p-3 rounded border border-yellow-500 text-xs mb-2 space-y-2">
+                            <div class="flex justify-between border-b border-yellow-900 pb-1">
+                                <span class="text-white font-bold">${d.userName || 'User'} (${d.uid})</span>
+                                <span class="text-[#FCD535] font-bold">${d.amount} USDT</span>
+                            </div>
+                            ${d.screenshot ? `<img src="${d.screenshot}" class="w-full max-h-40 object-contain bg-black/50 border border-[#2b3139] rounded cursor-pointer" onclick="window.open(this.src)">` : ''}
+                            <div class="flex gap-2">
+                                <button onclick="adminApproveDeposit('${id}', '${d.uid}', ${d.amount})" class="flex-1 bg-green-600 text-white py-1.5 rounded font-bold text-[10px] hover:bg-green-700 transition-colors">✓ Approve</button>
+                                <button onclick="adminRejectDeposit('${id}')" class="flex-1 bg-red-600 text-white py-1.5 rounded font-bold text-[10px] hover:bg-red-700 transition-colors">✗ Reject</button>
+                            </div>
+                        </div>`;
+                    }
+                });
+                if (dList.innerHTML === '') dList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No pending deposits</div>';
+            });
+        }
+
         function loadAdminData() {
             db.ref('users').on('value', s => {
                 const users = s.val() || {};
@@ -2035,8 +2183,13 @@
                         <div class="flex-1 min-w-0">
                             <p class="text-white font-medium truncate">${u.name || 'User'}</p>
                             <p class="text-[10px] text-[#848E9C]">TG ID: ${id} | Status: ${(u.status || 'UNVERIFIED').toUpperCase()} | Trades: ${u.totalTrades || 0}</p>
+                            <p class="text-[10px] text-[#FCD535]">Balance: ${(u.depositBalance || 0).toFixed(2)} USDT</p>
                         </div>
-                        ${String(id) !== String(ADMIN_ID) ? bBtn : '<span class="text-[#FCD535] text-xs font-bold">ADMIN</span>'}
+                        <div class="flex gap-1">
+                            <button onclick="adminAdjustBalance('${id}', 1)" class="bg-green-700 px-2 py-1 rounded text-[9px] text-white">+1</button>
+                            <button onclick="adminAdjustBalance('${id}', -1)" class="bg-red-700 px-2 py-1 rounded text-[9px] text-white">-1</button>
+                            ${String(id) !== String(ADMIN_ID) ? bBtn : '<span class="text-[#FCD535] text-xs font-bold">ADMIN</span>'}
+                        </div>
                     </div>`;
                 });
                 updateKycBadges();
@@ -2163,6 +2316,8 @@
                             </div>
                             <div class="text-gray-300 space-y-1 text-[11px]">
                                 <p>⚠️ <span class="text-red-400 font-bold">Raised By:</span> ${complainant.name || 'Unknown'} (${o.disputedBy || 'N/A'})</p>
+                                <p>📱 Phone: ${complainant.telePhone || 'N/A'} | 🏦 Bank: ${complainant.cbeAccount || 'N/A'}</p>
+                                <p>🔶 Binance: ${complainant.binanceId || 'N/A'}</p>
                                 <p>💰 Value: ${(o.amountEtb || 0).toFixed(2)} ETB @ ${o.price} rate</p>
                             </div>
                             <div class="flex flex-col gap-1 pt-1">
@@ -2195,6 +2350,8 @@
                 if (dList && dList.innerHTML === '') dList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No active disputes</div>';
                 if (oList && oList.innerHTML === '') oList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No active orders to monitor</div>';
             });
+
+            loadAdminDeposits();
         }
 
         function adminKYC(uid, status) {
@@ -2263,7 +2420,7 @@
             const el = document.getElementById(id);
             if (el) {
                 el.classList.remove('hidden');
-                if (['purchaseModal','editAdModal','ratingModal'].includes(id)) el.classList.add('flex');
+                if (['purchaseModal','editAdModal','ratingModal','depositModal'].includes(id)) el.classList.add('flex');
             }
         }
 
@@ -2271,7 +2428,7 @@
             const el = document.getElementById(id);
             if (el) {
                 el.classList.add('hidden');
-                if (['purchaseModal','editAdModal','ratingModal'].includes(id)) el.classList.remove('flex');
+                if (['purchaseModal','editAdModal','ratingModal','depositModal'].includes(id)) el.classList.remove('flex');
             }
         }
 
@@ -2290,4 +2447,4 @@
         }
     </script>
 </body>
-                                                                                           </html>
+                    </html>
