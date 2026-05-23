@@ -108,10 +108,10 @@
                 <div class="bg-[#FCD535] text-black font-black text-[10px] px-1.5 py-1 rounded">EP</div>
                 <h1 class="text-sm font-bold tracking-wide">Ethio P2P</h1>
                 <span id="my-presence-indicator" class="online-dot ml-1"></span>
+                <span id="header-balance" class="text-xs font-bold bg-[#1e2329] px-2 py-0.5 rounded border border-[#FCD535] ml-1">0.00 USDT</span>
             </div>
         </div>
         <div class="flex items-center gap-3">
-            <a href="https://t.me/Ethio_p2p_Exchange" target="_blank" class="text-xs font-bold bg-[#1e2329] px-2 py-0.5 rounded border border-[#2b3139] hover:bg-[#2b3139] transition-colors">Join Channel</a>
             <button onclick="toggleNotificationPanel()" class="relative text-lg text-[#FCD535]">
                 <i class="fa-solid fa-bell"></i>
                 <span id="notification-count" class="notification-badge hidden">0</span>
@@ -285,14 +285,12 @@
                     <div class="flex items-center gap-3 flex-1">
                         <div id="prof-avatar" class="w-16 h-16 rounded-full bg-[#2b3139] flex items-center justify-center text-xl font-bold text-white border-2 border-[#FCD535] overflow-hidden flex-shrink-0"></div>
                         <div class="flex-1 min-w-0">
-                            <h2 id="prof-name" class="text-base font-bold text-white truncate">
-                                Loading...
-                                <span id="prof-badge-inline" class="badge-verified text-xs ml-1 hidden">✓</span>
-                            </h2>
+                            <h2 id="prof-name" class="text-base font-bold text-white truncate">Loading...</h2>
                             <p class="text-[10px] font-bold mt-1" id="prof-status-text">STATUS: UNVERIFIED</p>
-                            <p class="text-xs text-[#FCD535] font-bold mt-1" id="prof-balance-line">Balance: <span id="prof-balance">0.00</span> USDT</p>
+                            <p class="text-xs text-[#FCD535] font-bold mt-1">Balance: <span id="prof-balance">0.00</span> USDT</p>
                         </div>
                     </div>
+                    <div id="prof-badge" class="badge-verified flex-shrink-0">✓</div>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-2 text-center text-xs bg-[#0b0e11] p-3 rounded-lg">
@@ -311,6 +309,7 @@
             <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139]">
                 <h3 class="text-xs font-bold text-[#848E9C] uppercase mb-3">Identity Verification (KYC)</h3>
                 <div id="kyc-action-area">
+                    <!-- KYC now uses a full name input instead of photo upload -->
                     <div class="space-y-3">
                         <input type="text" id="kyc-fullname" placeholder="Enter your full name" class="w-full p-2 rounded text-sm">
                         <button onclick="requestKYC()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold hover:bg-[#3367d6] transition-colors">
@@ -462,7 +461,7 @@
         </button>
     </nav>
 
-    <!-- Deposit Modal -->
+    <!-- Deposit Modal (no screenshot) -->
     <div id="depositModal" class="modal-overlay fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
         <div class="bg-[#1e2329] w-full max-w-sm rounded-xl p-5 border border-[#2b3139]">
             <h3 class="text-white font-bold text-lg mb-4">Deposit USDT</h3>
@@ -496,6 +495,7 @@
             <div id="support-chat-messages" class="space-y-2 text-xs"></div>
         </div>
         <div class="p-3 border-t border-[#2b3139] flex gap-2 bg-[#1e2329] pb-6">
+            <!-- Image upload removed – text only -->
             <input type="text" id="sup-chat-input" placeholder="Message Admin..." class="flex-1 bg-[#0b0e11] border border-[#2b3139] rounded-lg px-3 text-white text-xs">
             <button onclick="sendSupportMsg(false)" class="bg-[#FCD535] text-black px-3 rounded-lg hover:opacity-90 transition-opacity">
                 <i class="fa-solid fa-paper-plane"></i>
@@ -523,6 +523,7 @@
             <div id="admin-support-chat-messages" class="space-y-2 text-xs"></div>
         </div>
         <div class="p-3 border-t border-[#2b3139] flex gap-2 bg-[#1e2329] pb-6">
+            <!-- Image upload removed – text only -->
             <input type="text" id="adm-sup-chat-input" placeholder="Reply to user..." class="flex-1 bg-[#0b0e11] border border-[#2b3139] rounded-lg px-3 text-white text-xs">
             <button onclick="sendSupportMsg(true)" class="bg-[#3b82f6] text-white px-3 rounded-lg hover:bg-[#2563eb] transition-colors">
                 <i class="fa-solid fa-paper-plane"></i>
@@ -530,7 +531,7 @@
         </div>
     </div>
 
-    <!-- Purchase Modal -->
+    <!-- Purchase Modal (unchanged) -->
     <div id="purchaseModal" class="modal-overlay fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
         <div class="bg-[#1e2329] w-full max-w-sm rounded-xl p-5 border border-[#2b3139]">
             <h3 class="text-white font-bold text-lg mb-1" id="pm-title">Buy USDT</h3>
@@ -560,7 +561,7 @@
         </div>
     </div>
 
-    <!-- Edit Ad Modal -->
+    <!-- Edit Ad Modal (unchanged) -->
     <div id="editAdModal" class="modal-overlay fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
         <div class="bg-[#1e2329] w-full max-w-sm rounded-xl p-5 border border-[#2b3139] space-y-4">
             <h3 class="text-white font-bold text-base">Edit Ad</h3>
@@ -585,7 +586,7 @@
         </div>
     </div>
 
-    <!-- Trade Room Modal (no image upload) -->
+    <!-- Trade Room Modal – no image upload in chat -->
     <div id="tradeModal" class="fixed inset-0 bg-[#0b0e11] z-[60] hidden flex-col h-screen">
         <div class="bg-[#1e2329] border-b border-[#2b3139] p-3 flex justify-between items-center shrink-0">
             <div class="flex items-center gap-3">
@@ -634,6 +635,7 @@
                     </div>
                     <div id="chat-messages" class="flex-1 overflow-y-auto p-2 space-y-2 text-xs"></div>
                     <div class="p-2 border-t border-[#2b3139] flex gap-2">
+                        <!-- Image upload removed – text only -->
                         <input type="text" id="chat-input" placeholder="Type message..." class="flex-1 bg-[#0b0e11] border border-[#2b3139] rounded-lg px-3 text-white text-xs">
                         <button onclick="sendMsg()" class="bg-[#FCD535] text-black px-3 rounded-lg hover:opacity-90 transition-opacity">
                             <i class="fa-solid fa-paper-plane"></i>
@@ -754,9 +756,8 @@
             try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch(e) { return null; }
         }
 
-        // ====== IMAGE DOWNLOAD HELPER ======
+        // ====== IMAGE DOWNLOAD HELPER (kept for admin downloads) ======
         function downloadImage(base64Data, filename) {
-            // If base64Data is a full data URI, use it directly; else prepend
             const link = document.createElement('a');
             link.href = base64Data;
             link.download = filename || 'image.png';
@@ -887,7 +888,7 @@
         function updateProfileUI() {
             if (!myData || !myData.name) return;
             const displayName = user.first_name || myData.name || "User";
-            document.getElementById('prof-name').innerHTML = `${displayName} <span id="prof-badge-inline" class="badge-verified text-xs ml-1 hidden">✓</span>`;
+            document.getElementById('prof-name').innerText = displayName;
             const initLetter = displayName.charAt(0).toUpperCase();
             const avatarContainer = document.getElementById('prof-avatar');
             const headerAvatar = document.getElementById('header-avatar');
@@ -900,41 +901,46 @@
             }
 
             const sText = document.getElementById('prof-status-text');
-            const badgeInline = document.getElementById('prof-badge-inline');
-            const balanceLine = document.getElementById('prof-balance-line');
             const kycArea = document.getElementById('kyc-action-area');
             if (myData.status === 'verified') {
-                sText.classList.add('hidden');
-                if (badgeInline) badgeInline.classList.remove('hidden');
-                balanceLine.classList.add('text-lg');
+                sText.innerText = '✅ STATUS: VERIFIED';
+                sText.className = "text-[10px] text-[#0ECB81] mt-1 uppercase font-bold";
                 kycArea.innerHTML = `<div class="text-center text-[#0ECB81] font-bold text-xs py-2"><i class="fa-solid fa-circle-check text-lg mb-1 block"></i>Verified</div>`;
             } else if (myData.status === 'pending') {
-                sText.classList.remove('hidden');
                 sText.innerText = '⏳ STATUS: PENDING REVIEW';
                 sText.className = "text-[10px] text-[#FCD535] mt-1 uppercase font-bold";
-                if (badgeInline) badgeInline.classList.add('hidden');
-                balanceLine.classList.remove('text-lg');
                 kycArea.innerHTML = `<button disabled class="w-full bg-[#1e2329] border border-[#2b3139] text-[#FCD535] py-2.5 rounded-lg text-sm font-bold animate-pulse"><i class="fa-solid fa-clock mr-1"></i> Pending Review...</button>`;
             } else if (myData.status === 'declined') {
-                sText.classList.remove('hidden');
                 sText.innerText = '❌ STATUS: DECLINED';
                 sText.className = "text-[10px] text-[#F6465D] mt-1 uppercase font-bold";
-                if (badgeInline) badgeInline.classList.add('hidden');
-                balanceLine.classList.remove('text-lg');
-                kycArea.innerHTML = `<div class="text-center mb-2 text-xs text-red-400 font-medium">Verification failed. Please try again.</div><div class="space-y-3"><input type="text" id="kyc-fullname" placeholder="Enter your full name" class="w-full p-2 rounded text-sm"><button onclick="requestKYC()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold hover:bg-[#3367d6] transition-colors"><i class="fa-solid fa-redo mr-1"></i> Try Again</button></div>`;
+                kycArea.innerHTML = `<div class="text-center mb-2 text-xs text-red-400 font-medium">Verification failed. Please try again.</div>
+                <div class="space-y-3">
+                    <input type="text" id="kyc-fullname" placeholder="Enter your full name" class="w-full p-2 rounded text-sm">
+                    <button onclick="requestKYC()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold hover:bg-[#3367d6] transition-colors"><i class="fa-solid fa-redo mr-1"></i> Try Again</button>
+                </div>`;
             } else {
-                sText.classList.remove('hidden');
                 sText.innerText = '⚠️ STATUS: UNVERIFIED';
                 sText.className = "text-[10px] text-[#848E9C] mt-1 uppercase font-bold";
-                if (badgeInline) badgeInline.classList.add('hidden');
-                balanceLine.classList.remove('text-lg');
-                kycArea.innerHTML = `<div class="space-y-3"><input type="text" id="kyc-fullname" placeholder="Enter your full name" class="w-full p-2 rounded text-sm"><button onclick="requestKYC()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold hover:bg-[#3367d6] transition-colors"><i class="fa-solid fa-upload mr-1"></i> Submit for Verification</button></div>`;
+                kycArea.innerHTML = `
+                <div class="space-y-3">
+                    <input type="text" id="kyc-fullname" placeholder="Enter your full name" class="w-full p-2 rounded text-sm">
+                    <button onclick="requestKYC()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold hover:bg-[#3367d6] transition-colors"><i class="fa-solid fa-upload mr-1"></i> Submit for Verification</button>
+                </div>`;
             }
 
             document.getElementById('prof-completion').innerText = (myData.completionRate || 100) + '%';
             document.getElementById('prof-trades').innerText = myData.totalTrades || 0;
             document.getElementById('prof-balance').innerText = (myData.balance || 0).toFixed(2);
             document.getElementById('header-balance').innerText = (myData.balance || 0).toFixed(2) + ' USDT';
+
+            const badge = document.getElementById('prof-badge');
+            if (myData.status === 'verified') {
+                badge.className = 'badge-verified flex-shrink-0';
+                badge.innerText = '✓ VERIFIED';
+            } else {
+                badge.className = 'text-[#848E9C] text-xs flex-shrink-0';
+                badge.innerText = 'UNVERIFIED';
+            }
 
             if (myData.telePhone) document.getElementById('pm-tele-phone').value = myData.telePhone;
             if (myData.teleName) document.getElementById('pm-tele-name').value = myData.teleName;
@@ -945,7 +951,6 @@
             if (myData.cbeName) document.getElementById('pm-cbe-name').value = myData.cbeName;
             setupPMDisplay('pm-cbe', myData.cbeAccount, myData.cbeName);
 
-            // Update ad form balance display
             document.getElementById('ad-balance-display').innerText = (myData.balance || 0).toFixed(2);
         }
 
@@ -960,6 +965,7 @@
             db.ref('users/' + user.id).update(updates).then(() => showToast("✅ Profile settings saved successfully!")).catch(() => showToast("❌ Error saving profile. Please try again."));
         }
 
+        // ====== NEW KYC REQUEST (full name only, no photo) ======
         function requestKYC() {
             const fullName = document.getElementById('kyc-fullname')?.value.trim();
             if (!fullName) return showToast("⚠️ Please enter your full name.");
@@ -986,7 +992,7 @@
             return true;
         }
 
-        // ====== DEPOSIT SYSTEM ======
+        // ====== DEPOSIT SYSTEM (no screenshot) ======
         function openDepositModal() {
             openModal('depositModal');
         }
@@ -1024,7 +1030,7 @@
                     }
                 });
                 if (hasActive) {
-                    showToast(`⚠️ You already have a ${type} ad. Please delete or edit the existing one.`);
+                    showToast(`⚠️ You already have an active ${type} ad. Please pause or delete it first.`);
                     return;
                 }
                 
@@ -1114,7 +1120,6 @@
         function toggleAdStatus(adId, newStatus) {
             const ad = allAds.find(a => a.id === adId);
             if (!ad) return;
-            // If user tries to activate an ad paused by admin, block it
             if (newStatus === 'active' && ad.pausedByAdmin) {
                 showToast("⚠️ This ad was paused by admin. You cannot re-activate it.");
                 return;
@@ -1153,7 +1158,7 @@
                 snap.forEach(child => {
                     const ad = { id: child.key, ...child.val() };
                     if (ad.status === 'deleted' || ad.status === 'rejected') return;
-                    allAds.push(ad);
+                    allAds.push(ad); // now includes all non-deleted/non-rejected ads
                 });
                 cacheSet(CACHE_KEY_ADS, allAds);
                 loadMarketAdsUI();
@@ -1166,6 +1171,7 @@
             if (list) list.innerHTML = '';
             if (userAdsList) userAdsList.innerHTML = '';
 
+            // Build user's own ads list (all statuses except deleted/rejected)
             let myAdsCounter = 0;
             allAds.forEach(ad => {
                 if (String(ad.uid) === String(user.id) && userAdsList) {
@@ -1217,6 +1223,7 @@
                 userAdsList.innerHTML = '<div class="text-center text-[#848E9C] text-xs py-4">No ads posted yet</div>';
             }
 
+            // Market list: only active ads, with current filters
             filteredAds = allAds.filter(ad => {
                 if (ad.status !== 'active') return false;
                 if (ad.type !== (currentMarketType === 'buy' ? 'sell' : 'buy')) return false;
@@ -1351,7 +1358,7 @@
             showToast("🔄 Filters reset to default.");
         }
 
-        // ====== PURCHASE & TRADE ======
+        // ====== PURCHASE & TRADE (unchanged logic) ======
         function openPurchaseModal(adId, creatorId, price, min, max, terms) {
             if (!checkRequirements()) return;
 
@@ -1724,7 +1731,7 @@
             }
         }
 
-        // ====== CHAT SYSTEM (text only) ======
+        // ====== CHAT SYSTEM (text only, image removal) ======
         function loadChat(orderId) {
             db.ref('chats/' + orderId).on('value', s => {
                 const box = document.getElementById('chat-messages');
@@ -1773,7 +1780,7 @@
             }).then(() => { el.value = ''; });
         }
 
-        // ====== SUPPORT CHAT SYSTEM (text only) ======
+        // ====== SUPPORT CHAT SYSTEM (text only, no images) ======
         function openSupportChat() {
             currentSupportUid = String(user.id);
             openModal('supportChatModal');
@@ -2138,21 +2145,11 @@
                 depList.innerHTML = '';
                 Object.entries(deposits).sort((a,b) => b[1].timestamp - a[1].timestamp).forEach(([id, d]) => {
                     if (d.status === 'pending') {
-                        const userData = usersCachedMap[d.uid] || {};
-                        const fullName = userData.name || d.userName || 'Unknown';
-                        const teleUsername = userData.username || 'N/A';
-                        const phone = userData.telePhone || 'N/A';
-                        const binance = userData.binanceId || 'N/A';
                         depList.innerHTML += `
                         <div class="bg-[#1e2329] p-3 rounded border border-yellow-600 text-xs mb-2 space-y-2">
                             <div class="flex justify-between">
-                                <span class="text-white font-bold">${fullName}</span>
+                                <span class="text-white font-bold">${d.userName || 'User'}</span>
                                 <span class="text-[#FCD535] font-bold">${d.amount} USDT</span>
-                            </div>
-                            <div class="text-gray-300 text-[11px] space-y-1">
-                                <p>✈️ Telegram: ${teleUsername}</p>
-                                <p>📱 Phone: ${phone}</p>
-                                <p>🔶 Binance ID: ${binance}</p>
                             </div>
                             <div class="flex gap-2">
                                 <button onclick="approveDeposit('${id}', '${d.uid}', ${d.amount})" class="flex-1 bg-[#0ECB81] py-1.5 rounded font-black text-white text-[10px] hover:bg-green-600 transition-colors">✓ Approve</button>
@@ -2247,6 +2244,7 @@
                 if (manageAdsList.innerHTML === '') manageAdsList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No active or paused ads</div>';
             });
 
+            // KYC admin panel – shows full name, telegram username, phone numbers
             db.ref('users').on('value', s => {
                 const kList = document.getElementById('admin-kyc');
                 if (!kList) return;
@@ -2287,29 +2285,19 @@
                 Object.keys(orders).forEach(id => {
                     const o = orders[id];
                     if (o.dispute && o.status !== 'completed' && o.status !== 'cancelled' && dList) {
-                        const buyer = usersCachedMap[o.buyerId] || {};
-                        const seller = usersCachedMap[o.sellerId] || {};
+                        const complainant = usersCachedMap[o.disputedBy] || {};
                         dList.innerHTML += `
                         <div class="bg-red-950/40 p-3 rounded border border-red-500 text-xs mb-2 space-y-2">
                             <div class="flex justify-between border-b border-red-900 pb-1">
                                 <strong class="text-red-400">🚨 DISPUTE: #${id.substring(1, 6).toUpperCase()}</strong>
                                 <span class="text-[#FCD535] font-bold">${o.amountUsdt} USDT</span>
                             </div>
-                            <div class="grid grid-cols-2 gap-3 pt-1">
-                                <div class="space-y-1">
-                                    <p class="text-[#0ECB81] font-bold text-[11px]">🛒 BUYER</p>
-                                    <p class="text-gray-300">👤 ${buyer.name || 'Unknown'}</p>
-                                    <p class="text-gray-300">✈️ ${buyer.username || 'N/A'}</p>
-                                    <p class="text-gray-300">📱 ${buyer.telePhone || 'N/A'}</p>
-                                    <p class="text-gray-300">🔶 ${buyer.binanceId || 'N/A'}</p>
-                                </div>
-                                <div class="space-y-1">
-                                    <p class="text-[#F6465D] font-bold text-[11px]">💰 SELLER</p>
-                                    <p class="text-gray-300">👤 ${seller.name || 'Unknown'}</p>
-                                    <p class="text-gray-300">✈️ ${seller.username || 'N/A'}</p>
-                                    <p class="text-gray-300">📱 ${seller.telePhone || 'N/A'}</p>
-                                    <p class="text-gray-300">🔶 ${seller.binanceId || 'N/A'}</p>
-                                </div>
+                            <div class="text-gray-300 space-y-1 text-[11px]">
+                                <p>⚠️ <span class="text-red-400 font-bold">Raised By:</span> ${complainant.name || 'Unknown'} (TG: ${o.disputedBy || 'N/A'})</p>
+                                <p>📱 Phone: ${complainant.telePhone || 'N/A'}</p>
+                                <p>🏦 Bank: ${complainant.cbeAccount || 'N/A'}</p>
+                                <p>🔶 Binance ID: ${complainant.binanceId || 'N/A'}</p>
+                                <p>💰 Value: ${(o.amountEtb || 0).toFixed(2)} ETB @ ${o.price} rate</p>
                             </div>
                             <div class="flex flex-col gap-1 pt-1">
                                 <button onclick="openAdminChatMonitor('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded font-bold text-[11px] w-full transition-colors"><i class="fa-solid fa-comments mr-1"></i> View Chat Logs</button>
