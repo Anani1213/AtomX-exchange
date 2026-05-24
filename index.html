@@ -303,7 +303,7 @@
                         <div id="prof-avatar" class="w-16 h-16 rounded-full bg-[#2b3139] flex items-center justify-center text-xl font-bold text-white border-2 border-[#FCD535] overflow-hidden flex-shrink-0"></div>
                         <div class="flex-1 min-w-0">
                             <h2 id="prof-name" class="text-base font-bold text-white truncate">Loading...</h2>
-                            <p class="text-[10px] font-bold mt-1" id="prof-status-text">STATUS: UNVERIFIED</p>
+                            <p class="text-[10px] font-bold mt-1" id="prof-status-text">STATUS: VERIFIED</p>
                             <p class="text-xs text-[#FCD535] font-bold mt-1">Balance: <span id="prof-balance">0.00</span> USDT</p>
                         </div>
                     </div>
@@ -322,19 +322,9 @@
                 </div>
             </div>
 
-            <!-- KYC Section -->
-            <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139]">
-                <h3 class="text-xs font-bold text-[#848E9C] uppercase mb-3">Identity Verification (KYC)</h3>
-                <div id="kyc-action-area">
-                    <!-- KYC now includes full name and Telegram username -->
-                    <div class="space-y-3">
-                        <input type="text" id="kyc-fullname" placeholder="Full Name" class="w-full p-2 rounded text-sm">
-                        <input type="text" id="kyc-telegram" placeholder="Telegram Username (e.g., @youruser)" class="w-full p-2 rounded text-sm">
-                        <button onclick="requestKYC()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold hover:bg-[#3367d6] transition-colors">
-                            <i class="fa-solid fa-user-check mr-1"></i> Submit for Verification
-                        </button>
-                    </div>
-                </div>
+            <!-- Verified Account Banner (replaces KYC section) -->
+            <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139] text-center">
+                <p class="text-[#0ECB81] font-bold text-xs"><i class="fa-solid fa-circle-check mr-1"></i> Verified Account</p>
             </div>
 
             <!-- Payment Methods -->
@@ -438,10 +428,6 @@
                 <button onclick="switchAdminTab('admin-deposits', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">💰 Deposits</button>
                 <button onclick="switchAdminTab('admin-ad-approvals', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">📋 Ads Pending</button>
                 <button onclick="switchAdminTab('admin-manage-ads', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">⚙️ Manage Ads</button>
-                <button onclick="switchAdminTab('admin-kyc', this)" class="admin-tab-btn relative bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">
-                    🆔 KYC 
-                    <span id="kyc-tab-badge" class="hidden bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">0</span>
-                </button>
                 <button onclick="switchAdminTab('admin-disputes', this)" class="admin-tab-btn relative bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">
                     🚨 Disputes 
                     <span id="dispute-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center hidden font-bold">0</span>
@@ -455,7 +441,6 @@
             <div id="admin-deposits" class="admin-panel hidden space-y-2"></div>
             <div id="admin-ad-approvals" class="admin-panel hidden space-y-2"></div>
             <div id="admin-manage-ads" class="admin-panel hidden space-y-2"></div>
-            <div id="admin-kyc" class="admin-panel hidden space-y-2"></div>
             <div id="admin-disputes" class="admin-panel hidden space-y-2"></div>
             <div id="admin-orders" class="admin-panel hidden space-y-2"></div>
         </section>
@@ -486,7 +471,6 @@
             <i class="fa-solid fa-crown text-lg"></i>
             <span class="text-[10px] font-bold">Admin</span>
             <div id="nav-dispute-dot" class="absolute top-0 right-1 w-2 h-2 bg-red-500 rounded-full hidden"></div>
-            <span id="nav-kyc-badge" class="notification-badge hidden" style="top:-5px;right:-15px;">0</span>
         </button>
     </nav>
 
@@ -764,7 +748,6 @@
         let currentSupportUid = null;
         let currentMonitorOrderId = null;
         let supportUnread = false;
-        let pendingKycCount = 0;
 
         let filterPaymentMethods = ['telebirr', 'cbe'];
         let filterMinTrades = 0;
@@ -819,7 +802,6 @@
                 cacheSet(CACHE_KEY_USERS, usersCachedMap);
                 if (myData && myData.name) updateProfileUI();
                 loadMarketAds();
-                updateKycBadges();
             });
 
             initUser();
@@ -885,26 +867,6 @@
             }
         }
 
-        // ====== KYC BADGES ======
-        function updateKycBadges() {
-            let count = 0;
-            Object.values(usersCachedMap).forEach(u => {
-                if (u.status === 'pending') count++;
-            });
-            pendingKycCount = count;
-            const navBadge = document.getElementById('nav-kyc-badge');
-            const tabBadge = document.getElementById('kyc-tab-badge');
-            if (count > 0) {
-                navBadge.innerText = count;
-                navBadge.classList.remove('hidden');
-                tabBadge.innerText = count;
-                tabBadge.classList.remove('hidden');
-            } else {
-                navBadge.classList.add('hidden');
-                tabBadge.classList.add('hidden');
-            }
-        }
-
         // ====== USER SYSTEM ======
         function initUser() {
             db.ref('users/' + user.id).on('value', snap => {
@@ -913,7 +875,7 @@
                     const newUser = {
                         name: user.first_name || "User",
                         username: user.username || "",
-                        status: 'unverified',
+                        status: 'verified',          // <-- NO VERIFICATION NEEDED, ALWAYS VERIFIED
                         isBanned: false,
                         completionRate: 100,
                         totalTrades: 0,
@@ -932,10 +894,13 @@
                     myData = newUser;
                 } else {
                     myData = data;
+                    // Force verified status for everyone
+                    myData.status = 'verified';
                     const updates = {};
                     if (user.first_name && data.name !== user.first_name) updates.name = user.first_name;
                     if (user.username && data.username !== user.username) updates.username = user.username;
                     if (data.balance === undefined) updates.balance = 0;
+                    if (data.status !== 'verified') updates.status = 'verified';
                     if (Object.keys(updates).length > 0) db.ref('users/' + user.id).update(updates);
                 }
                 cacheSet(CACHE_KEY_MYDATA, myData);
@@ -984,49 +949,17 @@
                 headerAvatar.innerHTML = `<span>${initLetter}</span>`;
             }
 
-            const sText = document.getElementById('prof-status-text');
-            const kycArea = document.getElementById('kyc-action-area');
-            if (myData.status === 'verified') {
-                sText.innerText = '✅ STATUS: VERIFIED';
-                sText.className = "text-[10px] text-[#0ECB81] mt-1 uppercase font-bold";
-                kycArea.innerHTML = `<div class="text-center text-[#0ECB81] font-bold text-xs py-2"><i class="fa-solid fa-circle-check text-lg mb-1 block"></i>Verified</div>`;
-            } else if (myData.status === 'pending') {
-                sText.innerText = '⏳ STATUS: PENDING REVIEW';
-                sText.className = "text-[10px] text-[#FCD535] mt-1 uppercase font-bold";
-                kycArea.innerHTML = `<button disabled class="w-full bg-[#1e2329] border border-[#2b3139] text-[#FCD535] py-2.5 rounded-lg text-sm font-bold animate-pulse"><i class="fa-solid fa-clock mr-1"></i> Pending Review...</button>`;
-            } else if (myData.status === 'declined') {
-                sText.innerText = '❌ STATUS: DECLINED';
-                sText.className = "text-[10px] text-[#F6465D] mt-1 uppercase font-bold";
-                kycArea.innerHTML = `<div class="text-center mb-2 text-xs text-red-400 font-medium">Verification failed. Please try again.</div>
-                <div class="space-y-3">
-                    <input type="text" id="kyc-fullname" placeholder="Full Name" class="w-full p-2 rounded text-sm">
-                    <input type="text" id="kyc-telegram" placeholder="Telegram Username (e.g., @youruser)" class="w-full p-2 rounded text-sm">
-                    <button onclick="requestKYC()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold hover:bg-[#3367d6] transition-colors"><i class="fa-solid fa-redo mr-1"></i> Try Again</button>
-                </div>`;
-            } else {
-                sText.innerText = '⚠️ STATUS: UNVERIFIED';
-                sText.className = "text-[10px] text-[#848E9C] mt-1 uppercase font-bold";
-                kycArea.innerHTML = `
-                <div class="space-y-3">
-                    <input type="text" id="kyc-fullname" placeholder="Full Name" class="w-full p-2 rounded text-sm">
-                    <input type="text" id="kyc-telegram" placeholder="Telegram Username (e.g., @youruser)" class="w-full p-2 rounded text-sm">
-                    <button onclick="requestKYC()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold hover:bg-[#3367d6] transition-colors"><i class="fa-solid fa-upload mr-1"></i> Submit for Verification</button>
-                </div>`;
-            }
+            // Always show verified status
+            document.getElementById('prof-status-text').innerText = '✅ STATUS: VERIFIED';
+            document.getElementById('prof-status-text').className = "text-[10px] text-[#0ECB81] mt-1 uppercase font-bold";
 
             document.getElementById('prof-completion').innerText = (myData.completionRate || 100) + '%';
             document.getElementById('prof-trades').innerText = myData.totalTrades || 0;
             document.getElementById('prof-balance').innerText = (myData.balance || 0).toFixed(2);
             document.getElementById('header-balance').innerText = (myData.balance || 0).toFixed(2) + ' USDT';
 
-            const badge = document.getElementById('prof-badge');
-            if (myData.status === 'verified') {
-                badge.className = 'badge-verified flex-shrink-0';
-                badge.innerText = '✓ VERIFIED';
-            } else {
-                badge.className = 'text-[#848E9C] text-xs flex-shrink-0';
-                badge.innerText = 'UNVERIFIED';
-            }
+            document.getElementById('prof-badge').className = 'badge-verified flex-shrink-0';
+            document.getElementById('prof-badge').innerText = '✓ VERIFIED';
 
             if (myData.telePhone) document.getElementById('pm-tele-phone').value = myData.telePhone;
             if (myData.teleName) document.getElementById('pm-tele-name').value = myData.teleName;
@@ -1051,31 +984,11 @@
             db.ref('users/' + user.id).update(updates).then(() => showToast("✅ Profile settings saved successfully!")).catch(() => showToast("❌ Error saving profile. Please try again."));
         }
 
-        // ====== KYC REQUEST (full name + telegram) ======
-        function requestKYC() {
-            const fullName = document.getElementById('kyc-fullname')?.value.trim();
-            const telegram = document.getElementById('kyc-telegram')?.value.trim();
-            if (!fullName) return showToast("⚠️ Please enter your full name.");
-            if (!telegram) return showToast("⚠️ Please enter your Telegram username (e.g., @youruser).");
-            db.ref('users/' + user.id).update({ 
-                status: 'pending',
-                kycFullName: fullName,
-                kycTelegram: telegram
-            }).then(() => {
-                showToast("✅ Verification request submitted! Admin will review your details.");
-                updateKycBadges();
-            });
-        }
-
         function checkRequirements() {
             if (siteOffline) { showToast("⚠️ Site is currently offline."); return false; }
+            // Removed KYC verification check – all users are verified automatically
             if (!myData.binanceId || myData.binanceId.trim() === "") {
                 showToast("⚠️ Please set your Binance ID in Profile first!");
-                switchMainTab('profile');
-                return false;
-            }
-            if (myData.status !== 'verified') {
-                showToast("⚠️ You need to complete KYC verification to trade!");
                 switchMainTab('profile');
                 return false;
             }
@@ -2160,7 +2073,7 @@
             document.getElementById('notification-panel').classList.toggle('hidden');
         }
 
-        // ====== ADMIN PANEL ======
+        // ====== ADMIN PANEL (NO KYC TAB, NO VERIFICATION) ======
         function switchAdminTab(id, btn) {
             document.querySelectorAll('.admin-panel').forEach(e => e.classList.add('hidden'));
             document.querySelectorAll('.admin-tab-btn').forEach(e => {
@@ -2253,7 +2166,7 @@
                     <div class="bg-[#1e2329] p-3 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-1 hover:bg-[#2b3139] transition-colors">
                         <div class="flex-1 min-w-0">
                             <p class="text-white font-medium truncate">${u.name || 'User'}</p>
-                            <p class="text-[10px] text-[#848E9C]">TG ID: ${id} | Status: ${(u.status || 'UNVERIFIED').toUpperCase()} | Trades: ${u.totalTrades || 0}</p>
+                            <p class="text-[10px] text-[#848E9C]">TG ID: ${id} | Status: VERIFIED | Trades: ${u.totalTrades || 0}</p>
                             <p class="text-[10px] text-[#FCD535]">Balance: ${(u.balance || 0).toFixed(2)} USDT</p>
                         </div>
                         <div class="flex items-center gap-1">
@@ -2266,7 +2179,6 @@
                 });
                 if (uList && uList.innerHTML === '') uList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No users</div>';
                 if (bList && bList.innerHTML === '') bList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No banned users</div>';
-                updateKycBadges();
             });
 
             db.ref('deposits').on('value', s => {
@@ -2379,38 +2291,6 @@
                 if (manageAdsList.innerHTML === '') manageAdsList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No active or paused ads</div>';
             });
 
-            // KYC admin panel – shows full name, telegram username, phone numbers
-            db.ref('users').on('value', s => {
-                const kList = document.getElementById('admin-kyc');
-                if (!kList) return;
-                kList.innerHTML = '';
-                const users = s.val() || {};
-                Object.keys(users).forEach(id => {
-                    const u = users[id];
-                    if (u.status === 'pending') {
-                        const fullName = u.kycFullName || u.name || 'No name';
-                        const telegramUser = u.kycTelegram || u.username || 'N/A';
-                        const phone = u.telePhone || 'N/A';
-                        const binance = u.binanceId || 'N/A';
-                        kList.innerHTML += `
-                        <div class="bg-[#1e2329] p-3 rounded border border-yellow-600 text-xs mb-2 space-y-2">
-                            <div class="text-white font-bold">User: <span class="text-[#FCD535]">${u.name || 'User'}</span> (ID: ${id})</div>
-                            <div class="text-gray-300 space-y-1 text-[11px]">
-                                <p>📛 Full Name: <span class="text-white font-semibold">${fullName}</span></p>
-                                <p>✈️ Telegram: <span class="text-white">${telegramUser}</span></p>
-                                <p>📱 Phone: <span class="text-white">${phone}</span></p>
-                                <p>🔶 Binance ID: <span class="text-white">${binance}</span></p>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="adminKYC('${id}', 'verified')" class="flex-1 bg-[#0ECB81] py-1.5 rounded font-black text-white text-[10px] hover:bg-green-600 transition-colors">✓ Approve</button>
-                                <button onclick="adminKYC('${id}', 'declined')" class="flex-1 bg-[#F6465D] py-1.5 rounded font-black text-white text-[10px] hover:bg-red-700 transition-colors">✗ Reject</button>
-                            </div>
-                        </div>`;
-                    }
-                });
-                if (kList.innerHTML === '') kList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No pending KYC applications</div>';
-            });
-
             db.ref('orders').on('value', s => {
                 const dList = document.getElementById('admin-disputes');
                 const oList = document.getElementById('admin-orders');
@@ -2480,28 +2360,6 @@
             const newBal = parseFloat(document.getElementById('bal-' + uid).value);
             if (isNaN(newBal)) return showToast("Invalid balance.");
             db.ref('users/' + uid).update({ balance: newBal }).then(() => showToast("Balance set!"));
-        }
-
-        function adminKYC(uid, status) {
-            db.ref('users/' + uid).update({ status: status }).then(() => {
-                showToast(`User KYC ${status === 'verified' ? 'approved' : 'declined'}!`);
-                updateKycBadges();
-                if (status === 'verified') {
-                    db.ref('notifications/' + uid).push({
-                        type: 'system',
-                        message: '🎉 Great news! Your KYC verification has been APPROVED. You can now trade!',
-                        timestamp: Date.now(),
-                        read: false
-                    });
-                } else {
-                    db.ref('notifications/' + uid).push({
-                        type: 'system',
-                        message: '❌ Your KYC verification was declined. Please check your details and try again.',
-                        timestamp: Date.now(),
-                        read: false
-                    });
-                }
-            });
         }
 
         function toggleBan(uid, isBanned) {
@@ -2575,4 +2433,4 @@
         }
     </script>
 </body>
-                </html>
+                            </html>
