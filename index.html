@@ -75,6 +75,7 @@
             font-size: 9px; min-width: 16px; height: 16px; border-radius: 8px;
             display: flex; align-items: center; justify-content: center; padding: 0 3px;
         }
+        .site-offline-overlay { background: rgba(0,0,0,0.95); z-index: 9999; }
     </style>
 </head>
 <body class="pb-20 h-screen flex flex-col">
@@ -84,6 +85,14 @@
         <i class="fa-solid fa-ban text-6xl text-red-500 mb-4"></i>
         <h1 class="text-2xl font-bold text-white mb-2">Account Suspended</h1>
         <p class="text-sm text-gray-400">Your account has been permanently banned by the Admin.</p>
+    </div>
+
+    <!-- Site Offline Overlay -->
+    <div id="site-offline-overlay" class="site-offline-overlay fixed inset-0 hidden flex-col items-center justify-center p-6 text-center z-[9999]">
+        <i class="fa-solid fa-plug-circle-exclamation text-6xl text-yellow-500 mb-4"></i>
+        <h1 class="text-2xl font-bold text-white mb-2">Site Offline</h1>
+        <p class="text-sm text-gray-400">The exchange is temporarily offline for maintenance.</p>
+        <button id="admin-bypass-btn" onclick="bypassOfflineForAdmin()" class="hidden mt-4 bg-[#FCD535] text-black font-bold py-2 px-4 rounded-lg text-sm">Admin Panel</button>
     </div>
 
     <!-- Toast Container -->
@@ -125,6 +134,14 @@
         
         <!-- Market View -->
         <section id="market-view" class="tab-content active p-0">
+            <!-- Today's Price Range Dashboard -->
+            <div id="price-range-banner" class="bg-[#1e2329] p-3 m-2 rounded-xl border border-[#2b3139] text-center">
+                <p class="text-[10px] text-[#848E9C] uppercase tracking-wider">📊 Today's USDT Price Range</p>
+                <p class="text-lg font-black text-[#FCD535] mt-1">
+                    Min: <span id="daily-min-price">--</span> ETB | Max: <span id="daily-max-price">--</span> ETB
+                </p>
+            </div>
+
             <!-- Filters -->
             <div class="bg-[#0b0e11] z-20 p-4 border-b border-[#2b3139] space-y-4">
                 <div class="flex gap-6 text-base font-bold">
@@ -309,9 +326,10 @@
             <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139]">
                 <h3 class="text-xs font-bold text-[#848E9C] uppercase mb-3">Identity Verification (KYC)</h3>
                 <div id="kyc-action-area">
-                    <!-- KYC now uses a full name input instead of photo upload -->
+                    <!-- KYC now includes full name and Telegram username -->
                     <div class="space-y-3">
-                        <input type="text" id="kyc-fullname" placeholder="Enter your full name" class="w-full p-2 rounded text-sm">
+                        <input type="text" id="kyc-fullname" placeholder="Full Name" class="w-full p-2 rounded text-sm">
+                        <input type="text" id="kyc-telegram" placeholder="Telegram Username (e.g., @youruser)" class="w-full p-2 rounded text-sm">
                         <button onclick="requestKYC()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold hover:bg-[#3367d6] transition-colors">
                             <i class="fa-solid fa-user-check mr-1"></i> Submit for Verification
                         </button>
@@ -399,6 +417,17 @@
                 </div>
             </div>
 
+            <!-- Site On/Off Toggle -->
+            <div class="bg-[#1e2329] p-3 rounded-xl border border-[#2b3139] flex items-center justify-between">
+                <span class="text-sm font-bold text-white">Site Status</span>
+                <div class="flex items-center gap-2">
+                    <span id="site-status-label" class="text-xs font-bold text-[#0ECB81]">ONLINE</span>
+                    <button id="toggle-site-btn" onclick="toggleSiteStatus()" class="bg-[#FCD535] text-black px-4 py-2 rounded-lg text-xs font-bold hover:opacity-90 transition-opacity">
+                        Turn Off
+                    </button>
+                </div>
+            </div>
+
             <div class="flex gap-2 overflow-x-auto pb-2 text-xs font-bold mb-4">
                 <button onclick="switchAdminTab('admin-users', this)" class="admin-tab-btn bg-[#FCD535] text-black px-4 py-2 rounded-lg whitespace-nowrap transition-all">👥 Users</button>
                 <button onclick="switchAdminTab('admin-banned', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">🚫 Banned</button>
@@ -461,7 +490,7 @@
         </button>
     </nav>
 
-    <!-- Deposit Modal (no screenshot) -->
+    <!-- Deposit Modal (now includes transaction ID) -->
     <div id="depositModal" class="modal-overlay fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
         <div class="bg-[#1e2329] w-full max-w-sm rounded-xl p-5 border border-[#2b3139]">
             <h3 class="text-white font-bold text-lg mb-4">Deposit USDT</h3>
@@ -471,7 +500,8 @@
             </div>
             <div class="space-y-3">
                 <input type="number" id="deposit-amount" placeholder="Enter USDT amount" class="w-full p-2 rounded text-xs">
-                <p class="text-[10px] text-gray-400">After transferring, submit the amount. Admin will verify and credit your balance.</p>
+                <input type="text" id="deposit-txid" placeholder="Binance Transaction ID" class="w-full p-2 rounded text-xs">
+                <p class="text-[10px] text-gray-400">After transferring, enter the amount and transaction ID. Admin will verify.</p>
             </div>
             <div class="flex gap-3 mt-4">
                 <button onclick="closeModal('depositModal')" class="flex-1 py-2.5 rounded border border-[#2b3139] text-[#848E9C] font-bold text-xs hover:bg-[#2b3139] transition-colors">Cancel</button>
@@ -480,7 +510,7 @@
         </div>
     </div>
 
-    <!-- Support Chat Modal (User Side) – no image upload -->
+    <!-- Support Chat Modal (User Side) – text only -->
     <div id="supportChatModal" class="fixed inset-0 bg-[#0b0e11] z-[80] hidden flex-col h-screen">
         <div class="bg-[#1e2329] border-b border-[#2b3139] p-3 flex justify-between items-center shrink-0">
             <button onclick="closeModal('supportChatModal'); markSupportRead();" class="text-white text-lg hover:text-[#FCD535] transition-colors">
@@ -495,7 +525,6 @@
             <div id="support-chat-messages" class="space-y-2 text-xs"></div>
         </div>
         <div class="p-3 border-t border-[#2b3139] flex gap-2 bg-[#1e2329] pb-6">
-            <!-- Image upload removed – text only -->
             <input type="text" id="sup-chat-input" placeholder="Message Admin..." class="flex-1 bg-[#0b0e11] border border-[#2b3139] rounded-lg px-3 text-white text-xs">
             <button onclick="sendSupportMsg(false)" class="bg-[#FCD535] text-black px-3 rounded-lg hover:opacity-90 transition-opacity">
                 <i class="fa-solid fa-paper-plane"></i>
@@ -503,7 +532,7 @@
         </div>
     </div>
 
-    <!-- Admin Support Chat Modal – no image upload -->
+    <!-- Admin Support Chat Modal -->
     <div id="adminSupportChatModal" class="fixed inset-0 bg-[#0b0e11] z-[90] hidden flex-col h-screen">
         <div class="bg-[#1e2329] border-b border-[#2b3139] p-3 flex justify-between items-center shrink-0">
             <div class="flex items-center gap-3">
@@ -523,7 +552,6 @@
             <div id="admin-support-chat-messages" class="space-y-2 text-xs"></div>
         </div>
         <div class="p-3 border-t border-[#2b3139] flex gap-2 bg-[#1e2329] pb-6">
-            <!-- Image upload removed – text only -->
             <input type="text" id="adm-sup-chat-input" placeholder="Reply to user..." class="flex-1 bg-[#0b0e11] border border-[#2b3139] rounded-lg px-3 text-white text-xs">
             <button onclick="sendSupportMsg(true)" class="bg-[#3b82f6] text-white px-3 rounded-lg hover:bg-[#2563eb] transition-colors">
                 <i class="fa-solid fa-paper-plane"></i>
@@ -531,7 +559,7 @@
         </div>
     </div>
 
-    <!-- Purchase Modal (unchanged) -->
+    <!-- Purchase Modal -->
     <div id="purchaseModal" class="modal-overlay fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
         <div class="bg-[#1e2329] w-full max-w-sm rounded-xl p-5 border border-[#2b3139]">
             <h3 class="text-white font-bold text-lg mb-1" id="pm-title">Buy USDT</h3>
@@ -561,7 +589,7 @@
         </div>
     </div>
 
-    <!-- Edit Ad Modal (unchanged) -->
+    <!-- Edit Ad Modal -->
     <div id="editAdModal" class="modal-overlay fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
         <div class="bg-[#1e2329] w-full max-w-sm rounded-xl p-5 border border-[#2b3139] space-y-4">
             <h3 class="text-white font-bold text-base">Edit Ad</h3>
@@ -586,7 +614,7 @@
         </div>
     </div>
 
-    <!-- Trade Room Modal – no image upload in chat -->
+    <!-- Trade Room Modal – no image upload -->
     <div id="tradeModal" class="fixed inset-0 bg-[#0b0e11] z-[60] hidden flex-col h-screen">
         <div class="bg-[#1e2329] border-b border-[#2b3139] p-3 flex justify-between items-center shrink-0">
             <div class="flex items-center gap-3">
@@ -635,7 +663,6 @@
                     </div>
                     <div id="chat-messages" class="flex-1 overflow-y-auto p-2 space-y-2 text-xs"></div>
                     <div class="p-2 border-t border-[#2b3139] flex gap-2">
-                        <!-- Image upload removed – text only -->
                         <input type="text" id="chat-input" placeholder="Type message..." class="flex-1 bg-[#0b0e11] border border-[#2b3139] rounded-lg px-3 text-white text-xs">
                         <button onclick="sendMsg()" class="bg-[#FCD535] text-black px-3 rounded-lg hover:opacity-90 transition-opacity">
                             <i class="fa-solid fa-paper-plane"></i>
@@ -645,9 +672,7 @@
             </div>
         </div>
 
-        <!-- Dynamic trade buttons -->
         <div class="fixed bottom-0 w-full bg-[#1e2329] border-t border-[#2b3139] p-3 flex gap-2 z-[60]" id="trade-buttons-area">
-            <!-- Filled dynamically -->
         </div>
     </div>
 
@@ -747,6 +772,7 @@
         let filterUsdtMax = 100000;
         let filterSearch = '';
         let currentTxnStatus = 'all';
+        let siteOffline = false;
 
         // ====== CACHE HELPERS ======
         function cacheSet(key, value) {
@@ -756,7 +782,7 @@
             try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch(e) { return null; }
         }
 
-        // ====== IMAGE DOWNLOAD HELPER (kept for admin downloads) ======
+        // ====== IMAGE DOWNLOAD HELPER ======
         function downloadImage(base64Data, filename) {
             const link = document.createElement('a');
             link.href = base64Data;
@@ -771,6 +797,15 @@
             if (String(user.id) === String(ADMIN_ID)) {
                 document.getElementById('nav-admin').classList.remove('hidden');
             }
+
+            db.ref('settings/siteStatus').on('value', snap => {
+                const status = snap.val() || 'online';
+                siteOffline = (status === 'offline');
+                updateSiteOfflineUI();
+                if (String(user.id) === String(ADMIN_ID)) {
+                    updateAdminSiteToggleUI(status);
+                }
+            });
 
             const cachedUsers = cacheGet(CACHE_KEY_USERS);
             if (cachedUsers) usersCachedMap = cachedUsers;
@@ -795,6 +830,54 @@
             updatePresence();
             setInterval(updatePresence, 20000);
         });
+
+        function updateSiteOfflineUI() {
+            const overlay = document.getElementById('site-offline-overlay');
+            const bypassBtn = document.getElementById('admin-bypass-btn');
+            if (siteOffline) {
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
+                if (String(user.id) === String(ADMIN_ID)) {
+                    bypassBtn.classList.remove('hidden');
+                } else {
+                    bypassBtn.classList.add('hidden');
+                }
+                if (String(user.id) !== String(ADMIN_ID)) {
+                    document.querySelectorAll('.nav-item').forEach(btn => btn.style.pointerEvents = 'none');
+                }
+            } else {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+                document.querySelectorAll('.nav-item').forEach(btn => btn.style.pointerEvents = 'auto');
+            }
+        }
+
+        function bypassOfflineForAdmin() {
+            document.getElementById('site-offline-overlay').classList.add('hidden');
+            switchMainTab('admin');
+        }
+
+        function updateAdminSiteToggleUI(status) {
+            const label = document.getElementById('site-status-label');
+            const btn = document.getElementById('toggle-site-btn');
+            if (status === 'offline') {
+                label.innerText = 'OFFLINE';
+                label.className = 'text-xs font-bold text-red-500';
+                btn.innerText = 'Turn On';
+            } else {
+                label.innerText = 'ONLINE';
+                label.className = 'text-xs font-bold text-[#0ECB81]';
+                btn.innerText = 'Turn Off';
+            }
+        }
+
+        function toggleSiteStatus() {
+            const currentStatus = siteOffline ? 'offline' : 'online';
+            const newStatus = currentStatus === 'online' ? 'offline' : 'online';
+            db.ref('settings/siteStatus').set(newStatus).then(() => {
+                showToast(`Site turned ${newStatus.toUpperCase()}`);
+            });
+        }
 
         function updatePresence() {
             if (user && user.id) {
@@ -842,7 +925,8 @@
                         binanceId: "",
                         cbeAccount: "",
                         cbeName: "",
-                        kycFullName: ""
+                        kycFullName: "",
+                        kycTelegram: ""
                     };
                     db.ref('users/' + user.id).set(newUser);
                     myData = newUser;
@@ -915,7 +999,8 @@
                 sText.className = "text-[10px] text-[#F6465D] mt-1 uppercase font-bold";
                 kycArea.innerHTML = `<div class="text-center mb-2 text-xs text-red-400 font-medium">Verification failed. Please try again.</div>
                 <div class="space-y-3">
-                    <input type="text" id="kyc-fullname" placeholder="Enter your full name" class="w-full p-2 rounded text-sm">
+                    <input type="text" id="kyc-fullname" placeholder="Full Name" class="w-full p-2 rounded text-sm">
+                    <input type="text" id="kyc-telegram" placeholder="Telegram Username (e.g., @youruser)" class="w-full p-2 rounded text-sm">
                     <button onclick="requestKYC()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold hover:bg-[#3367d6] transition-colors"><i class="fa-solid fa-redo mr-1"></i> Try Again</button>
                 </div>`;
             } else {
@@ -923,7 +1008,8 @@
                 sText.className = "text-[10px] text-[#848E9C] mt-1 uppercase font-bold";
                 kycArea.innerHTML = `
                 <div class="space-y-3">
-                    <input type="text" id="kyc-fullname" placeholder="Enter your full name" class="w-full p-2 rounded text-sm">
+                    <input type="text" id="kyc-fullname" placeholder="Full Name" class="w-full p-2 rounded text-sm">
+                    <input type="text" id="kyc-telegram" placeholder="Telegram Username (e.g., @youruser)" class="w-full p-2 rounded text-sm">
                     <button onclick="requestKYC()" class="w-full bg-[#4285F4] text-white py-2.5 rounded-lg text-sm font-bold hover:bg-[#3367d6] transition-colors"><i class="fa-solid fa-upload mr-1"></i> Submit for Verification</button>
                 </div>`;
             }
@@ -965,13 +1051,16 @@
             db.ref('users/' + user.id).update(updates).then(() => showToast("✅ Profile settings saved successfully!")).catch(() => showToast("❌ Error saving profile. Please try again."));
         }
 
-        // ====== NEW KYC REQUEST (full name only, no photo) ======
+        // ====== KYC REQUEST (full name + telegram) ======
         function requestKYC() {
             const fullName = document.getElementById('kyc-fullname')?.value.trim();
+            const telegram = document.getElementById('kyc-telegram')?.value.trim();
             if (!fullName) return showToast("⚠️ Please enter your full name.");
+            if (!telegram) return showToast("⚠️ Please enter your Telegram username (e.g., @youruser).");
             db.ref('users/' + user.id).update({ 
                 status: 'pending',
-                kycFullName: fullName
+                kycFullName: fullName,
+                kycTelegram: telegram
             }).then(() => {
                 showToast("✅ Verification request submitted! Admin will review your details.");
                 updateKycBadges();
@@ -979,6 +1068,7 @@
         }
 
         function checkRequirements() {
+            if (siteOffline) { showToast("⚠️ Site is currently offline."); return false; }
             if (!myData.binanceId || myData.binanceId.trim() === "") {
                 showToast("⚠️ Please set your Binance ID in Profile first!");
                 switchMainTab('profile');
@@ -992,31 +1082,39 @@
             return true;
         }
 
-        // ====== DEPOSIT SYSTEM (no screenshot) ======
+        // ====== DEPOSIT SYSTEM (with transaction ID) ======
         function openDepositModal() {
+            if (siteOffline) { showToast("⚠️ Site is offline."); return; }
             openModal('depositModal');
         }
 
         function submitDeposit() {
+            if (siteOffline) { showToast("⚠️ Site is offline."); return; }
             const amount = parseFloat(document.getElementById('deposit-amount').value);
+            const txId = document.getElementById('deposit-txid').value.trim();
             if (!amount || amount <= 0) return showToast("⚠️ Enter a valid amount.");
+            if (!txId) return showToast("⚠️ Enter Binance Transaction ID.");
 
             db.ref('deposits').push({
                 uid: String(user.id),
                 userName: user.first_name || myData.name || "User",
                 amount: amount,
+                txId: txId,
+                phone: myData.telePhone || "Not provided",
                 status: 'pending',
                 timestamp: Date.now()
             }).then(() => {
                 showToast("✅ Deposit submitted! Waiting for admin approval.");
                 closeModal('depositModal');
                 document.getElementById('deposit-amount').value = '';
+                document.getElementById('deposit-txid').value = '';
             });
         }
 
         // ====== AD SYSTEM ======
         function publishAd() {
             if (!checkRequirements()) return;
+            if (siteOffline) { showToast("⚠️ Site is offline."); return; }
             const type = document.getElementById('ad-form-type').value;
             const userBalance = myData.balance || 0;
 
@@ -1118,6 +1216,7 @@
         }
 
         function toggleAdStatus(adId, newStatus) {
+            if (siteOffline) { showToast("⚠️ Site is offline."); return; }
             const ad = allAds.find(a => a.id === adId);
             if (!ad) return;
             if (newStatus === 'active' && ad.pausedByAdmin) {
@@ -1158,11 +1257,32 @@
                 snap.forEach(child => {
                     const ad = { id: child.key, ...child.val() };
                     if (ad.status === 'deleted' || ad.status === 'rejected') return;
-                    allAds.push(ad); // now includes all non-deleted/non-rejected ads
+                    allAds.push(ad);
                 });
                 cacheSet(CACHE_KEY_ADS, allAds);
                 loadMarketAdsUI();
+                updatePriceRangeBanner();
             });
+        }
+
+        function updatePriceRangeBanner() {
+            const activeAds = allAds.filter(ad => ad.status === 'active');
+            let minPrice = Infinity, maxPrice = -Infinity;
+            activeAds.forEach(ad => {
+                if (ad.price < minPrice) minPrice = ad.price;
+                if (ad.price > maxPrice) maxPrice = ad.price;
+            });
+            const minEl = document.getElementById('daily-min-price');
+            const maxEl = document.getElementById('daily-max-price');
+            if (minEl && maxEl) {
+                if (activeAds.length === 0 || !isFinite(minPrice)) {
+                    minEl.innerText = '--';
+                    maxEl.innerText = '--';
+                } else {
+                    minEl.innerText = minPrice.toFixed(2);
+                    maxEl.innerText = maxPrice.toFixed(2);
+                }
+            }
         }
 
         function loadMarketAdsUI() {
@@ -1171,7 +1291,6 @@
             if (list) list.innerHTML = '';
             if (userAdsList) userAdsList.innerHTML = '';
 
-            // Build user's own ads list (all statuses except deleted/rejected)
             let myAdsCounter = 0;
             allAds.forEach(ad => {
                 if (String(ad.uid) === String(user.id) && userAdsList) {
@@ -1223,7 +1342,6 @@
                 userAdsList.innerHTML = '<div class="text-center text-[#848E9C] text-xs py-4">No ads posted yet</div>';
             }
 
-            // Market list: only active ads, with current filters
             filteredAds = allAds.filter(ad => {
                 if (ad.status !== 'active') return false;
                 if (ad.type !== (currentMarketType === 'buy' ? 'sell' : 'buy')) return false;
@@ -1358,9 +1476,10 @@
             showToast("🔄 Filters reset to default.");
         }
 
-        // ====== PURCHASE & TRADE (unchanged logic) ======
+        // ====== PURCHASE & TRADE ======
         function openPurchaseModal(adId, creatorId, price, min, max, terms) {
             if (!checkRequirements()) return;
+            if (siteOffline) { showToast("⚠️ Site is offline."); return; }
 
             if (hasActivePendingOrder()) {
                 showToast("⚠️ You have an active order pending. Complete or wait for it to expire before placing a new order.");
@@ -1669,28 +1788,37 @@
             await db.ref('orders/' + activeTradeId).update({ buyerPaidFiat: true });
             db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '✅ Buyer has paid ETB.', timestamp: Date.now() });
         }
-        async function sellerConfirmFiat() {
-            await db.ref('orders/' + activeTradeId).update({ sellerConfirmedFiat: true });
-            db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '✅ Seller confirmed fiat received.', timestamp: Date.now() });
-        }
         async function sellerReleaseCrypto() {
             await db.ref('orders/' + activeTradeId).update({ sellerReleasedCrypto: true });
             db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '🚀 Seller released USDT.', timestamp: Date.now() });
         }
-        async function buyerConfirmCrypto() {
-            await db.ref('orders/' + activeTradeId).update({ buyerConfirmedCrypto: true });
-            db.ref('orders/' + activeTradeId).once('value', s => {
-                const o = s.val();
+        async function sellerPayCrypto() {
+            await db.ref('orders/' + activeTradeId).update({ sellerPaidCrypto: true });
+            db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '✅ Seller has paid USDT.', timestamp: Date.now() });
+        }
+
+        // New trade completion checker
+        function checkTradeCompletion(orderId) {
+            db.ref('orders/' + orderId).once('value', snap => {
+                const o = snap.val();
                 if (!o) return;
                 let complete = false;
                 if (o.adType === 'sell') {
-                    if (o.buyerPaidFiat && o.sellerConfirmedFiat && o.sellerReleasedCrypto && o.buyerConfirmedCrypto) complete = true;
-                } else {
-                    if (o.sellerPaidCrypto && o.buyerConfirmedCrypto && o.buyerPaidFiat && o.sellerConfirmedFiat) complete = true;
+                    if (o.buyerPaidFiat && o.sellerConfirmedFiat && o.sellerReleasedCrypto && o.buyerConfirmedCrypto) {
+                        complete = true;
+                    }
+                } else if (o.adType === 'buy') {
+                    if (o.sellerPaidCrypto && o.buyerConfirmedCrypto && o.buyerPaidFiat && o.sellerConfirmedFiat) {
+                        complete = true;
+                    }
                 }
                 if (complete) {
-                    db.ref('orders/' + activeTradeId).update({ status: 'completed' }).then(() => {
-                        db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '🎉 Trade completed successfully! Both parties confirmed.', timestamp: Date.now() });
+                    db.ref('orders/' + orderId).update({ status: 'completed' }).then(() => {
+                        db.ref('chats/' + orderId).push({
+                            sender: 'system',
+                            text: '🎉 Trade completed successfully! Both parties confirmed.',
+                            timestamp: Date.now()
+                        });
                         db.ref('users/' + o.buyerId + '/totalTrades').transaction(current => (current || 0) + 1);
                         db.ref('users/' + o.sellerId + '/totalTrades').transaction(current => (current || 0) + 1);
                         clearInterval(tradeInterval);
@@ -1698,14 +1826,17 @@
                         openModal('ratingModal');
                         showToast("🎉 Trade completed successfully!");
                     });
-                } else {
-                    db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '✅ Step confirmed.', timestamp: Date.now() });
                 }
             });
         }
-        async function sellerPayCrypto() {
-            await db.ref('orders/' + activeTradeId).update({ sellerPaidCrypto: true });
-            db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '✅ Seller has paid USDT.', timestamp: Date.now() });
+
+        async function buyerConfirmCrypto() {
+            await db.ref('orders/' + activeTradeId).update({ buyerConfirmedCrypto: true });
+            checkTradeCompletion(activeTradeId);
+        }
+        async function sellerConfirmFiat() {
+            await db.ref('orders/' + activeTradeId).update({ sellerConfirmedFiat: true });
+            checkTradeCompletion(activeTradeId);
         }
 
         function leaveTradeRoom() {
@@ -1731,7 +1862,7 @@
             }
         }
 
-        // ====== CHAT SYSTEM (text only, image removal) ======
+        // ====== CHAT SYSTEM (text only) ======
         function loadChat(orderId) {
             db.ref('chats/' + orderId).on('value', s => {
                 const box = document.getElementById('chat-messages');
@@ -1780,7 +1911,7 @@
             }).then(() => { el.value = ''; });
         }
 
-        // ====== SUPPORT CHAT SYSTEM (text only, no images) ======
+        // ====== SUPPORT CHAT SYSTEM ======
         function openSupportChat() {
             currentSupportUid = String(user.id);
             openModal('supportChatModal');
@@ -2151,6 +2282,10 @@
                                 <span class="text-white font-bold">${d.userName || 'User'}</span>
                                 <span class="text-[#FCD535] font-bold">${d.amount} USDT</span>
                             </div>
+                            <div class="text-[10px] text-[#848E9C] space-y-1">
+                                <p>TxID: ${d.txId || 'N/A'}</p>
+                                <p>Phone: ${d.phone || 'N/A'}</p>
+                            </div>
                             <div class="flex gap-2">
                                 <button onclick="approveDeposit('${id}', '${d.uid}', ${d.amount})" class="flex-1 bg-[#0ECB81] py-1.5 rounded font-black text-white text-[10px] hover:bg-green-600 transition-colors">✓ Approve</button>
                                 <button onclick="rejectDeposit('${id}')" class="flex-1 bg-[#F6465D] py-1.5 rounded font-black text-white text-[10px] hover:bg-red-700 transition-colors">✗ Reject</button>
@@ -2254,7 +2389,7 @@
                     const u = users[id];
                     if (u.status === 'pending') {
                         const fullName = u.kycFullName || u.name || 'No name';
-                        const telegramUser = u.username || 'N/A';
+                        const telegramUser = u.kycTelegram || u.username || 'N/A';
                         const phone = u.telePhone || 'N/A';
                         const binance = u.binanceId || 'N/A';
                         kList.innerHTML += `
@@ -2440,4 +2575,4 @@
         }
     </script>
 </body>
-    </html>
+                </html>
