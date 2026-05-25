@@ -89,9 +89,9 @@
 </head>
 <body class="pb-20 h-screen flex flex-col">
 
-    <!-- Splash Screen (added) -->
+    <!-- Splash Screen (updated with direct image link) -->
     <div id="splash-screen">
-        <img src="<a href="https://ibb.co/Mknr5zcc"><img src="https://i.ibb.co/N2x5n099/18320.jpg" alt="18320" border="0" /></a>" alt="Loading..." onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔄</text></svg>'">
+        <img src="https://i.ibb.co/N2x5n099/18320.jpg" alt="Loading..." onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔄</text></svg>'">
     </div>
 
     <!-- Banned Screen -->
@@ -793,17 +793,14 @@
         window.addEventListener('DOMContentLoaded', function() {
             const splash = document.getElementById('splash-screen');
             if (splash) {
-                // Preload the image to ensure it's displayed
                 const img = splash.querySelector('img');
                 if (img.complete) {
-                    // Image already cached, show immediately then start timeout
                     startSplashTimer(splash);
                 } else {
                     img.onload = function() {
                         startSplashTimer(splash);
                     };
                     img.onerror = function() {
-                        // Fallback if image fails to load
                         startSplashTimer(splash);
                     };
                 }
@@ -815,7 +812,7 @@
                 splash.style.opacity = '0';
                 setTimeout(function() {
                     splash.remove();
-                }, 500); // matches transition duration
+                }, 500);
             }, 3000);
         }
 
@@ -919,7 +916,7 @@
                     const newUser = {
                         name: user.first_name || "User",
                         username: user.username || "",
-                        status: 'verified',          // <-- NO VERIFICATION NEEDED, ALWAYS VERIFIED
+                        status: 'verified',
                         isBanned: false,
                         completionRate: 100,
                         totalTrades: 0,
@@ -938,7 +935,6 @@
                     myData = newUser;
                 } else {
                     myData = data;
-                    // Force verified status for everyone
                     myData.status = 'verified';
                     const updates = {};
                     if (user.first_name && data.name !== user.first_name) updates.name = user.first_name;
@@ -993,7 +989,6 @@
                 headerAvatar.innerHTML = `<span>${initLetter}</span>`;
             }
 
-            // Always show verified status
             document.getElementById('prof-status-text').innerText = '✅ STATUS: VERIFIED';
             document.getElementById('prof-status-text').className = "text-[10px] text-[#0ECB81] mt-1 uppercase font-bold";
 
@@ -1030,7 +1025,6 @@
 
         function checkRequirements() {
             if (siteOffline) { showToast("⚠️ Site is currently offline."); return false; }
-            // Removed KYC verification check – all users are verified automatically
             if (!myData.binanceId || myData.binanceId.trim() === "") {
                 showToast("⚠️ Please set your Binance ID in Profile first!");
                 switchMainTab('profile');
@@ -1754,7 +1748,6 @@
             db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '✅ Seller has paid USDT.', timestamp: Date.now() });
         }
 
-        // New trade completion checker
         function checkTradeCompletion(orderId) {
             db.ref('orders/' + orderId).once('value', snap => {
                 const o = snap.val();
@@ -2477,4 +2470,4 @@
         }
     </script>
 </body>
-    </html>
+                            </html>
