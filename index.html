@@ -508,7 +508,7 @@
         <div class="flex-1 overflow-y-auto bg-[#0b0e11] p-4" id="support-chat-scroll">
             <div id="support-chat-messages" class="space-y-2 text-xs"></div>
         </div>
-        <div class="p-3 border-t border-[#2b3139] flex gap-2 bg-[#1e2329] pb-6 shrink-0">
+        <div class="p-3 border-t border-[#2b3139] flex gap-2 bg-[#1e2329] pb-6">
             <input type="text" id="sup-chat-input" placeholder="Message Admin..." class="flex-1 bg-[#0b0e11] border border-[#2b3139] rounded-lg px-3 text-white text-xs">
             <button onclick="sendSupportMsg(false)" class="bg-[#FCD535] text-black px-3 rounded-lg hover:opacity-90 transition-opacity">
                 <i class="fa-solid fa-paper-plane"></i>
@@ -535,7 +535,7 @@
         <div class="flex-1 overflow-y-auto bg-[#0b0e11] p-4" id="admin-support-scroll">
             <div id="admin-support-chat-messages" class="space-y-2 text-xs"></div>
         </div>
-        <div class="p-3 border-t border-[#2b3139] flex gap-2 bg-[#1e2329] pb-6 shrink-0">
+        <div class="p-3 border-t border-[#2b3139] flex gap-2 bg-[#1e2329] pb-6">
             <input type="text" id="adm-sup-chat-input" placeholder="Reply to user..." class="flex-1 bg-[#0b0e11] border border-[#2b3139] rounded-lg px-3 text-white text-xs">
             <button onclick="sendSupportMsg(true)" class="bg-[#3b82f6] text-white px-3 rounded-lg hover:bg-[#2563eb] transition-colors">
                 <i class="fa-solid fa-paper-plane"></i>
@@ -598,9 +598,8 @@
         </div>
     </div>
 
-    <!-- Trade Room Modal – FIXED: chat input stays at the bottom, only messages scroll -->
+    <!-- Trade Room Modal – no image upload -->
     <div id="tradeModal" class="fixed inset-0 bg-[#0b0e11] z-[60] hidden flex-col h-screen">
-        <!-- Header (fixed top) -->
         <div class="bg-[#1e2329] border-b border-[#2b3139] p-3 flex justify-between items-center shrink-0">
             <div class="flex items-center gap-3">
                 <button onclick="leaveTradeRoom()" class="text-white text-lg hover:text-[#FCD535] transition-colors">
@@ -620,16 +619,13 @@
             </button>
         </div>
 
-        <!-- Scrollable middle section (trade info + messages) -->
-        <div id="trade-chat-scroll" class="flex-1 overflow-y-auto bg-[#0b0e11]">
-            <!-- Trade amount info -->
+        <div class="flex-1 overflow-y-auto pb-20 bg-[#0b0e11]">
             <div class="p-4 bg-[#1e2329] border-b border-[#2b3139] text-center">
                 <h1 id="tr-etb" class="text-2xl font-black text-[#FCD535]">0.00 ETB</h1>
                 <p id="tr-usdt" class="text-xs font-bold text-white mt-1">0.00 USDT</p>
             </div>
 
             <div class="p-4 space-y-3">
-                <!-- Partner info card -->
                 <div class="bg-[#1e2329] p-3 rounded-xl border border-[#2b3139]">
                     <div class="flex items-center gap-2 mb-2 pb-2 border-b border-[#2b3139]">
                         <div class="w-8 h-8 rounded-full bg-[#2b3139] flex items-center justify-center font-bold text-white text-sm overflow-hidden" id="tr-partner-av"></div>
@@ -645,32 +641,28 @@
                     </div>
                 </div>
 
-                <!-- Messages area (grows with content, no fixed height) -->
-                <div class="bg-[#1e2329] rounded-xl border border-[#2b3139] flex flex-col min-h-[200px]">
-                    <div class="bg-[#2b3139] text-[10px] text-center py-1 text-[#848E9C] font-bold rounded-t-xl shrink-0">
+                <div class="bg-[#1e2329] rounded-xl border border-[#2b3139] h-64 flex flex-col">
+                    <div class="bg-[#2b3139] text-[10px] text-center py-1 text-[#848E9C] font-bold rounded-t-xl">
                         💬 Trade Chat
                     </div>
-                    <div id="chat-messages" class="flex-1 p-2 space-y-2 text-xs"></div>
+                    <div id="chat-messages" class="flex-1 overflow-y-auto p-2 space-y-2 text-xs"></div>
+                    <div class="p-2 border-t border-[#2b3139] flex gap-2">
+                        <input type="text" id="chat-input" placeholder="Type message..." class="flex-1 bg-[#0b0e11] border border-[#2b3139] rounded-lg px-3 text-white text-xs">
+                        <button onclick="sendMsg()" class="bg-[#FCD535] text-black px-3 rounded-lg hover:opacity-90 transition-opacity">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Chat input (fixed at bottom, always visible) -->
-        <div class="shrink-0 p-2 border-t border-[#2b3139] flex gap-2 bg-[#1e2329]">
-            <input type="text" id="chat-input" placeholder="Type message..." class="flex-1 bg-[#0b0e11] border border-[#2b3139] rounded-lg px-3 text-white text-xs">
-            <button onclick="sendMsg()" class="bg-[#FCD535] text-black px-3 rounded-lg hover:opacity-90 transition-opacity">
-                <i class="fa-solid fa-paper-plane"></i>
-            </button>
-        </div>
-
-        <!-- Trade action buttons (fixed at very bottom) -->
-        <div class="shrink-0 bg-[#1e2329] border-t border-[#2b3139] p-3 flex gap-2" id="trade-buttons-area">
+        <div class="fixed bottom-0 w-full bg-[#1e2329] border-t border-[#2b3139] p-3 flex gap-2 z-[60]" id="trade-buttons-area">
         </div>
     </div>
 
     <!-- Admin Chat Monitor Modal -->
     <div id="adminChatModal" class="fixed inset-0 bg-[#0b0e11] z-[80] hidden flex-col h-screen">
-        <div class="bg-[#1e2329] border-b border-[#2b3139] p-3 flex justify-between items-center shrink-0">
+        <div class="bg-[#1e2329] border-b border-[#2b3139] p-3 flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <button onclick="closeModal('adminChatModal')" class="text-white text-lg hover:text-[#FCD535] transition-colors">
                     <i class="fa-solid fa-arrow-left"></i>
@@ -883,7 +875,7 @@
                     const newUser = {
                         name: user.first_name || "User",
                         username: user.username || "",
-                        status: 'verified',
+                        status: 'verified',          // <-- NO VERIFICATION NEEDED, ALWAYS VERIFIED
                         isBanned: false,
                         completionRate: 100,
                         totalTrades: 0,
@@ -902,6 +894,7 @@
                     myData = newUser;
                 } else {
                     myData = data;
+                    // Force verified status for everyone
                     myData.status = 'verified';
                     const updates = {};
                     if (user.first_name && data.name !== user.first_name) updates.name = user.first_name;
@@ -956,6 +949,7 @@
                 headerAvatar.innerHTML = `<span>${initLetter}</span>`;
             }
 
+            // Always show verified status
             document.getElementById('prof-status-text').innerText = '✅ STATUS: VERIFIED';
             document.getElementById('prof-status-text').className = "text-[10px] text-[#0ECB81] mt-1 uppercase font-bold";
 
@@ -992,6 +986,7 @@
 
         function checkRequirements() {
             if (siteOffline) { showToast("⚠️ Site is currently offline."); return false; }
+            // Removed KYC verification check – all users are verified automatically
             if (!myData.binanceId || myData.binanceId.trim() === "") {
                 showToast("⚠️ Please set your Binance ID in Profile first!");
                 switchMainTab('profile');
@@ -1715,6 +1710,7 @@
             db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '✅ Seller has paid USDT.', timestamp: Date.now() });
         }
 
+        // New trade completion checker
         function checkTradeCompletion(orderId) {
             db.ref('orders/' + orderId).once('value', snap => {
                 const o = snap.val();
@@ -1807,11 +1803,7 @@
                         </button>` : ''}
                     </div>`;
                 });
-                // Scroll the outer container instead of chat-messages
-                const scrollContainer = document.getElementById('trade-chat-scroll');
-                if (scrollContainer) {
-                    scrollContainer.scrollTop = scrollContainer.scrollHeight;
-                }
+                box.scrollTop = box.scrollHeight;
             });
         }
 
@@ -2441,4 +2433,4 @@
         }
     </script>
 </body>
-                                </html>
+    </html>
