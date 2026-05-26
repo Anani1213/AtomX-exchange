@@ -39,6 +39,13 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes splashSwing {
+            0% { transform: rotate(-6deg); }
+            25% { transform: rotate(6deg); }
+            50% { transform: rotate(-4deg); }
+            75% { transform: rotate(4deg); }
+            100% { transform: rotate(-6deg); }
+        }
         
         .notification-badge { 
             position: absolute; top: -5px; right: -5px; 
@@ -77,21 +84,26 @@
         }
         .site-offline-overlay { background: rgba(0,0,0,0.95); z-index: 9999; }
 
-        /* Splash screen */
+        /* Splash screen with swing animation */
         #splash-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 99999; display: flex;
             align-items: center; justify-content: center;
             transition: opacity 0.5s ease;
         }
-        #splash-screen img { max-width: 80%; max-height: 80%; object-fit: contain; }
+        #splash-screen img {
+            max-width: 80%; max-height: 80%; object-fit: contain;
+            animation: splashSwing 2.5s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
     </style>
 </head>
 <body class="pb-20 h-screen flex flex-col">
 
-    <!-- Splash Screen (updated with direct image link) -->
+    <!-- Splash Screen (updated with swing animation) -->
     <div id="splash-screen">
-        <img src="https://i.ibb.co/N2x5n099/18320.jpg" alt="Loading..." onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔄</text></svg>'">
+        <img src="https://i.ibb.co/N2x5n099/18320.jpg" alt="Loading..." 
+             onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔄</text></svg>'">
     </div>
 
     <!-- Banned Screen -->
@@ -336,7 +348,7 @@
                 </div>
             </div>
 
-            <!-- Verified Account Banner (replaces KYC section) -->
+            <!-- Verified Account Banner -->
             <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139] text-center">
                 <p class="text-[#0ECB81] font-bold text-xs"><i class="fa-solid fa-circle-check mr-1"></i> Verified Account</p>
             </div>
@@ -488,7 +500,7 @@
         </button>
     </nav>
 
-    <!-- Deposit Modal (now includes transaction ID) -->
+    <!-- Deposit Modal -->
     <div id="depositModal" class="modal-overlay fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
         <div class="bg-[#1e2329] w-full max-w-sm rounded-xl p-5 border border-[#2b3139]">
             <h3 class="text-white font-bold text-lg mb-4">Deposit USDT</h3>
@@ -519,10 +531,10 @@
             </h2>
             <div class="w-6"></div>
         </div>
-        <div class="flex-1 overflow-y-auto bg-[#0b0e11] p-4" id="support-chat-scroll">
+        <div class="flex-1 overflow-y-auto bg-[#0b0e11] p-4 pb-24" id="support-chat-scroll">
             <div id="support-chat-messages" class="space-y-2 text-xs"></div>
         </div>
-        <div class="p-3 border-t border-[#2b3139] flex gap-2 bg-[#1e2329] pb-6">
+        <div class="fixed bottom-0 w-full p-3 border-t border-[#2b3139] flex gap-2 bg-[#1e2329] z-[90]">
             <input type="text" id="sup-chat-input" placeholder="Message Admin..." class="flex-1 bg-[#0b0e11] border border-[#2b3139] rounded-lg px-3 text-white text-xs">
             <button onclick="sendSupportMsg(false)" class="bg-[#FCD535] text-black px-3 rounded-lg hover:opacity-90 transition-opacity">
                 <i class="fa-solid fa-paper-plane"></i>
@@ -546,10 +558,10 @@
                 <i class="fa-solid fa-trash mr-1"></i> Clear
             </button>
         </div>
-        <div class="flex-1 overflow-y-auto bg-[#0b0e11] p-4" id="admin-support-scroll">
+        <div class="flex-1 overflow-y-auto bg-[#0b0e11] p-4 pb-24" id="admin-support-scroll">
             <div id="admin-support-chat-messages" class="space-y-2 text-xs"></div>
         </div>
-        <div class="p-3 border-t border-[#2b3139] flex gap-2 bg-[#1e2329] pb-6">
+        <div class="fixed bottom-0 w-full p-3 border-t border-[#2b3139] flex gap-2 bg-[#1e2329] z-[90]">
             <input type="text" id="adm-sup-chat-input" placeholder="Reply to user..." class="flex-1 bg-[#0b0e11] border border-[#2b3139] rounded-lg px-3 text-white text-xs">
             <button onclick="sendSupportMsg(true)" class="bg-[#3b82f6] text-white px-3 rounded-lg hover:bg-[#2563eb] transition-colors">
                 <i class="fa-solid fa-paper-plane"></i>
@@ -612,7 +624,7 @@
         </div>
     </div>
 
-    <!-- Trade Room Modal – no image upload -->
+    <!-- Trade Room Modal – redesigned with fixed chat input -->
     <div id="tradeModal" class="fixed inset-0 bg-[#0b0e11] z-[60] hidden flex-col h-screen">
         <div class="bg-[#1e2329] border-b border-[#2b3139] p-3 flex justify-between items-center shrink-0">
             <div class="flex items-center gap-3">
@@ -633,7 +645,7 @@
             </button>
         </div>
 
-        <div class="flex-1 overflow-y-auto pb-20 bg-[#0b0e11]">
+        <div class="flex-1 overflow-y-auto pb-36 bg-[#0b0e11]">
             <div class="p-4 bg-[#1e2329] border-b border-[#2b3139] text-center">
                 <h1 id="tr-etb" class="text-2xl font-black text-[#FCD535]">0.00 ETB</h1>
                 <p id="tr-usdt" class="text-xs font-bold text-white mt-1">0.00 USDT</p>
@@ -660,17 +672,20 @@
                         💬 Trade Chat
                     </div>
                     <div id="chat-messages" class="flex-1 overflow-y-auto p-2 space-y-2 text-xs"></div>
-                    <div class="p-2 border-t border-[#2b3139] flex gap-2">
-                        <input type="text" id="chat-input" placeholder="Type message..." class="flex-1 bg-[#0b0e11] border border-[#2b3139] rounded-lg px-3 text-white text-xs">
-                        <button onclick="sendMsg()" class="bg-[#FCD535] text-black px-3 rounded-lg hover:opacity-90 transition-opacity">
-                            <i class="fa-solid fa-paper-plane"></i>
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="fixed bottom-0 w-full bg-[#1e2329] border-t border-[#2b3139] p-3 flex gap-2 z-[60]" id="trade-buttons-area">
+        <!-- Fixed Bottom Bar: Chat Input + Trade Buttons -->
+        <div class="fixed bottom-0 w-full bg-[#1e2329] border-t border-[#2b3139] p-3 flex flex-col gap-2 z-[60]">
+            <div class="flex gap-2">
+                <input type="text" id="chat-input" placeholder="Type message..." class="flex-1 bg-[#0b0e11] border border-[#2b3139] rounded-lg px-3 text-white text-xs">
+                <button onclick="sendMsg()" class="bg-[#FCD535] text-black px-3 rounded-lg hover:opacity-90 transition-opacity">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+            <div id="trade-buttons-area" class="flex gap-2">
+            </div>
         </div>
     </div>
 
@@ -779,17 +794,7 @@
             try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch(e) { return null; }
         }
 
-        // ====== IMAGE DOWNLOAD HELPER ======
-        function downloadImage(base64Data, filename) {
-            const link = document.createElement('a');
-            link.href = base64Data;
-            link.download = filename || 'image.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // ====== SPLASH SCREEN (added) ======
+        // ====== SPLASH SCREEN WITH ANIMATION ======
         window.addEventListener('DOMContentLoaded', function() {
             const splash = document.getElementById('splash-screen');
             if (splash) {
@@ -797,12 +802,8 @@
                 if (img.complete) {
                     startSplashTimer(splash);
                 } else {
-                    img.onload = function() {
-                        startSplashTimer(splash);
-                    };
-                    img.onerror = function() {
-                        startSplashTimer(splash);
-                    };
+                    img.onload = function() { startSplashTimer(splash); };
+                    img.onerror = function() { startSplashTimer(splash); };
                 }
             }
         });
@@ -1033,7 +1034,7 @@
             return true;
         }
 
-        // ====== DEPOSIT SYSTEM (with transaction ID) ======
+        // ====== DEPOSIT SYSTEM ======
         function openDepositModal() {
             if (siteOffline) { showToast("⚠️ Site is offline."); return; }
             openModal('depositModal');
@@ -1812,7 +1813,7 @@
             }
         }
 
-        // ====== CHAT SYSTEM (text only) ======
+        // ====== CHAT SYSTEM ======
         function loadChat(orderId) {
             db.ref('chats/' + orderId).on('value', s => {
                 const box = document.getElementById('chat-messages');
@@ -2110,7 +2111,7 @@
             document.getElementById('notification-panel').classList.toggle('hidden');
         }
 
-        // ====== ADMIN PANEL (NO KYC TAB, NO VERIFICATION) ======
+        // ====== ADMIN PANEL (ENHANCED DISPUTE DETAILS) ======
         function switchAdminTab(id, btn) {
             document.querySelectorAll('.admin-panel').forEach(e => e.classList.add('hidden'));
             document.querySelectorAll('.admin-tab-btn').forEach(e => {
@@ -2328,6 +2329,7 @@
                 if (manageAdsList.innerHTML === '') manageAdsList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No active or paused ads</div>';
             });
 
+            // Enhanced dispute display showing both parties' details
             db.ref('orders').on('value', s => {
                 const dList = document.getElementById('admin-disputes');
                 const oList = document.getElementById('admin-orders');
@@ -2338,6 +2340,9 @@
                     const o = orders[id];
                     if (o.dispute && o.status !== 'completed' && o.status !== 'cancelled' && dList) {
                         const complainant = usersCachedMap[o.disputedBy] || {};
+                        const buyer = usersCachedMap[o.buyerId] || {};
+                        const seller = usersCachedMap[o.sellerId] || {};
+                        const whoRaised = String(o.disputedBy) === String(o.buyerId) ? 'Buyer' : 'Seller';
                         dList.innerHTML += `
                         <div class="bg-red-950/40 p-3 rounded border border-red-500 text-xs mb-2 space-y-2">
                             <div class="flex justify-between border-b border-red-900 pb-1">
@@ -2345,11 +2350,23 @@
                                 <span class="text-[#FCD535] font-bold">${o.amountUsdt} USDT</span>
                             </div>
                             <div class="text-gray-300 space-y-1 text-[11px]">
-                                <p>⚠️ <span class="text-red-400 font-bold">Raised By:</span> ${complainant.name || 'Unknown'} (TG: ${o.disputedBy || 'N/A'})</p>
-                                <p>📱 Phone: ${complainant.telePhone || 'N/A'}</p>
-                                <p>🏦 Bank: ${complainant.cbeAccount || 'N/A'}</p>
-                                <p>🔶 Binance ID: ${complainant.binanceId || 'N/A'}</p>
-                                <p>💰 Value: ${(o.amountEtb || 0).toFixed(2)} ETB @ ${o.price} rate</p>
+                                <p>⚠️ <span class="text-red-400 font-bold">Raised By:</span> ${whoRaised} — ${complainant.name || 'Unknown'} (TG: ${o.disputedBy || 'N/A'})</p>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-[11px]">
+                                <div class="bg-[#0b0e11] p-2 rounded space-y-1">
+                                    <div class="text-[#0ECB81] font-bold">👤 Buyer</div>
+                                    <div>Name: ${buyer.name || 'N/A'}</div>
+                                    <div>TG ID: ${o.buyerId || 'N/A'}</div>
+                                    <div>📱 Telebirr: ${buyer.telePhone || 'N/A'}</div>
+                                    <div>🔶 Binance: ${buyer.binanceId || 'N/A'}</div>
+                                </div>
+                                <div class="bg-[#0b0e11] p-2 rounded space-y-1">
+                                    <div class="text-[#FCD535] font-bold">👤 Seller</div>
+                                    <div>Name: ${seller.name || 'N/A'}</div>
+                                    <div>TG ID: ${o.sellerId || 'N/A'}</div>
+                                    <div>📱 Telebirr: ${seller.telePhone || 'N/A'}</div>
+                                    <div>🔶 Binance: ${seller.binanceId || 'N/A'}</div>
+                                </div>
                             </div>
                             <div class="flex flex-col gap-1 pt-1">
                                 <button onclick="openAdminChatMonitor('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded font-bold text-[11px] w-full transition-colors"><i class="fa-solid fa-comments mr-1"></i> View Chat Logs</button>
@@ -2470,4 +2487,4 @@
         }
     </script>
 </body>
-                            </html>
+    </html>
