@@ -4,14 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ethio P2P Exchange - Professional</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <script src="https://telegram.org/js/telegram-web-app.js">
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js">
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        
+
         :root {
             --bg-dark: #0b0e11;
             --bg-card: #1e2329;
@@ -23,76 +27,237 @@
             --sell-red: #F6465D;
         }
 
-        * { -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; overflow-x: hidden; margin: 0; padding: 0; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.25s ease; }
-        .nav-item { color: var(--text-muted); transition: all 0.2s; cursor: pointer; position: relative; }
-        .nav-item.active { color: var(--text-main); font-weight: 700; }
-        
-        input, select, textarea { background-color: var(--bg-dark) !important; border: 1px solid #2b3139 !important; color: var(--text-main) !important; outline: none; }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary-yellow) !important; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: var(--bg-dark); }
-        ::-webkit-scrollbar-thumb { background: #2b3139; border-radius: 4px; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        @keyframes splashSwing {
-            0% { transform: rotate(-6deg); }
-            25% { transform: rotate(6deg); }
-            50% { transform: rotate(-4deg); }
-            75% { transform: rotate(4deg); }
-            100% { transform: rotate(-6deg); }
+        * {
+            -webkit-tap-highlight-color: transparent;
         }
-        
-        .notification-badge { 
-            position: absolute; top: -5px; right: -5px; 
-            background: #F6465D; color: white; font-size: 9px; 
-            padding: 2px 5px; border-radius: 10px; min-width: 18px; text-align: center;
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
         }
-        .chat-image { max-width: 90%; max-height: 200px; border-radius: 8px; margin-top: 5px; border: 1px solid #2b3139; cursor: pointer; }
-        .badge-pro { background: #6C5CE7; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
-        .badge-trusted { background: #00B894; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
-        .badge-verified { background: #0ECB81; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.25s ease;
+        }
+        .nav-item {
+            color: var(--text-muted);
+            transition: all 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+        .nav-item.active {
+            color: var(--text-main);
+            font-weight: 700;
+        }
 
-        #toast-container { z-index: 9999; }
-        .banned-screen { background: var(--bg-dark); z-index: 10000; }
-        
-        .filter-chip {
-            display: inline-block; background: #2b3139; border: 1px solid #2b3139;
-            color: var(--text-main); padding: 6px 12px; border-radius: 20px;
-            font-size: 12px; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+        input,
+        select,
+        textarea {
+            background-color: var(--bg-dark) !important;
+            border: 1px solid #2b3139 !important;
+            color: var(--text-main) !important;
+            outline: none;
         }
-        .filter-chip.active { background: var(--primary-yellow); color: black; border-color: var(--primary-yellow); }
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--primary-yellow) !important;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2b3139;
+            border-radius: 4px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        @keyframes splashSwing {
+            0% {
+                transform: rotate(-6deg);
+            }
+            25% {
+                transform: rotate(6deg);
+            }
+            50% {
+                transform: rotate(-4deg);
+            }
+            75% {
+                transform: rotate(4deg);
+            }
+            100% {
+                transform: rotate(-6deg);
+            }
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #F6465D;
+            color: white;
+            font-size: 9px;
+            padding: 2px 5px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+        }
+        .chat-image {
+            max-width: 90%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 5px;
+            border: 1px solid #2b3139;
+            cursor: pointer;
+        }
+        .badge-pro {
+            background: #6C5CE7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .badge-trusted {
+            background: #00B894;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .badge-verified {
+            background: #0ECB81;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        #toast-container {
+            z-index: 9999;
+        }
+        .banned-screen {
+            background: var(--bg-dark);
+            z-index: 10000;
+        }
+
+        .filter-chip {
+            display: inline-block;
+            background: #2b3139;
+            border: 1px solid #2b3139;
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .filter-chip.active {
+            background: var(--primary-yellow);
+            color: black;
+            border-color: var(--primary-yellow);
+        }
 
         .online-dot {
-            width: 8px; height: 8px; background-color: #0ECB81; border-radius: 50%;
-            display: inline-block; box-shadow: 0 0 8px #0ECB81; animation: pulse 2s infinite;
+            width: 8px;
+            height: 8px;
+            background-color: #0ECB81;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px #0ECB81;
+            animation: pulse 2s infinite;
         }
-        .offline-dot { width: 8px; height: 8px; background-color: #848E9C; border-radius: 50%; display: inline-block; }
+        .offline-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #848E9C;
+            border-radius: 50%;
+            display: inline-block;
+        }
 
-        .delete-chat-btn { opacity: 0; transition: opacity 0.2s; }
-        .chat-message:hover .delete-chat-btn { opacity: 1; }
+        .delete-chat-btn {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .chat-message:hover .delete-chat-btn {
+            opacity: 1;
+        }
 
-        .modal-overlay { animation: fadeIn 0.2s ease; }
+        .modal-overlay {
+            animation: fadeIn 0.2s ease;
+        }
         .nav-badge {
-            position: absolute; top: -2px; right: -6px; background: #F6465D; color: white;
-            font-size: 9px; min-width: 16px; height: 16px; border-radius: 8px;
-            display: flex; align-items: center; justify-content: center; padding: 0 3px;
+            position: absolute;
+            top: -2px;
+            right: -6px;
+            background: #F6465D;
+            color: white;
+            font-size: 9px;
+            min-width: 16px;
+            height: 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 3px;
         }
-        .site-offline-overlay { background: rgba(0,0,0,0.95); z-index: 9999; }
+        .site-offline-overlay {
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+        }
 
-        /* Splash screen with swing animation */
         #splash-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 99999; display: flex;
-            align-items: center; justify-content: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: opacity 0.5s ease;
         }
         #splash-screen img {
-            max-width: 80%; max-height: 80%; object-fit: contain;
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
             animation: splashSwing 2.5s ease-in-out infinite;
             transform-origin: bottom center;
         }
@@ -100,10 +265,10 @@
 </head>
 <body class="pb-20 h-screen flex flex-col">
 
-    <!-- Splash Screen (updated with swing animation) -->
+    <!-- Splash Screen -->
     <div id="splash-screen">
-        <img src="https://i.ibb.co/N2x5n099/18320.jpg" alt="Loading..." 
-             onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔄</text></svg>'">
+        <img src="https://i.ibb.co/N2x5n099/18320.jpg" alt="Loading..."
+        onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔄</text></svg>'">
     </div>
 
     <!-- Banned Screen -->
@@ -157,10 +322,9 @@
 
     <!-- Main Content -->
     <main class="flex-1 overflow-y-auto w-full relative">
-        
+
         <!-- Market View -->
         <section id="market-view" class="tab-content active p-0">
-            <!-- Today's Price Range Dashboard -->
             <div id="price-range-banner" class="bg-[#1e2329] p-3 m-2 rounded-xl border border-[#2b3139] text-center">
                 <p class="text-[10px] text-[#848E9C] uppercase tracking-wider">📊 Today's USDT Price Range</p>
                 <p class="text-lg font-black text-[#FCD535] mt-1">
@@ -189,6 +353,9 @@
                         <div class="flex flex-wrap gap-2">
                             <span class="filter-chip active" onclick="togglePaymentFilter('telebirr', this)">📱 Telebirr</span>
                             <span class="filter-chip active" onclick="togglePaymentFilter('cbe', this)">🏦 CBE Bank</span>
+                            <span class="filter-chip active" onclick="togglePaymentFilter('awash', this)">🏦 Awash Bank</span>
+                            <span class="filter-chip active" onclick="togglePaymentFilter('abyssinia', this)">🏦 Abyssinia Bank</span>
+                            <span class="filter-chip active" onclick="togglePaymentFilter('dashen', this)">🏦 Dashen Bank</span>
                         </div>
                     </div>
 
@@ -232,7 +399,7 @@
                     </button>
                 </div>
             </div>
-            
+
             <div class="space-y-4">
                 <div>
                     <h3 class="text-xs font-bold text-[#848E9C] mb-2 uppercase tracking-wider flex items-center gap-2">
@@ -286,12 +453,24 @@
                     <label class="text-xs text-[#848E9C] mb-2 block">Accepted Payment Methods</label>
                     <div class="space-y-2">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" id="pm-telebirr" class="w-4 h-4 accent-[#FCD535]" checked> 
+                            <input type="checkbox" id="pm-telebirr" class="w-4 h-4 accent-[#FCD535]" checked>
                             <span class="text-sm">📱 Telebirr</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" id="pm-cbe" class="w-4 h-4 accent-[#FCD535]"> 
+                            <input type="checkbox" id="pm-cbe" class="w-4 h-4 accent-[#FCD535]">
                             <span class="text-sm">🏦 CBE Bank</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="pm-awash" class="w-4 h-4 accent-[#FCD535]">
+                            <span class="text-sm">🏦 Awash Bank</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="pm-abyssinia" class="w-4 h-4 accent-[#FCD535]">
+                            <span class="text-sm">🏦 Abyssinia Bank</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="pm-dashen" class="w-4 h-4 accent-[#FCD535]">
+                            <span class="text-sm">🏦 Dashen Bank</span>
                         </label>
                     </div>
                 </div>
@@ -335,7 +514,7 @@
                     </div>
                     <div id="prof-badge" class="badge-verified flex-shrink-0">✓</div>
                 </div>
-                
+
                 <div class="grid grid-cols-2 gap-2 text-center text-xs bg-[#0b0e11] p-3 rounded-lg">
                     <div>
                         <div class="font-bold text-lg text-[#FCD535]" id="prof-completion">100%</div>
@@ -356,7 +535,7 @@
             <!-- Payment Methods -->
             <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139] space-y-4">
                 <h3 class="text-xs font-bold text-[#848E9C] uppercase border-b border-[#2b3139] pb-2">Payment Methods</h3>
-                
+
                 <!-- Telebirr -->
                 <div class="border-l-2 border-[#FCD535] pl-3">
                     <div class="flex justify-between items-center mb-2">
@@ -398,6 +577,51 @@
                     <div id="pm-cbe-edit">
                         <input type="text" id="pm-cbe-account" placeholder="Account Number" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11] mb-2">
                         <input type="text" id="pm-cbe-name" placeholder="Account Holder Name" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
+                    </div>
+                </div>
+
+                <!-- Awash Bank -->
+                <div class="border-l-2 border-[#E91E63] pl-3">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-[10px] font-bold text-[#E91E63] block">🏦 AWASH BANK</label>
+                        <button onclick="toggleEdit('pm-awash')" class="text-[#848E9C] hover:text-[#E91E63] transition-colors">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </button>
+                    </div>
+                    <div id="pm-awash-display" class="text-sm font-bold text-[#848E9C] bg-[#0b0e11] p-2 rounded mb-2 hidden">Not Set</div>
+                    <div id="pm-awash-edit">
+                        <input type="text" id="pm-awash-account" placeholder="Account Number" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11] mb-2">
+                        <input type="text" id="pm-awash-name" placeholder="Account Holder Name" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
+                    </div>
+                </div>
+
+                <!-- Abyssinia Bank -->
+                <div class="border-l-2 border-[#9C27B0] pl-3">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-[10px] font-bold text-[#9C27B0] block">🏦 ABYSSINIA BANK</label>
+                        <button onclick="toggleEdit('pm-abyssinia')" class="text-[#848E9C] hover:text-[#9C27B0] transition-colors">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </button>
+                    </div>
+                    <div id="pm-abyssinia-display" class="text-sm font-bold text-[#848E9C] bg-[#0b0e11] p-2 rounded mb-2 hidden">Not Set</div>
+                    <div id="pm-abyssinia-edit">
+                        <input type="text" id="pm-abyssinia-account" placeholder="Account Number" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11] mb-2">
+                        <input type="text" id="pm-abyssinia-name" placeholder="Account Holder Name" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
+                    </div>
+                </div>
+
+                <!-- Dashen Bank -->
+                <div class="border-l-2 border-[#FF9800] pl-3">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-[10px] font-bold text-[#FF9800] block">🏦 DASHEN BANK</label>
+                        <button onclick="toggleEdit('pm-dashen')" class="text-[#848E9C] hover:text-[#FF9800] transition-colors">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </button>
+                    </div>
+                    <div id="pm-dashen-display" class="text-sm font-bold text-[#848E9C] bg-[#0b0e11] p-2 rounded mb-2 hidden">Not Set</div>
+                    <div id="pm-dashen-edit">
+                        <input type="text" id="pm-dashen-account" placeholder="Account Number" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11] mb-2">
+                        <input type="text" id="pm-dashen-name" placeholder="Account Holder Name" class="w-full p-2 rounded-lg text-sm bg-[#0b0e11]">
                     </div>
                 </div>
 
@@ -448,14 +672,14 @@
                 <button onclick="switchAdminTab('admin-users', this)" class="admin-tab-btn bg-[#FCD535] text-black px-4 py-2 rounded-lg whitespace-nowrap transition-all">👥 Users</button>
                 <button onclick="switchAdminTab('admin-banned', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">🚫 Banned</button>
                 <button onclick="switchAdminTab('admin-support', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap relative transition-all">
-                    💬 Support 
+                    💬 Support
                     <span id="support-badge" class="absolute -top-2 -right-2 bg-blue-500 text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center hidden font-bold">0</span>
                 </button>
                 <button onclick="switchAdminTab('admin-deposits', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">💰 Deposits</button>
                 <button onclick="switchAdminTab('admin-ad-approvals', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">📋 Ads Pending</button>
                 <button onclick="switchAdminTab('admin-manage-ads', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">⚙️ Manage Ads</button>
                 <button onclick="switchAdminTab('admin-disputes', this)" class="admin-tab-btn relative bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">
-                    🚨 Disputes 
+                    🚨 Disputes
                     <span id="dispute-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center hidden font-bold">0</span>
                 </button>
                 <button onclick="switchAdminTab('admin-orders', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">📊 Monitor</button>
@@ -520,7 +744,7 @@
         </div>
     </div>
 
-    <!-- Support Chat Modal (User Side) – text only -->
+    <!-- Support Chat Modal (User Side) -->
     <div id="supportChatModal" class="fixed inset-0 bg-[#0b0e11] z-[80] hidden flex-col h-screen">
         <div class="bg-[#1e2329] border-b border-[#2b3139] p-3 flex justify-between items-center shrink-0">
             <button onclick="closeModal('supportChatModal'); markSupportRead();" class="text-white text-lg hover:text-[#FCD535] transition-colors">
@@ -576,7 +800,7 @@
             <p class="text-xs text-[#848E9C] mb-4">Limits: <span id="pm-limit" class="text-white font-bold"></span></p>
             <div class="bg-[#0b0e11] p-3 rounded-lg mb-4 text-xs text-[#848E9C] border border-[#2b3139]">
                 <strong class="text-white">Merchant Info:</strong><br>
-                <span id="pm-seller-name"></span> | 
+                <span id="pm-seller-name"></span> |
                 <span class="text-[#0ECB81] font-bold" id="pm-seller-trades">0 Trades</span>
             </div>
             <div class="bg-[#0b0e11] p-3 rounded-lg mb-4 text-xs text-[#848E9C] border border-[#2b3139]">
@@ -589,6 +813,9 @@
                     <option value="">Select method...</option>
                     <option value="telebirr">📱 Telebirr</option>
                     <option value="cbe">🏦 CBE Bank</option>
+                    <option value="awash">🏦 Awash Bank</option>
+                    <option value="abyssinia">🏦 Abyssinia Bank</option>
+                    <option value="dashen">🏦 Dashen Bank</option>
                 </select>
             </div>
             <input type="number" id="purchase-amount" placeholder="Enter amount in USDT" class="w-full p-3 rounded-lg font-bold mb-4">
@@ -624,7 +851,7 @@
         </div>
     </div>
 
-    <!-- Trade Room Modal – redesigned with fixed chat input -->
+    <!-- Trade Room Modal -->
     <div id="tradeModal" class="fixed inset-0 bg-[#0b0e11] z-[60] hidden flex-col h-screen">
         <div class="bg-[#1e2329] border-b border-[#2b3139] p-3 flex justify-between items-center shrink-0">
             <div class="flex items-center gap-3">
@@ -676,7 +903,7 @@
             </div>
         </div>
 
-        <!-- Fixed Bottom Bar: Chat Input + Trade Buttons -->
+        <!-- Fixed Bottom Bar -->
         <div class="fixed bottom-0 w-full bg-[#1e2329] border-t border-[#2b3139] p-3 flex flex-col gap-2 z-[60]">
             <div class="flex gap-2">
                 <input type="text" id="chat-input" placeholder="Type message..." class="flex-1 bg-[#0b0e11] border border-[#2b3139] rounded-lg px-3 text-white text-xs">
@@ -737,7 +964,7 @@
             messagingSenderId: "228796594910",
             appId: "1:228796594910:web:c51b4fc1158e30fb3ea04f"
         };
-        
+
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.database();
 
@@ -745,16 +972,16 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
-        
+
         const initData = tg.initDataUnsafe || {};
-        const user = initData.user || { 
-            id: 7798504269, 
+        const user = initData.user || {
+            id: 7798504269,
             first_name: "Admin",
             photo_url: null
         };
         const ADMIN_ID = 7798504269;
         const ADMIN_BINANCE_ID = "895035355";
-        
+
         const tgPhotoUrl = user.photo_url || null;
 
         // ====== LOCAL CACHE KEYS ======
@@ -778,7 +1005,7 @@
         let currentMonitorOrderId = null;
         let supportUnread = false;
 
-        let filterPaymentMethods = ['telebirr', 'cbe'];
+        let filterPaymentMethods = ['telebirr', 'cbe', 'awash', 'abyssinia', 'dashen'];
         let filterMinTrades = 0;
         let filterUsdtMin = 0;
         let filterUsdtMax = 100000;
@@ -788,10 +1015,11 @@
 
         // ====== CACHE HELPERS ======
         function cacheSet(key, value) {
-            try { localStorage.setItem(key, JSON.stringify(value)); } catch(e) {}
+            try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
         }
+
         function cacheGet(key) {
-            try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch(e) { return null; }
+            try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch (e) { return null; }
         }
 
         // ====== SPLASH SCREEN WITH ANIMATION ======
@@ -835,9 +1063,11 @@
             const cachedUsers = cacheGet(CACHE_KEY_USERS);
             if (cachedUsers) usersCachedMap = cachedUsers;
             const cachedAds = cacheGet(CACHE_KEY_ADS);
-            if (cachedAds) { allAds = cachedAds; loadMarketAdsUI(); }
+            if (cachedAds) { allAds = cachedAds;
+                loadMarketAdsUI(); }
             const cachedMyData = cacheGet(CACHE_KEY_MYDATA);
-            if (cachedMyData) { myData = cachedMyData; updateProfileUI(); }
+            if (cachedMyData) { myData = cachedMyData;
+                updateProfileUI(); }
 
             db.ref('users').on('value', snap => {
                 usersCachedMap = snap.val() || {};
@@ -929,6 +1159,12 @@
                         binanceId: "",
                         cbeAccount: "",
                         cbeName: "",
+                        awashAccount: "",
+                        awashName: "",
+                        abyssiniaAccount: "",
+                        abyssiniaName: "",
+                        dashenAccount: "",
+                        dashenName: "",
                         kycFullName: "",
                         kycTelegram: ""
                     };
@@ -942,6 +1178,12 @@
                     if (user.username && data.username !== user.username) updates.username = user.username;
                     if (data.balance === undefined) updates.balance = 0;
                     if (data.status !== 'verified') updates.status = 'verified';
+                    if (data.awashAccount === undefined) updates.awashAccount = "";
+                    if (data.awashName === undefined) updates.awashName = "";
+                    if (data.abyssiniaAccount === undefined) updates.abyssiniaAccount = "";
+                    if (data.abyssiniaName === undefined) updates.abyssiniaName = "";
+                    if (data.dashenAccount === undefined) updates.dashenAccount = "";
+                    if (data.dashenName === undefined) updates.dashenName = "";
                     if (Object.keys(updates).length > 0) db.ref('users/' + user.id).update(updates);
                 }
                 cacheSet(CACHE_KEY_MYDATA, myData);
@@ -962,9 +1204,9 @@
             const displayEl = document.getElementById(idPrefix + '-display');
             const editEl = document.getElementById(idPrefix + '-edit');
             if (val1 && val1.toString().trim() !== "") {
-                let masked = val1.toString().length > 4 
-                    ? val1.toString().substring(0, 3) + "****" + val1.toString().slice(-2)
-                    : val1;
+                let masked = val1.toString().length > 4 ?
+                    val1.toString().substring(0, 3) + "****" + val1.toString().slice(-2) :
+                    val1;
                 displayEl.innerText = masked + (val2 ? " (" + val2 + ")" : "");
                 displayEl.classList.remove('hidden');
                 editEl.classList.add('hidden');
@@ -983,7 +1225,8 @@
             const avatarContainer = document.getElementById('prof-avatar');
             const headerAvatar = document.getElementById('header-avatar');
             if (tgPhotoUrl) {
-                avatarContainer.innerHTML = `<img src="${tgPhotoUrl}" class="w-full h-full object-cover rounded-full" alt="avatar">`;
+                avatarContainer.innerHTML =
+                    `<img src="${tgPhotoUrl}" class="w-full h-full object-cover rounded-full" alt="avatar">`;
                 headerAvatar.innerHTML = `<img src="${tgPhotoUrl}" class="w-full h-full object-cover" alt="avatar">`;
             } else {
                 avatarContainer.innerHTML = `<span class="text-xl">${initLetter}</span>`;
@@ -991,7 +1234,8 @@
             }
 
             document.getElementById('prof-status-text').innerText = '✅ STATUS: VERIFIED';
-            document.getElementById('prof-status-text').className = "text-[10px] text-[#0ECB81] mt-1 uppercase font-bold";
+            document.getElementById('prof-status-text').className =
+                "text-[10px] text-[#0ECB81] mt-1 uppercase font-bold";
 
             document.getElementById('prof-completion').innerText = (myData.completionRate || 100) + '%';
             document.getElementById('prof-trades').innerText = myData.totalTrades || 0;
@@ -1009,6 +1253,15 @@
             if (myData.cbeAccount) document.getElementById('pm-cbe-account').value = myData.cbeAccount;
             if (myData.cbeName) document.getElementById('pm-cbe-name').value = myData.cbeName;
             setupPMDisplay('pm-cbe', myData.cbeAccount, myData.cbeName);
+            if (myData.awashAccount) document.getElementById('pm-awash-account').value = myData.awashAccount;
+            if (myData.awashName) document.getElementById('pm-awash-name').value = myData.awashName;
+            setupPMDisplay('pm-awash', myData.awashAccount, myData.awashName);
+            if (myData.abyssiniaAccount) document.getElementById('pm-abyssinia-account').value = myData.abyssiniaAccount;
+            if (myData.abyssiniaName) document.getElementById('pm-abyssinia-name').value = myData.abyssiniaName;
+            setupPMDisplay('pm-abyssinia', myData.abyssiniaAccount, myData.abyssiniaName);
+            if (myData.dashenAccount) document.getElementById('pm-dashen-account').value = myData.dashenAccount;
+            if (myData.dashenName) document.getElementById('pm-dashen-name').value = myData.dashenName;
+            setupPMDisplay('pm-dashen', myData.dashenAccount, myData.dashenName);
 
             document.getElementById('ad-balance-display').innerText = (myData.balance || 0).toFixed(2);
         }
@@ -1019,9 +1272,17 @@
                 teleName: document.getElementById('pm-tele-name').value,
                 binanceId: document.getElementById('pm-binance-id').value,
                 cbeAccount: document.getElementById('pm-cbe-account').value,
-                cbeName: document.getElementById('pm-cbe-name').value
+                cbeName: document.getElementById('pm-cbe-name').value,
+                awashAccount: document.getElementById('pm-awash-account').value,
+                awashName: document.getElementById('pm-awash-name').value,
+                abyssiniaAccount: document.getElementById('pm-abyssinia-account').value,
+                abyssiniaName: document.getElementById('pm-abyssinia-name').value,
+                dashenAccount: document.getElementById('pm-dashen-account').value,
+                dashenName: document.getElementById('pm-dashen-name').value
             };
-            db.ref('users/' + user.id).update(updates).then(() => showToast("✅ Profile settings saved successfully!")).catch(() => showToast("❌ Error saving profile. Please try again."));
+            db.ref('users/' + user.id).update(updates).then(() => showToast(
+                "✅ Profile settings saved successfully!")).catch(() => showToast(
+                "❌ Error saving profile. Please try again."));
         }
 
         function checkRequirements() {
@@ -1080,31 +1341,54 @@
                     }
                 });
                 if (hasActive) {
-                    showToast(`⚠️ You already have an active ${type} ad. Please pause or delete it first.`);
+                    showToast(
+                        `⚠️ You already have an active ${type} ad. Please pause or delete it first.`);
                     return;
                 }
-                
+
                 const price = parseFloat(document.getElementById('ad-price').value);
                 const amount = parseFloat(document.getElementById('ad-amount').value);
                 const min = parseFloat(document.getElementById('ad-min').value);
                 const max = parseFloat(document.getElementById('ad-max').value);
                 const terms = document.getElementById('ad-terms').value || "No special terms.";
                 if (!price || !amount || !min || !max) return showToast("⚠️ Please fill all fields!");
-                if (amount > userBalance) return showToast(`⚠️ Amount exceeds your available balance (${userBalance.toFixed(2)} USDT). Please deposit more.`);
+                if (amount > userBalance) return showToast(
+                    `⚠️ Amount exceeds your available balance (${userBalance.toFixed(2)} USDT). Please deposit more.`
+                    );
                 if (min > max) return showToast("⚠️ Min limit cannot be greater than Max limit!");
-                if (min > amount || max > amount) return showToast("⚠️ Limits must be within total amount!");
+                if (min > amount || max > amount) return showToast(
+                "⚠️ Limits must be within total amount!");
 
                 const paymentMethods = [
                     document.getElementById('pm-telebirr').checked ? 'telebirr' : null,
-                    document.getElementById('pm-cbe').checked ? 'cbe' : null
+                    document.getElementById('pm-cbe').checked ? 'cbe' : null,
+                    document.getElementById('pm-awash').checked ? 'awash' : null,
+                    document.getElementById('pm-abyssinia').checked ? 'abyssinia' : null,
+                    document.getElementById('pm-dashen').checked ? 'dashen' : null
                 ].filter(p => p !== null);
 
-                if (paymentMethods.length === 0) return showToast("⚠️ Select at least one payment method!");
+                if (paymentMethods.length === 0) return showToast(
+                "⚠️ Select at least one payment method!");
                 if (paymentMethods.includes('cbe') && (!myData.cbeAccount || !myData.cbeName)) {
-                    return showToast("⚠️ Please fill CBE Account details in your profile first!");
+                    return showToast(
+                    "⚠️ Please fill CBE Account details in your profile first!");
                 }
                 if (paymentMethods.includes('telebirr') && (!myData.telePhone || !myData.teleName)) {
-                    return showToast("⚠️ Please fill Telebirr details in your profile first!");
+                    return showToast(
+                    "⚠️ Please fill Telebirr details in your profile first!");
+                }
+                if (paymentMethods.includes('awash') && (!myData.awashAccount || !myData.awashName)) {
+                    return showToast(
+                    "⚠️ Please fill Awash Bank Account details in your profile first!");
+                }
+                if (paymentMethods.includes('abyssinia') && (!myData.abyssiniaAccount || !myData
+                        .abyssiniaName)) {
+                    return showToast(
+                    "⚠️ Please fill Abyssinia Bank Account details in your profile first!");
+                }
+                if (paymentMethods.includes('dashen') && (!myData.dashenAccount || !myData.dashenName)) {
+                    return showToast(
+                    "⚠️ Please fill Dashen Bank Account details in your profile first!");
                 }
 
                 db.ref('ads').push({
@@ -1137,11 +1421,15 @@
             const buyBtn = document.getElementById('form-tab-buy');
             const sellBtn = document.getElementById('form-tab-sell');
             if (type === 'buy') {
-                buyBtn.className = "flex-1 py-2 text-sm font-bold bg-[#0ECB81] text-white rounded-md transition-all";
-                sellBtn.className = "flex-1 py-2 text-sm font-bold text-[#848E9C] rounded-md transition-all";
+                buyBtn.className =
+                    "flex-1 py-2 text-sm font-bold bg-[#0ECB81] text-white rounded-md transition-all";
+                sellBtn.className =
+                "flex-1 py-2 text-sm font-bold text-[#848E9C] rounded-md transition-all";
             } else {
-                sellBtn.className = "flex-1 py-2 text-sm font-bold bg-[#F6465D] text-white rounded-md transition-all";
-                buyBtn.className = "flex-1 py-2 text-sm font-bold text-[#848E9C] rounded-md transition-all";
+                sellBtn.className =
+                    "flex-1 py-2 text-sm font-bold bg-[#F6465D] text-white rounded-md transition-all";
+                buyBtn.className =
+                "flex-1 py-2 text-sm font-bold text-[#848E9C] rounded-md transition-all";
             }
             document.getElementById('ad-balance-display').innerText = (myData.balance || 0).toFixed(2);
         }
@@ -1184,7 +1472,8 @@
             db.ref('ads/' + adId).update({ status: newStatus }).then(() => {
                 showToast(`Ad ${newStatus === 'active' ? 'resumed' : 'paused'} successfully!`);
             }).catch(() => {
-                if (adIndex !== -1) allAds[adIndex].status = (newStatus === 'active' ? 'paused' : 'active');
+                if (adIndex !== -1) allAds[adIndex].status = (newStatus === 'active' ? 'paused' :
+                    'active');
                 cacheSet(CACHE_KEY_ADS, allAds);
                 loadMarketAdsUI();
                 showToast("❌ Failed to update ad status. Please try again.");
@@ -1194,12 +1483,12 @@
         // ====== MARKET SYSTEM ======
         function setMarket(type) {
             currentMarketType = type;
-            document.getElementById('btn-market-buy').className = type === 'buy' 
-                ? 'text-white border-b-2 border-[#FCD535] pb-1 transition-all' 
-                : 'text-[#848E9C] pb-1 transition-all';
-            document.getElementById('btn-market-sell').className = type === 'sell' 
-                ? 'text-white border-b-2 border-[#FCD535] pb-1 transition-all' 
-                : 'text-[#848E9C] pb-1 transition-all';
+            document.getElementById('btn-market-buy').className = type === 'buy' ?
+                'text-white border-b-2 border-[#FCD535] pb-1 transition-all' :
+                'text-[#848E9C] pb-1 transition-all';
+            document.getElementById('btn-market-sell').className = type === 'sell' ?
+                'text-white border-b-2 border-[#FCD535] pb-1 transition-all' :
+                'text-[#848E9C] pb-1 transition-all';
             loadMarketAds();
         }
 
@@ -1219,7 +1508,8 @@
 
         function updatePriceRangeBanner() {
             const activeAds = allAds.filter(ad => ad.status === 'active');
-            let minPrice = Infinity, maxPrice = -Infinity;
+            let minPrice = Infinity,
+                maxPrice = -Infinity;
             activeAds.forEach(ad => {
                 if (ad.price < minPrice) minPrice = ad.price;
                 if (ad.price > maxPrice) maxPrice = ad.price;
@@ -1250,17 +1540,24 @@
                     let badgeState = '';
                     let actionToggleBtn = '';
                     if (ad.status === 'pending_approval') {
-                        badgeState = `<span class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-2 py-0.5 rounded text-[10px] font-bold">Pending</span>`;
+                        badgeState =
+                            `<span class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-2 py-0.5 rounded text-[10px] font-bold">Pending</span>`;
                     } else if (ad.status === 'active') {
-                        badgeState = `<span class="bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded text-[10px] font-bold ad-status-badge">Live</span>`;
-                        actionToggleBtn = `<button onclick="toggleAdStatus('${ad.id}', 'paused')" class="bg-amber-600 text-white px-2 py-1 rounded text-[10px] font-bold hover:bg-amber-700 transition-colors ad-toggle-btn"><i class="fa-solid fa-pause"></i></button>`;
+                        badgeState =
+                            `<span class="bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded text-[10px] font-bold ad-status-badge">Live</span>`;
+                        actionToggleBtn =
+                            `<button onclick="toggleAdStatus('${ad.id}', 'paused')" class="bg-amber-600 text-white px-2 py-1 rounded text-[10px] font-bold hover:bg-amber-700 transition-colors ad-toggle-btn"><i class="fa-solid fa-pause"></i></button>`;
                     } else if (ad.status === 'paused') {
                         if (ad.pausedByAdmin) {
-                            badgeState = `<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[10px] font-bold">Paused by Admin</span>`;
-                            actionToggleBtn = `<button disabled class="bg-gray-600 text-gray-400 px-2 py-1 rounded text-[10px] font-bold"><i class="fa-solid fa-lock"></i></button>`;
+                            badgeState =
+                                `<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[10px] font-bold">Paused by Admin</span>`;
+                            actionToggleBtn =
+                                `<button disabled class="bg-gray-600 text-gray-400 px-2 py-1 rounded text-[10px] font-bold"><i class="fa-solid fa-lock"></i></button>`;
                         } else {
-                            badgeState = `<span class="bg-gray-500/20 text-gray-400 border border-gray-500/30 px-2 py-0.5 rounded text-[10px] font-bold ad-status-badge">Paused</span>`;
-                            actionToggleBtn = `<button onclick="toggleAdStatus('${ad.id}', 'active')" class="bg-green-600 text-white px-2 py-1 rounded text-[10px] font-bold hover:bg-green-700 transition-colors ad-toggle-btn"><i class="fa-solid fa-play"></i></button>`;
+                            badgeState =
+                                `<span class="bg-gray-500/20 text-gray-400 border border-gray-500/30 px-2 py-0.5 rounded text-[10px] font-bold ad-status-badge">Paused</span>`;
+                            actionToggleBtn =
+                                `<button onclick="toggleAdStatus('${ad.id}', 'active')" class="bg-green-600 text-white px-2 py-1 rounded text-[10px] font-bold hover:bg-green-700 transition-colors ad-toggle-btn"><i class="fa-solid fa-play"></i></button>`;
                         }
                     }
                     const typeColor = ad.type === 'buy' ? 'text-[#0ECB81]' : 'text-[#F6465D]';
@@ -1291,7 +1588,8 @@
                 }
             });
             if (myAdsCounter === 0 && userAdsList) {
-                userAdsList.innerHTML = '<div class="text-center text-[#848E9C] text-xs py-4">No ads posted yet</div>';
+                userAdsList.innerHTML =
+                    '<div class="text-center text-[#848E9C] text-xs py-4">No ads posted yet</div>';
             }
 
             filteredAds = allAds.filter(ad => {
@@ -1313,23 +1611,32 @@
 
             if (!list) return;
             if (filteredAds.length === 0) {
-                list.innerHTML = `<div class="p-8 text-center text-[#848E9C]"><i class="fa-solid fa-inbox text-4xl mb-3 block opacity-50"></i><p class="text-sm">No ads found matching your filters</p><p class="text-xs mt-1 opacity-70">Try adjusting your search criteria</p></div>`;
+                list.innerHTML =
+                    `<div class="p-8 text-center text-[#848E9C]"><i class="fa-solid fa-inbox text-4xl mb-3 block opacity-50"></i><p class="text-sm">No ads found matching your filters</p><p class="text-xs mt-1 opacity-70">Try adjusting your search criteria</p></div>`;
                 return;
             }
 
             filteredAds.forEach(ad => {
                 const btnLabel = currentMarketType === 'buy' ? 'BUY' : 'SELL';
-                const btnClr = currentMarketType === 'buy' ? 'bg-[#0ECB81] hover:bg-green-600' : 'bg-[#F6465D] hover:bg-red-600';
+                const btnClr = currentMarketType === 'buy' ? 'bg-[#0ECB81] hover:bg-green-600' :
+                    'bg-[#F6465D] hover:bg-red-600';
                 const isMyAd = String(ad.uid) === String(user.id);
                 const ownerData = usersCachedMap[ad.uid] || {};
                 const totalTrades = ownerData.totalTrades || 0;
                 const isOnline = ownerData.lastSeen && (Date.now() - ownerData.lastSeen < 60000);
-                const presenceDot = isOnline ? '<span class="online-dot ml-1"></span>' : '<span class="offline-dot ml-1"></span>';
+                const presenceDot = isOnline ? '<span class="online-dot ml-1"></span>' :
+                    '<span class="offline-dot ml-1"></span>';
                 let safePaymentMethods = (ad.paymentMethods || []).filter(m => m && m !== 'undefined');
                 if (safePaymentMethods.length === 0) safePaymentMethods = ['cbe'];
                 const paymentBadges = safePaymentMethods.map(m => {
-                    const icons = { 'telebirr': '📱 Telebirr', 'cbe': '🏦 CBE' };
-                    return `<span class="bg-[#0b0e11] px-2 py-0.5 rounded text-[9px]">${icons[m] || '🏦 CBE'}</span>`;
+                    const icons = {
+                        'telebirr': '📱 Telebirr',
+                        'cbe': '🏦 CBE',
+                        'awash': '🏦 Awash',
+                        'abyssinia': '🏦 Abyssinia',
+                        'dashen': '🏦 Dashen'
+                    };
+                    return `<span class="bg-[#0b0e11] px-2 py-0.5 rounded text-[9px]">${icons[m] || '🏦 Bank'}</span>`;
                 }).join(' ');
                 const adOwnerInitial = (ad.userName || 'U').charAt(0).toUpperCase();
                 const html = `
@@ -1358,7 +1665,8 @@
 
         function deleteAd(adId) {
             if (confirm('Are you sure you want to delete this ad permanently?')) {
-                db.ref('ads/' + adId).update({ status: 'deleted' }).then(() => showToast("🗑️ Ad deleted!"));
+                db.ref('ads/' + adId).update({ status: 'deleted' }).then(() => showToast(
+                "🗑️ Ad deleted!"));
             }
         }
 
@@ -1407,7 +1715,7 @@
         }
 
         function resetFilters() {
-            filterPaymentMethods = ['telebirr', 'cbe'];
+            filterPaymentMethods = ['telebirr', 'cbe', 'awash', 'abyssinia', 'dashen'];
             filterMinTrades = 0;
             filterUsdtMin = 0;
             filterUsdtMax = 100000;
@@ -1419,10 +1727,12 @@
             document.getElementById('custom-trades-input').classList.add('hidden');
             document.querySelectorAll('.filter-chip').forEach(chip => {
                 const onclickAttr = chip.getAttribute('onclick');
-                if (onclickAttr && onclickAttr.includes("'telebirr'")) chip.classList.add('active');
-                if (onclickAttr && onclickAttr.includes("'cbe'")) chip.classList.add('active');
+                if (onclickAttr && (onclickAttr.includes("'telebirr'") || onclickAttr.includes("'cbe'") ||
+                        onclickAttr.includes("'awash'") || onclickAttr.includes("'abyssinia'") || onclickAttr
+                        .includes("'dashen'"))) chip.classList.add('active');
                 if (onclickAttr && onclickAttr.includes('setMinTrades(0,')) chip.classList.add('active');
-                else if (onclickAttr && onclickAttr.includes('setMinTrades')) chip.classList.remove('active');
+                else if (onclickAttr && onclickAttr.includes('setMinTrades')) chip.classList.remove(
+                    'active');
             });
             loadMarketAds();
             showToast("🔄 Filters reset to default.");
@@ -1434,12 +1744,15 @@
             if (siteOffline) { showToast("⚠️ Site is offline."); return; }
 
             if (hasActivePendingOrder()) {
-                showToast("⚠️ You have an active order pending. Complete or wait for it to expire before placing a new order.");
+                showToast(
+                    "⚠️ You have an active order pending. Complete or wait for it to expire before placing a new order."
+                    );
                 return;
             }
 
             selectedAd = { adId, creatorId, price, min, max };
-            document.getElementById('pm-title').innerText = `${currentMarketType === 'buy' ? 'Buy' : 'Sell'} USDT`;
+            document.getElementById('pm-title').innerText =
+                `${currentMarketType === 'buy' ? 'Buy' : 'Sell'} USDT`;
             document.getElementById('pm-limit').innerText = `${min} - ${max} USDT`;
             document.getElementById('pm-terms').innerText = terms;
             const sellerData = usersCachedMap[creatorId] || {};
@@ -1471,19 +1784,48 @@
 
             const ad = allAds.find(a => a.id === selectedAd.adId);
             const adPaymentMethods = ad ? (ad.paymentMethods || []).filter(m => m && m !== 'undefined') : [];
-            if (adPaymentMethods.length === 0) adPaymentMethods.push('telebirr', 'cbe');
-            
+            if (adPaymentMethods.length === 0) adPaymentMethods.push('telebirr', 'cbe', 'awash', 'abyssinia',
+            'dashen');
+
             if (!adPaymentMethods.includes(selectedPayment)) {
-                return showToast(`⚠️ Seller does not accept ${selectedPayment === 'telebirr' ? '📱 Telebirr' : '🏦 CBE Bank'}. Please choose another method.`);
+                const pmNames = {
+                    'telebirr': '📱 Telebirr',
+                    'cbe': '🏦 CBE Bank',
+                    'awash': '🏦 Awash Bank',
+                    'abyssinia': '🏦 Abyssinia Bank',
+                    'dashen': '🏦 Dashen Bank'
+                };
+                return showToast(
+                    `⚠️ Seller does not accept ${pmNames[selectedPayment] || selectedPayment}. Please choose another method.`
+                    );
             }
 
             const sellerId = currentMarketType === 'buy' ? selectedAd.creatorId : String(user.id);
             const seller = usersCachedMap[sellerId] || {};
             if (selectedPayment === 'telebirr' && (!seller.telePhone || !seller.teleName)) {
-                return showToast("⚠️ The seller hasn't filled their Telebirr details. Please choose another method or contact support.");
+                return showToast(
+                    "⚠️ The seller hasn't filled their Telebirr details. Please choose another method or contact support."
+                    );
             }
             if (selectedPayment === 'cbe' && (!seller.cbeAccount || !seller.cbeName)) {
-                return showToast("⚠️ The seller hasn't filled their CBE account details. Please choose another method or contact support.");
+                return showToast(
+                    "⚠️ The seller hasn't filled their CBE account details. Please choose another method or contact support."
+                    );
+            }
+            if (selectedPayment === 'awash' && (!seller.awashAccount || !seller.awashName)) {
+                return showToast(
+                    "⚠️ The seller hasn't filled their Awash Bank account details. Please choose another method or contact support."
+                    );
+            }
+            if (selectedPayment === 'abyssinia' && (!seller.abyssiniaAccount || !seller.abyssiniaName)) {
+                return showToast(
+                    "⚠️ The seller hasn't filled their Abyssinia Bank account details. Please choose another method or contact support."
+                    );
+            }
+            if (selectedPayment === 'dashen' && (!seller.dashenAccount || !seller.dashenName)) {
+                return showToast(
+                    "⚠️ The seller hasn't filled their Dashen Bank account details. Please choose another method or contact support."
+                    );
             }
 
             const buyerId = currentMarketType === 'buy' ? String(user.id) : String(selectedAd.creatorId);
@@ -1547,14 +1889,15 @@
                         });
                         o.status = 'cancelled';
                     }
-                    if ((String(o.buyerId) === String(user.id) || String(o.sellerId) === String(user.id)) 
-                        && o.status !== 'completed' && o.status !== 'cancelled') {
+                    if ((String(o.buyerId) === String(user.id) || String(o.sellerId) === String(user.id)) &&
+                        o.status !== 'completed' && o.status !== 'cancelled') {
                         activeCount++;
                         if (list) {
                             const statusColor = o.dispute ? 'text-red-500' : 'text-[#FCD535]';
                             const statusText = o.dispute ? '🚨 DISPUTE' : o.status.toUpperCase();
                             const role = String(o.buyerId) === String(user.id) ? 'Buying' : 'Selling';
-                            const roleColor = String(o.buyerId) === String(user.id) ? 'text-[#0ECB81]' : 'text-[#F6465D]';
+                            const roleColor = String(o.buyerId) === String(user.id) ? 'text-[#0ECB81]' :
+                                'text-[#F6465D]';
                             list.innerHTML += `
                             <div onclick="openTradeRoom('${id}')" 
                                 class="bg-[#1e2329] p-3 rounded-lg border border-[#2b3139] flex justify-between items-center text-xs cursor-pointer mb-2 hover:border-[#FCD535] transition-all">
@@ -1584,8 +1927,9 @@
                 if (String(user.id) === String(ADMIN_ID)) {
                     const badge = document.getElementById('dispute-badge');
                     const dot = document.getElementById('nav-dispute-dot');
-                    const disputeCount = Object.keys(orders).filter(id => 
-                        orders[id].dispute && orders[id].status !== 'completed' && orders[id].status !== 'cancelled'
+                    const disputeCount = Object.keys(orders).filter(id =>
+                        orders[id].dispute && orders[id].status !== 'completed' && orders[id].status !==
+                        'cancelled'
                     ).length;
                     if (disputeCount > 0) {
                         badge.innerText = disputeCount;
@@ -1605,9 +1949,11 @@
             db.ref('orders/' + orderId).off();
             db.ref('orders/' + orderId).on('value', s => {
                 const o = s.val();
-                if (!o) { closeModal('tradeModal'); clearInterval(tradeInterval); return; }
+                if (!o) { closeModal('tradeModal');
+                    clearInterval(tradeInterval); return; }
                 if (o.status === 'completed' || o.status === 'cancelled') {
-                    closeModal('tradeModal'); clearInterval(tradeInterval);
+                    closeModal('tradeModal');
+                    clearInterval(tradeInterval);
                     if (o.status === 'completed') openModal('ratingModal');
                     return;
                 }
@@ -1640,13 +1986,19 @@
                 } else {
                     avBox.innerText = (partner.name || 'P').charAt(0).toUpperCase();
                 }
-                document.getElementById('tr-partner-trades').innerText = (partner.totalTrades || 0) + " Trades";
+                document.getElementById('tr-partner-trades').innerText = (partner.totalTrades || 0) +
+                " Trades";
                 let paymentMethod = o.selectedPaymentMethod || 'cbe';
                 if (paymentMethod === 'undefined') paymentMethod = 'cbe';
-                document.getElementById('tr-payment-method').innerText = {
+                const pmNames = {
                     'telebirr': '📱 Telebirr',
-                    'cbe': '🏦 CBE Bank'
-                }[paymentMethod] || '🏦 CBE Bank';
+                    'cbe': '🏦 CBE Bank',
+                    'awash': '🏦 Awash Bank',
+                    'abyssinia': '🏦 Abyssinia Bank',
+                    'dashen': '🏦 Dashen Bank'
+                };
+                document.getElementById('tr-payment-method').innerText = pmNames[paymentMethod] ||
+                '🏦 Bank';
                 let paymentHTML = '';
                 if (iAmBuyer) {
                     if (paymentMethod === 'telebirr') {
@@ -1659,15 +2011,22 @@
                             <span>👤 Name:</span> 
                             <span class="font-black text-[#FCD535]">${partner.teleName || 'N/A'}</span>
                         </div>`;
-                    } else {
+                    } else if (['cbe', 'awash', 'abyssinia', 'dashen'].includes(paymentMethod)) {
+                        const bankFields = {
+                            'cbe': { account: partner.cbeAccount, name: partner.cbeName },
+                            'awash': { account: partner.awashAccount, name: partner.awashName },
+                            'abyssinia': { account: partner.abyssiniaAccount, name: partner.abyssiniaName },
+                            'dashen': { account: partner.dashenAccount, name: partner.dashenName }
+                        };
+                        const bf = bankFields[paymentMethod] || { account: 'N/A', name: 'N/A' };
                         paymentHTML = `
                         <div class="flex justify-between p-2 bg-[#0b0e11] mb-1 px-2 rounded">
                             <span>🏦 Account:</span> 
-                            <span class="font-black text-[#FCD535]">${partner.cbeAccount || 'N/A'}</span>
+                            <span class="font-black text-[#FCD535]">${bf.account || 'N/A'}</span>
                         </div>
                         <div class="flex justify-between p-2 bg-[#0b0e11] px-2 rounded">
                             <span>👤 Name:</span> 
-                            <span class="font-black text-[#FCD535]">${partner.cbeName || 'N/A'}</span>
+                            <span class="font-black text-[#FCD535]">${bf.name || 'N/A'}</span>
                         </div>`;
                     }
                 } else {
@@ -1695,41 +2054,55 @@
             if (adType === 'sell') {
                 if (iAmBuyer) {
                     if (!o.buyerPaidFiat) {
-                        btnHTML = `<button onclick="buyerPayFiat()" class="flex-1 py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity">✅ I Have Paid ETB</button>`;
+                        btnHTML =
+                            `<button onclick="buyerPayFiat()" class="flex-1 py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity">✅ I Have Paid ETB</button>`;
                     } else if (o.sellerReleasedCrypto && !o.buyerConfirmedCrypto) {
-                        btnHTML = `<button onclick="buyerConfirmCrypto()" class="flex-1 py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity">✅ I Have Received USDT</button>`;
+                        btnHTML =
+                            `<button onclick="buyerConfirmCrypto()" class="flex-1 py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity">✅ I Have Received USDT</button>`;
                     } else {
-                        btnHTML = `<button disabled class="flex-1 py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase">⏳ Waiting for seller...</button>`;
+                        btnHTML =
+                            `<button disabled class="flex-1 py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase">⏳ Waiting for seller...</button>`;
                     }
                 } else {
                     if (o.buyerPaidFiat && !o.sellerConfirmedFiat) {
-                        btnHTML = `<button onclick="sellerConfirmFiat()" class="flex-1 py-3 rounded-xl bg-[#FCD535] text-black text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity">✅ I Have Received ETB</button>`;
+                        btnHTML =
+                            `<button onclick="sellerConfirmFiat()" class="flex-1 py-3 rounded-xl bg-[#FCD535] text-black text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity">✅ I Have Received ETB</button>`;
                     } else if (o.sellerConfirmedFiat && !o.sellerReleasedCrypto) {
-                        btnHTML = `<button onclick="sellerReleaseCrypto()" class="flex-1 py-3 rounded-xl bg-[#FCD535] text-black text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity">🚀 Release USDT</button>`;
+                        btnHTML =
+                            `<button onclick="sellerReleaseCrypto()" class="flex-1 py-3 rounded-xl bg-[#FCD535] text-black text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity">🚀 Release USDT</button>`;
                     } else if (o.sellerReleasedCrypto && !o.buyerConfirmedCrypto) {
-                        btnHTML = `<button disabled class="flex-1 py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase">⏳ Waiting for buyer to confirm USDT...</button>`;
+                        btnHTML =
+                            `<button disabled class="flex-1 py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase">⏳ Waiting for buyer to confirm USDT...</button>`;
                     } else {
-                        btnHTML = `<button disabled class="flex-1 py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase">⏳ Waiting for buyer to pay...</button>`;
+                        btnHTML =
+                            `<button disabled class="flex-1 py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase">⏳ Waiting for buyer to pay...</button>`;
                     }
                 }
             } else if (adType === 'buy') {
                 if (iAmBuyer) {
                     if (o.sellerPaidCrypto && !o.buyerConfirmedCrypto) {
-                        btnHTML = `<button onclick="buyerConfirmCrypto()" class="flex-1 py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity">✅ I Have Received USDT</button>`;
+                        btnHTML =
+                            `<button onclick="buyerConfirmCrypto()" class="flex-1 py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity">✅ I Have Received USDT</button>`;
                     } else if (o.buyerConfirmedCrypto && !o.buyerPaidFiat) {
-                        btnHTML = `<button onclick="buyerPayFiat()" class="flex-1 py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity">✅ I Have Paid ETB</button>`;
+                        btnHTML =
+                            `<button onclick="buyerPayFiat()" class="flex-1 py-3 rounded-xl bg-[#0ECB81] text-white text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity">✅ I Have Paid ETB</button>`;
                     } else if (o.buyerPaidFiat && !o.sellerConfirmedFiat) {
-                        btnHTML = `<button disabled class="flex-1 py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase">⏳ Waiting for seller to confirm ETB...</button>`;
+                        btnHTML =
+                            `<button disabled class="flex-1 py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase">⏳ Waiting for seller to confirm ETB...</button>`;
                     } else {
-                        btnHTML = `<button disabled class="flex-1 py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase">⏳ Waiting for seller to send USDT...</button>`;
+                        btnHTML =
+                            `<button disabled class="flex-1 py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase">⏳ Waiting for seller to send USDT...</button>`;
                     }
                 } else {
                     if (!o.sellerPaidCrypto) {
-                        btnHTML = `<button onclick="sellerPayCrypto()" class="flex-1 py-3 rounded-xl bg-[#FCD535] text-black text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity">✅ I Have Paid USDT</button>`;
+                        btnHTML =
+                            `<button onclick="sellerPayCrypto()" class="flex-1 py-3 rounded-xl bg-[#FCD535] text-black text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity">✅ I Have Paid USDT</button>`;
                     } else if (o.buyerPaidFiat && !o.sellerConfirmedFiat) {
-                        btnHTML = `<button onclick="sellerConfirmFiat()" class="flex-1 py-3 rounded-xl bg-[#FCD535] text-black text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity">✅ I Have Received ETB</button>`;
+                        btnHTML =
+                            `<button onclick="sellerConfirmFiat()" class="flex-1 py-3 rounded-xl bg-[#FCD535] text-black text-xs font-black uppercase shadow-lg hover:opacity-90 transition-opacity">✅ I Have Received ETB</button>`;
                     } else {
-                        btnHTML = `<button disabled class="flex-1 py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase">⏳ Waiting for buyer...</button>`;
+                        btnHTML =
+                            `<button disabled class="flex-1 py-3 rounded-xl bg-gray-600 text-gray-300 text-xs font-bold uppercase">⏳ Waiting for buyer...</button>`;
                     }
                 }
             }
@@ -1738,15 +2111,18 @@
 
         async function buyerPayFiat() {
             await db.ref('orders/' + activeTradeId).update({ buyerPaidFiat: true });
-            db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '✅ Buyer has paid ETB.', timestamp: Date.now() });
+            db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '✅ Buyer has paid ETB.',
+                timestamp: Date.now() });
         }
         async function sellerReleaseCrypto() {
             await db.ref('orders/' + activeTradeId).update({ sellerReleasedCrypto: true });
-            db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '🚀 Seller released USDT.', timestamp: Date.now() });
+            db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '🚀 Seller released USDT.',
+                timestamp: Date.now() });
         }
         async function sellerPayCrypto() {
             await db.ref('orders/' + activeTradeId).update({ sellerPaidCrypto: true });
-            db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '✅ Seller has paid USDT.', timestamp: Date.now() });
+            db.ref('chats/' + activeTradeId).push({ sender: 'system', text: '✅ Seller has paid USDT.',
+                timestamp: Date.now() });
         }
 
         function checkTradeCompletion(orderId) {
@@ -1755,11 +2131,13 @@
                 if (!o) return;
                 let complete = false;
                 if (o.adType === 'sell') {
-                    if (o.buyerPaidFiat && o.sellerConfirmedFiat && o.sellerReleasedCrypto && o.buyerConfirmedCrypto) {
+                    if (o.buyerPaidFiat && o.sellerConfirmedFiat && o.sellerReleasedCrypto && o
+                        .buyerConfirmedCrypto) {
                         complete = true;
                     }
                 } else if (o.adType === 'buy') {
-                    if (o.sellerPaidCrypto && o.buyerConfirmedCrypto && o.buyerPaidFiat && o.sellerConfirmedFiat) {
+                    if (o.sellerPaidCrypto && o.buyerConfirmedCrypto && o.buyerPaidFiat && o
+                        .sellerConfirmedFiat) {
                         complete = true;
                     }
                 }
@@ -1770,8 +2148,10 @@
                             text: '🎉 Trade completed successfully! Both parties confirmed.',
                             timestamp: Date.now()
                         });
-                        db.ref('users/' + o.buyerId + '/totalTrades').transaction(current => (current || 0) + 1);
-                        db.ref('users/' + o.sellerId + '/totalTrades').transaction(current => (current || 0) + 1);
+                        db.ref('users/' + o.buyerId + '/totalTrades').transaction(current => (
+                            current || 0) + 1);
+                        db.ref('users/' + o.sellerId + '/totalTrades').transaction(current => (
+                            current || 0) + 1);
                         clearInterval(tradeInterval);
                         closeModal('tradeModal');
                         openModal('ratingModal');
@@ -1798,8 +2178,8 @@
         function reportDispute() {
             if (!activeTradeId) return;
             if (confirm('Report this trade as a dispute? An admin will review the case.')) {
-                db.ref('orders/' + activeTradeId).update({ 
-                    dispute: true, 
+                db.ref('orders/' + activeTradeId).update({
+                    dispute: true,
                     disputedBy: String(user.id),
                     disputeTime: Date.now()
                 }).then(() => {
@@ -1820,14 +2200,19 @@
                 if (!box) return;
                 box.innerHTML = '';
                 const chats = s.val() || {};
-                const chatEntries = Object.entries(chats).sort((a, b) => (a[1].timestamp || 0) - (b[1].timestamp || 0));
+                const chatEntries = Object.entries(chats).sort((a, b) => (a[1].timestamp || 0) - (b[1]
+                    .timestamp || 0));
                 chatEntries.forEach(([key, c]) => {
                     const isMe = String(c.sender) === String(user.id);
                     const isSys = c.sender === 'system';
                     const align = isMe ? 'justify-end' : isSys ? 'justify-center' : 'justify-start';
-                    const bg = isMe ? 'bg-[#FCD535] text-black' : isSys ? 'text-[#848E9C] text-center' : 'bg-[#2b3139] text-white';
+                    const bg = isMe ? 'bg-[#FCD535] text-black' : isSys ?
+                        'text-[#848E9C] text-center' : 'bg-[#2b3139] text-white';
                     let content = c.text || '';
-                    const timeStr = c.timestamp ? new Date(c.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+                    const timeStr = c.timestamp ? new Date(c.timestamp).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) : '';
                     box.innerHTML += `
                     <div class="flex ${align} mb-1 chat-message group relative">
                         <div class="${bg} px-3 py-1.5 rounded-lg text-[11px] max-w-[80%] break-words">
@@ -1847,7 +2232,8 @@
 
         function deleteChatMessage(orderId, messageKey) {
             if (confirm('Delete this message?')) {
-                db.ref(`chats/${orderId}/${messageKey}`).remove().then(() => showToast("🗑️ Message deleted!"));
+                db.ref(`chats/${orderId}/${messageKey}`).remove().then(() => showToast(
+                "🗑️ Message deleted!"));
             }
         }
 
@@ -1911,7 +2297,8 @@
             currentSupportUid = uid;
             const u = usersCachedMap[uid] || {};
             document.getElementById('adm-sup-name').innerText = u.name || "Unknown User";
-            document.getElementById('adm-sup-details').innerText = `TG ID: ${uid} | 📱 ${u.telePhone || 'N/A'} | 🔶 ${u.binanceId || 'N/A'}`;
+            document.getElementById('adm-sup-details').innerText =
+                `TG ID: ${uid} | 📱 ${u.telePhone || 'N/A'} | 🔶 ${u.binanceId || 'N/A'}`;
             openModal('adminSupportChatModal');
             loadSupportChat('admin-support-chat-messages', currentSupportUid, true);
             setTimeout(() => {
@@ -1926,14 +2313,20 @@
                 if (!box) return;
                 box.innerHTML = '';
                 const chats = s.val() || {};
-                const chatEntries = Object.entries(chats).sort((a, b) => (a[1].timestamp || 0) - (b[1].timestamp || 0));
+                const chatEntries = Object.entries(chats).sort((a, b) => (a[1].timestamp || 0) - (b[1]
+                    .timestamp || 0));
                 chatEntries.forEach(([key, c]) => {
-                    const isMe = isAdminView ? (c.sender === 'admin') : (String(c.sender) === String(uid));
+                    const isMe = isAdminView ? (c.sender === 'admin') : (String(c.sender) === String(
+                        uid));
                     const isSys = c.sender === 'system';
                     const align = isMe ? 'justify-end' : isSys ? 'justify-center' : 'justify-start';
-                    const bg = isMe ? 'bg-[#FCD535] text-black' : isSys ? 'text-[#848E9C] text-center text-[10px]' : 'bg-[#2b3139] text-white';
+                    const bg = isMe ? 'bg-[#FCD535] text-black' : isSys ?
+                        'text-[#848E9C] text-center text-[10px]' : 'bg-[#2b3139] text-white';
                     let content = c.text || '';
-                    const timeStr = c.timestamp ? new Date(c.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+                    const timeStr = c.timestamp ? new Date(c.timestamp).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) : '';
                     box.innerHTML += `
                     <div class="flex ${align} mb-1 chat-message group relative">
                         <div class="${bg} px-3 py-1.5 rounded-lg text-[11px] max-w-[80%] break-words">
@@ -1947,7 +2340,8 @@
                         </button>` : ''}
                     </div>`;
                 });
-                const scrollEl = isAdminView ? document.getElementById('admin-support-scroll') : document.getElementById('support-chat-scroll');
+                const scrollEl = isAdminView ? document.getElementById('admin-support-scroll') : document
+                    .getElementById('support-chat-scroll');
                 if (scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
             });
             if (isAdminView) db.ref('support_threads/' + uid).update({ unreadByAdmin: false });
@@ -1955,7 +2349,8 @@
 
         function deleteSupportMessage(uid, messageKey) {
             if (confirm('Delete this message?')) {
-                db.ref(`support_chats/${uid}/${messageKey}`).remove().then(() => showToast("🗑️ Message deleted!"));
+                db.ref(`support_chats/${uid}/${messageKey}`).remove().then(() => showToast(
+                "🗑️ Message deleted!"));
             }
         }
 
@@ -2001,7 +2396,8 @@
         // ====== TRANSACTION HISTORY ======
         function filterTxnStatus(status, el) {
             currentTxnStatus = status;
-            document.querySelectorAll('[onclick*="filterTxnStatus"]').forEach(e => e.classList.remove('active'));
+            document.querySelectorAll('[onclick*="filterTxnStatus"]').forEach(e => e.classList.remove(
+            'active'));
             el.classList.add('active');
             loadTransactionHistory();
         }
@@ -2011,7 +2407,8 @@
             if (!list) return;
             list.innerHTML = '';
             let filtered = allTransactions.filter(t => {
-                if (String(t.buyerId) !== String(user.id) && String(t.sellerId) !== String(user.id)) return false;
+                if (String(t.buyerId) !== String(user.id) && String(t.sellerId) !== String(user.id))
+                    return false;
                 if (String(t.buyerId) === String(user.id) && t.hiddenByBuyer) return false;
                 if (String(t.sellerId) === String(user.id) && t.hiddenBySeller) return false;
                 if (currentTxnStatus !== 'all' && t.status !== currentTxnStatus) return false;
@@ -2019,20 +2416,32 @@
             });
             filtered.sort((a, b) => (b.startTime || 0) - (a.startTime || 0));
             if (filtered.length === 0) {
-                list.innerHTML = `<div class="text-center text-[#848E9C] py-8"><i class="fa-solid fa-receipt text-3xl mb-2 block opacity-50"></i><p>No transactions found</p></div>`;
+                list.innerHTML =
+                    `<div class="text-center text-[#848E9C] py-8"><i class="fa-solid fa-receipt text-3xl mb-2 block opacity-50"></i><p>No transactions found</p></div>`;
                 return;
             }
             filtered.forEach(t => {
                 const iAmBuyer = String(t.buyerId) === String(user.id);
-                const statusColor = t.dispute ? 'text-red-500' : t.status === 'completed' ? 'text-[#0ECB81]' : t.status === 'cancelled' ? 'text-gray-500' : 'text-[#FCD535]';
-                const typeLabel = iAmBuyer ? '<span class="text-[#0ECB81] font-bold">BUY</span>' : '<span class="text-[#F6465D] font-bold">SELL</span>';
+                const statusColor = t.dispute ? 'text-red-500' : t.status === 'completed' ?
+                    'text-[#0ECB81]' : t.status === 'cancelled' ? 'text-gray-500' : 'text-[#FCD535]';
+                const typeLabel = iAmBuyer ?
+                    '<span class="text-[#0ECB81] font-bold">BUY</span>' :
+                    '<span class="text-[#F6465D] font-bold">SELL</span>';
                 const dateStr = t.startTime ? new Date(t.startTime).toLocaleDateString() : 'N/A';
+                const pmNames = {
+                    'telebirr': '📱 Telebirr',
+                    'cbe': '🏦 CBE',
+                    'awash': '🏦 Awash',
+                    'abyssinia': '🏦 Abyssinia',
+                    'dashen': '🏦 Dashen'
+                };
+                const pmDisplay = pmNames[t.selectedPaymentMethod] || t.selectedPaymentMethod || 'N/A';
                 list.innerHTML += `
                 <div class="bg-[#1e2329] p-3 rounded-lg border border-[#2b3139] flex justify-between items-center mb-2 hover:bg-[#2b3139] transition-colors">
                     <div>
                         <div class="flex items-center gap-2">${typeLabel}<p class="text-xs font-bold text-white">${t.amountUsdt || 0} USDT</p></div>
                         <p class="text-[10px] text-[#848E9C] mt-1">Rate: ${(t.price || 0).toFixed(2)} ETB | Total: ${(t.amountEtb || 0).toFixed(2)} ETB</p>
-                        <p class="text-[9px] text-[#848E9C]">${dateStr}</p>
+                        <p class="text-[9px] text-[#848E9C]">${dateStr} | ${pmDisplay}</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="${statusColor} text-xs font-bold uppercase">${t.dispute ? 'DISPUTE' : t.status}</span>
@@ -2049,7 +2458,8 @@
                     const updates = {};
                     if (String(o.buyerId) === String(user.id)) updates.hiddenByBuyer = true;
                     if (String(o.sellerId) === String(user.id)) updates.hiddenBySeller = true;
-                    db.ref('orders/' + orderId).update(updates).then(() => showToast("Transaction hidden from history."));
+                    db.ref('orders/' + orderId).update(updates).then(() => showToast(
+                        "Transaction hidden from history."));
                 });
             }
         }
@@ -2060,7 +2470,8 @@
                 if (String(t.buyerId) === String(user.id) || String(t.sellerId) === String(user.id)) {
                     const type = String(t.buyerId) === String(user.id) ? 'Buy' : 'Sell';
                     const date = t.startTime ? new Date(t.startTime).toLocaleDateString() : 'N/A';
-                    csv += `"${date}","${t.amountUsdt || 0}","${(t.price || 0).toFixed(2)}","${(t.amountEtb || 0).toFixed(2)}","${type}","${t.status}","${t.selectedPaymentMethod || 'N/A'}"\n`;
+                    csv +=
+                        `"${date}","${t.amountUsdt || 0}","${(t.price || 0).toFixed(2)}","${(t.amountEtb || 0).toFixed(2)}","${type}","${t.status}","${t.selectedPaymentMethod || 'N/A'}"\n`;
                 }
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -2085,9 +2496,11 @@
                 const list = document.getElementById('notifications-list');
                 if (!list) return;
                 list.innerHTML = '';
-                const sorted = entries.sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0)).slice(0, 20);
+                const sorted = entries.sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0)).slice(0,
+                    20);
                 if (sorted.length === 0) {
-                    list.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No notifications yet</div>';
+                    list.innerHTML =
+                        '<div class="text-xs text-[#848E9C] text-center py-4">No notifications yet</div>';
                     return;
                 }
                 sorted.forEach(([key, n]) => {
@@ -2105,20 +2518,24 @@
         }
 
         function markNotificationRead(key) { db.ref(`notifications/${user.id}/${key}`).update({ read: true }); }
-        function deleteNotification(key) { db.ref(`notifications/${user.id}/${key}`).remove().then(() => showToast("Notification deleted.")); }
+
+        function deleteNotification(key) { db.ref(`notifications/${user.id}/${key}`).remove().then(() => showToast(
+                "Notification deleted.")); }
 
         function toggleNotificationPanel() {
             document.getElementById('notification-panel').classList.toggle('hidden');
         }
 
-        // ====== ADMIN PANEL (ENHANCED DISPUTE DETAILS) ======
+        // ====== ADMIN PANEL ======
         function switchAdminTab(id, btn) {
             document.querySelectorAll('.admin-panel').forEach(e => e.classList.add('hidden'));
             document.querySelectorAll('.admin-tab-btn').forEach(e => {
-                e.className = "admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all";
+                e.className =
+                    "admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all";
             });
             document.getElementById(id).classList.remove('hidden');
-            btn.className = "admin-tab-btn bg-[#FCD535] text-black px-4 py-2 rounded-lg whitespace-nowrap font-bold transition-all";
+            btn.className =
+                "admin-tab-btn bg-[#FCD535] text-black px-4 py-2 rounded-lg whitespace-nowrap font-bold transition-all";
         }
 
         function openAdminChatMonitor(orderId) {
@@ -2130,11 +2547,13 @@
                 if (!box) return;
                 box.innerHTML = '';
                 const chats = s.val() || {};
-                const chatEntries = Object.entries(chats).sort((a, b) => (a[1].timestamp || 0) - (b[1].timestamp || 0));
+                const chatEntries = Object.entries(chats).sort((a, b) => (a[1].timestamp || 0) - (b[1]
+                    .timestamp || 0));
                 chatEntries.forEach(([key, c]) => {
                     const isSys = c.sender === 'system';
                     const align = isSys ? 'justify-center' : 'justify-start';
-                    const bg = isSys ? 'text-[#848E9C] text-center' : 'bg-[#2b3139] text-white';
+                    const bg = isSys ? 'text-[#848E9C] text-center' :
+                    'bg-[#2b3139] text-white';
                     const senderName = usersCachedMap[c.sender]?.name || c.sender || 'Unknown';
                     let content = c.text || '';
                     box.innerHTML += `
@@ -2155,7 +2574,9 @@
 
         function clearTradeChat() {
             if (!currentMonitorOrderId) return;
-            if (confirm("Wipe out this room's chat history completely? This will only clear messages, not delete the room.")) {
+            if (confirm(
+                    "Wipe out this room's chat history completely? This will only clear messages, not delete the room."
+                    )) {
                 db.ref('chats/' + currentMonitorOrderId).remove().then(() => {
                     db.ref('chats/' + currentMonitorOrderId).push({
                         sender: 'system',
@@ -2169,7 +2590,8 @@
 
         function deleteTradeRoom() {
             if (!currentMonitorOrderId) return;
-            if (confirm("Permanently delete the entire chat room for this order? This action cannot be undone.")) {
+            if (confirm(
+                    "Permanently delete the entire chat room for this order? This action cannot be undone.")) {
                 db.ref('chats/' + currentMonitorOrderId).remove().then(() => {
                     showToast("🗑️ Chat room deleted permanently!");
                     closeModal('adminChatModal');
@@ -2181,7 +2603,9 @@
             const updates = { status: status };
             if (status === 'paused') updates.pausedByAdmin = true;
             else if (status === 'active') updates.pausedByAdmin = false;
-            db.ref('ads/' + adId).update(updates).then(() => showToast(`Ad ${status === 'active' ? 'approved/activated' : status === 'paused' ? 'paused' : 'rejected'}!`));
+            db.ref('ads/' + adId).update(updates).then(() => showToast(
+                `Ad ${status === 'active' ? 'approved/activated' : status === 'paused' ? 'paused' : 'rejected'}!`
+                ));
         }
 
         function loadAdminData() {
@@ -2194,12 +2618,13 @@
                 if (bList) bList.innerHTML = '';
                 Object.keys(users).forEach(id => {
                     const u = users[id];
-                    const bBtn = u.isBanned
-                        ? `<button onclick="toggleBan('${id}', false)" class="bg-green-600 px-3 py-1 rounded text-[10px] text-white font-bold hover:bg-green-700 transition-colors">UNBAN</button>`
-                        : `<button onclick="toggleBan('${id}', true)" class="bg-[#F6465D] px-3 py-1 rounded text-[10px] text-white font-bold hover:bg-red-700 transition-colors">BAN</button>`;
-                    const balanceAdjust = String(id) !== String(ADMIN_ID) ? 
+                    const bBtn = u.isBanned ?
+                        `<button onclick="toggleBan('${id}', false)" class="bg-green-600 px-3 py-1 rounded text-[10px] text-white font-bold hover:bg-green-700 transition-colors">UNBAN</button>` :
+                        `<button onclick="toggleBan('${id}', true)" class="bg-[#F6465D] px-3 py-1 rounded text-[10px] text-white font-bold hover:bg-red-700 transition-colors">BAN</button>`;
+                    const balanceAdjust = String(id) !== String(ADMIN_ID) ?
                         `<input type="number" id="bal-${id}" value="${(u.balance || 0).toFixed(2)}" class="w-16 p-1 text-xs bg-[#0b0e11] border border-[#2b3139] rounded mr-1"> 
-                         <button onclick="adjustBalance('${id}')" class="bg-blue-600 text-white px-2 py-0.5 rounded text-[9px] font-bold hover:bg-blue-700">Set</button>` : '';
+                         <button onclick="adjustBalance('${id}')" class="bg-blue-600 text-white px-2 py-0.5 rounded text-[9px] font-bold hover:bg-blue-700">Set</button>` :
+                        '';
                     const userRow = `
                     <div class="bg-[#1e2329] p-3 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-1 hover:bg-[#2b3139] transition-colors">
                         <div class="flex-1 min-w-0">
@@ -2215,8 +2640,10 @@
                     if (u.isBanned && bList) bList.innerHTML += userRow;
                     else if (uList) uList.innerHTML += userRow;
                 });
-                if (uList && uList.innerHTML === '') uList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No users</div>';
-                if (bList && bList.innerHTML === '') bList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No banned users</div>';
+                if (uList && uList.innerHTML === '') uList.innerHTML =
+                    '<div class="text-xs text-[#848E9C] text-center py-4">No users</div>';
+                if (bList && bList.innerHTML === '') bList.innerHTML =
+                    '<div class="text-xs text-[#848E9C] text-center py-4">No banned users</div>';
             });
 
             db.ref('deposits').on('value', s => {
@@ -2224,7 +2651,8 @@
                 const depList = document.getElementById('admin-deposits');
                 if (!depList) return;
                 depList.innerHTML = '';
-                Object.entries(deposits).sort((a,b) => b[1].timestamp - a[1].timestamp).forEach(([id, d]) => {
+                Object.entries(deposits).sort((a, b) => b[1].timestamp - a[1].timestamp).forEach(([id,
+                d]) => {
                     if (d.status === 'pending') {
                         depList.innerHTML += `
                         <div class="bg-[#1e2329] p-3 rounded border border-yellow-600 text-xs mb-2 space-y-2">
@@ -2243,7 +2671,8 @@
                         </div>`;
                     }
                 });
-                if (depList.innerHTML === '') depList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No pending deposits</div>';
+                if (depList.innerHTML === '') depList.innerHTML =
+                    '<div class="text-xs text-[#848E9C] text-center py-4">No pending deposits</div>';
             });
 
             db.ref('support_threads').on('value', s => {
@@ -2253,11 +2682,14 @@
                 if (!supList) return;
                 supList.innerHTML = '';
                 let unreadCount = 0;
-                const sortedThreads = Object.entries(threads).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
+                const sortedThreads = Object.entries(threads).sort((a, b) => (b[1].timestamp || 0) - (a[1]
+                    .timestamp || 0));
                 sortedThreads.forEach(([uid, t]) => {
                     const u = usersCachedMap[uid] || {};
                     if (t.unreadByAdmin) unreadCount++;
-                    const unreadIndicator = t.unreadByAdmin ? '<span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse inline-block ml-1"></span>' : '';
+                    const unreadIndicator = t.unreadByAdmin ?
+                        '<span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse inline-block ml-1"></span>' :
+                        '';
                     supList.innerHTML += `
                     <div onclick="openAdminSupportChat('${uid}')" class="bg-[#1e2329] p-3 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-2 cursor-pointer hover:bg-[#2b3139] transition-colors">
                         <div class="flex-1 min-w-0">
@@ -2269,8 +2701,10 @@
                         <button class="bg-[#3b82f6] text-white px-3 py-1 rounded text-[10px] font-bold hover:bg-[#2563eb] transition-colors flex-shrink-0 ml-2"><i class="fa-solid fa-reply"></i></button>
                     </div>`;
                 });
-                if (unreadCount > 0) { badge.innerText = unreadCount; badge.classList.remove('hidden'); } else badge.classList.add('hidden');
-                if (supList.innerHTML === '') supList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No support messages</div>';
+                if (unreadCount > 0) { badge.innerText = unreadCount;
+                    badge.classList.remove('hidden'); } else badge.classList.add('hidden');
+                if (supList.innerHTML === '') supList.innerHTML =
+                    '<div class="text-xs text-[#848E9C] text-center py-4">No support messages</div>';
             });
 
             db.ref('ads').on('value', s => {
@@ -2283,7 +2717,8 @@
                 Object.keys(ads).forEach(id => {
                     const ad = ads[id];
                     if (ad.status === 'pending_approval') {
-                        const pmLabels = (ad.paymentMethods || []).filter(m => m !== 'undefined').join(', ').toUpperCase() || 'NONE';
+                        const pmLabels = (ad.paymentMethods || []).filter(m => m !== 'undefined').join(
+                            ', ').toUpperCase() || 'NONE';
                         const typeColor = ad.type === 'buy' ? 'text-[#0ECB81]' : 'text-[#F6465D]';
                         adApprovalList.innerHTML += `
                         <div class="bg-[#1e2329] p-3 rounded border border-yellow-500 text-xs mb-2 space-y-2">
@@ -2305,12 +2740,14 @@
                         </div>`;
                     }
                     if (ad.status === 'active' || ad.status === 'paused') {
-                        const borderColor = ad.status === 'active' ? 'border-[#0ECB81]' : 'border-amber-600';
+                        const borderColor = ad.status === 'active' ? 'border-[#0ECB81]' :
+                            'border-amber-600';
                         const isAdminPaused = ad.pausedByAdmin;
-                        const actionBtn = ad.status === 'active'
-                            ? `<button onclick="adminApproveAd('${id}', 'paused', true)" class="bg-amber-600 text-white px-3 py-1 rounded text-xs font-bold w-full hover:bg-amber-700 transition-colors"><i class="fa-solid fa-pause mr-1"></i> Pause</button>`
-                            : `<button onclick="adminApproveAd('${id}', 'active', false)" class="bg-[#0ECB81] text-white px-3 py-1 rounded text-xs font-bold w-full hover:bg-green-600 transition-colors"><i class="fa-solid fa-play mr-1"></i> Activate</button>`;
-                        const pauseInfo = ad.pausedByAdmin ? '<span class="text-red-400 text-[10px] ml-1">(Admin paused)</span>' : '';
+                        const actionBtn = ad.status === 'active' ?
+                            `<button onclick="adminApproveAd('${id}', 'paused', true)" class="bg-amber-600 text-white px-3 py-1 rounded text-xs font-bold w-full hover:bg-amber-700 transition-colors"><i class="fa-solid fa-pause mr-1"></i> Pause</button>` :
+                            `<button onclick="adminApproveAd('${id}', 'active', false)" class="bg-[#0ECB81] text-white px-3 py-1 rounded text-xs font-bold w-full hover:bg-green-600 transition-colors"><i class="fa-solid fa-play mr-1"></i> Activate</button>`;
+                        const pauseInfo = ad.pausedByAdmin ?
+                            '<span class="text-red-400 text-[10px] ml-1">(Admin paused)</span>' : '';
                         manageAdsList.innerHTML += `
                         <div class="bg-[#1e2329] p-3 rounded border ${borderColor} text-xs mb-2 space-y-2">
                             <div class="flex justify-between items-center">
@@ -2325,11 +2762,12 @@
                         </div>`;
                     }
                 });
-                if (adApprovalList.innerHTML === '') adApprovalList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No ads pending approval</div>';
-                if (manageAdsList.innerHTML === '') manageAdsList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No active or paused ads</div>';
+                if (adApprovalList.innerHTML === '') adApprovalList.innerHTML =
+                    '<div class="text-xs text-[#848E9C] text-center py-4">No ads pending approval</div>';
+                if (manageAdsList.innerHTML === '') manageAdsList.innerHTML =
+                    '<div class="text-xs text-[#848E9C] text-center py-4">No active or paused ads</div>';
             });
 
-            // Enhanced dispute display showing both parties' details
             db.ref('orders').on('value', s => {
                 const dList = document.getElementById('admin-disputes');
                 const oList = document.getElementById('admin-orders');
@@ -2342,7 +2780,8 @@
                         const complainant = usersCachedMap[o.disputedBy] || {};
                         const buyer = usersCachedMap[o.buyerId] || {};
                         const seller = usersCachedMap[o.sellerId] || {};
-                        const whoRaised = String(o.disputedBy) === String(o.buyerId) ? 'Buyer' : 'Seller';
+                        const whoRaised = String(o.disputedBy) === String(o.buyerId) ? 'Buyer' :
+                            'Seller';
                         dList.innerHTML += `
                         <div class="bg-red-950/40 p-3 rounded border border-red-500 text-xs mb-2 space-y-2">
                             <div class="flex justify-between border-b border-red-900 pb-1">
@@ -2395,8 +2834,10 @@
                         </div>`;
                     }
                 });
-                if (dList && dList.innerHTML === '') dList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No active disputes</div>';
-                if (oList && oList.innerHTML === '') oList.innerHTML = '<div class="text-xs text-[#848E9C] text-center py-4">No active orders to monitor</div>';
+                if (dList && dList.innerHTML === '') dList.innerHTML =
+                    '<div class="text-xs text-[#848E9C] text-center py-4">No active disputes</div>';
+                if (oList && oList.innerHTML === '') oList.innerHTML =
+                    '<div class="text-xs text-[#848E9C] text-center py-4">No active orders to monitor</div>';
             });
         }
 
@@ -2406,8 +2847,10 @@
                 showToast("✅ Deposit approved! Balance updated.");
             });
         }
+
         function rejectDeposit(depId) {
-            db.ref('deposits/' + depId).update({ status: 'rejected' }).then(() => showToast("Deposit rejected."));
+            db.ref('deposits/' + depId).update({ status: 'rejected' }).then(() => showToast(
+            "Deposit rejected."));
         }
 
         function adjustBalance(uid) {
@@ -2419,7 +2862,8 @@
         function toggleBan(uid, isBanned) {
             const action = isBanned ? 'BAN' : 'UNBAN';
             if (confirm(`Are you sure you want to ${action} this user?`)) {
-                db.ref('users/' + uid).update({ isBanned: isBanned }).then(() => showToast(`User ${action}NED successfully!`));
+                db.ref('users/' + uid).update({ isBanned: isBanned }).then(() => showToast(
+                `User ${action}NED successfully!`));
             }
         }
 
@@ -2460,7 +2904,8 @@
             const el = document.getElementById(id);
             if (el) {
                 el.classList.remove('hidden');
-                if (['purchaseModal','editAdModal','ratingModal','depositModal'].includes(id)) el.classList.add('flex');
+                if (['purchaseModal', 'editAdModal', 'ratingModal', 'depositModal'].includes(id)) el.classList
+                    .add('flex');
             }
         }
 
@@ -2468,7 +2913,8 @@
             const el = document.getElementById(id);
             if (el) {
                 el.classList.add('hidden');
-                if (['purchaseModal','editAdModal','ratingModal','depositModal'].includes(id)) el.classList.remove('flex');
+                if (['purchaseModal', 'editAdModal', 'ratingModal', 'depositModal'].includes(id)) el.classList
+                    .remove('flex');
             }
         }
 
@@ -2476,7 +2922,8 @@
             const container = document.getElementById('toast-container');
             if (!container) return;
             const toast = document.createElement('div');
-            toast.className = "bg-[#1e2329] border border-[#2b3139] text-[#FCD535] font-bold text-xs px-4 py-2.5 rounded-xl shadow-2xl pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2";
+            toast.className =
+                "bg-[#1e2329] border border-[#2b3139] text-[#FCD535] font-bold text-xs px-4 py-2.5 rounded-xl shadow-2xl pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2";
             toast.innerHTML = `<span>${text}</span>`;
             container.appendChild(toast);
             requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
@@ -2487,4 +2934,4 @@
         }
     </script>
 </body>
-    </html>
+                </html>
