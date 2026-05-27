@@ -359,17 +359,6 @@
                         </div>
                     </div>
 
-                    <div>
-                        <label class="text-[10px] text-[#848E9C] font-bold mb-2 block">Trader Experience</label>
-                        <div class="flex gap-2 flex-wrap items-center">
-                            <span class="filter-chip active" onclick="setMinTrades(0, this)">All Users</span>
-                            <span class="filter-chip" onclick="setMinTrades(10, this)">10+ Trades</span>
-                            <span class="filter-chip" onclick="setMinTrades(50, this)">50+ Trades</span>
-                            <span class="filter-chip" onclick="setMinTradesCustom()" id="custom-trades-chip">Custom</span>
-                            <input type="number" id="custom-trades-input" placeholder="Min trades" class="p-2 rounded text-xs w-24 hidden" onchange="applyCustomTrades()">
-                        </div>
-                    </div>
-
                     <input type="text" id="filter-search" placeholder="Search by username..." class="w-full p-2 rounded text-xs">
                     <div class="flex gap-2">
                         <button onclick="applyFilters()" class="flex-1 bg-[#FCD535] text-black font-bold py-2.5 rounded text-xs hover:opacity-90 transition-opacity">
@@ -1006,7 +995,6 @@
         let supportUnread = false;
 
         let filterPaymentMethods = ['telebirr', 'cbe', 'awash', 'abyssinia', 'dashen'];
-        let filterMinTrades = 0;
         let filterUsdtMin = 0;
         let filterUsdtMax = 100000;
         let filterSearch = '';
@@ -1602,9 +1590,7 @@
                 if (!filterPaymentMethods.some(m => methods.includes(m))) return false;
                 const nameToSearch = (ad.userName || "").toLowerCase();
                 if (filterSearch && nameToSearch.indexOf(filterSearch.toLowerCase()) === -1) return false;
-                const ownerData = usersCachedMap[ad.uid] || {};
-                const ownerTrades = ownerData.totalTrades || 0;
-                if (ownerTrades < filterMinTrades) return false;
+                // No filterMinTrades anymore, trades count is just displayed
                 return true;
             });
             filteredAds.sort((a, b) => currentMarketType === 'buy' ? a.price - b.price : b.price - a.price);
@@ -1626,6 +1612,15 @@
                 const isOnline = ownerData.lastSeen && (Date.now() - ownerData.lastSeen < 60000);
                 const presenceDot = isOnline ? '<span class="online-dot ml-1"></span>' :
                     '<span class="offline-dot ml-1"></span>';
+
+                // Payment method colors
+                const pmColors = {
+                    'telebirr': 'bg-green-500/20 text-green-300 border-green-500/30',
+                    'cbe': 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+                    'awash': 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+                    'abyssinia': 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
+                    'dashen': 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+                };
                 let safePaymentMethods = (ad.paymentMethods || []).filter(m => m && m !== 'undefined');
                 if (safePaymentMethods.length === 0) safePaymentMethods = ['cbe'];
                 const paymentBadges = safePaymentMethods.map(m => {
@@ -1636,7 +1631,8 @@
                         'abyssinia': '🏦 Abyssinia',
                         'dashen': '🏦 Dashen'
                     };
-                    return `<span class="bg-[#0b0e11] px-2 py-0.5 rounded text-[9px]">${icons[m] || '🏦 Bank'}</span>`;
+                    const colorClass = pmColors[m] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+                    return `<span class="px-2 py-0.5 rounded text-[9px] border ${colorClass}">${icons[m] || '🏦 Bank'}</span>`;
                 }).join(' ');
                 const adOwnerInitial = (ad.userName || 'U').charAt(0).toUpperCase();
                 const html = `
@@ -1683,29 +1679,6 @@
             loadMarketAds();
         }
 
-        function setMinTrades(count, el) {
-            filterMinTrades = count;
-            document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('custom-trades-input').classList.add('hidden');
-            document.getElementById('custom-trades-chip').classList.remove('active');
-            loadMarketAds();
-        }
-
-        function setMinTradesCustom() {
-            const input = document.getElementById('custom-trades-input');
-            input.classList.toggle('hidden');
-            document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
-            document.getElementById('custom-trades-chip').classList.add('active');
-            loadMarketAds();
-        }
-
-        function applyCustomTrades() {
-            const val = parseInt(document.getElementById('custom-trades-input').value) || 0;
-            filterMinTrades = val;
-            loadMarketAds();
-        }
-
         function applyFilters() {
             filterUsdtMin = parseFloat(document.getElementById('filter-usdt-min').value) || 0;
             filterUsdtMax = parseFloat(document.getElementById('filter-usdt-max').value) || 100000;
@@ -1716,23 +1689,17 @@
 
         function resetFilters() {
             filterPaymentMethods = ['telebirr', 'cbe', 'awash', 'abyssinia', 'dashen'];
-            filterMinTrades = 0;
             filterUsdtMin = 0;
             filterUsdtMax = 100000;
             filterSearch = '';
             document.getElementById('filter-usdt-min').value = '0';
             document.getElementById('filter-usdt-max').value = '100000';
             document.getElementById('filter-search').value = '';
-            document.getElementById('custom-trades-input').value = '';
-            document.getElementById('custom-trades-input').classList.add('hidden');
             document.querySelectorAll('.filter-chip').forEach(chip => {
                 const onclickAttr = chip.getAttribute('onclick');
                 if (onclickAttr && (onclickAttr.includes("'telebirr'") || onclickAttr.includes("'cbe'") ||
                         onclickAttr.includes("'awash'") || onclickAttr.includes("'abyssinia'") || onclickAttr
                         .includes("'dashen'"))) chip.classList.add('active');
-                if (onclickAttr && onclickAttr.includes('setMinTrades(0,')) chip.classList.add('active');
-                else if (onclickAttr && onclickAttr.includes('setMinTrades')) chip.classList.remove(
-                    'active');
             });
             loadMarketAds();
             showToast("🔄 Filters reset to default.");
@@ -2453,6 +2420,8 @@
 
         function deleteOrderHistory(orderId) {
             if (confirm("Hide this transaction from your history?")) {
+                // Close rating modal if it's somehow open (prevents accidental "Awesome" popup)
+                closeModal('ratingModal');
                 db.ref('orders/' + orderId).once('value', s => {
                     const o = s.val();
                     const updates = {};
@@ -2934,4 +2903,4 @@
         }
     </script>
 </body>
-                </html>
+                        </html>
