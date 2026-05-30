@@ -672,6 +672,10 @@
                     <span id="dispute-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center hidden font-bold">0</span>
                 </button>
                 <button onclick="switchAdminTab('admin-orders', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">📊 Monitor</button>
+                <!-- New: Manage Admins (only super admin) -->
+                <button id="btn-admin-manage-admins" onclick="switchAdminTab('admin-manage-admins', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all hidden">
+                    👑 Admins
+                </button>
             </div>
 
             <div id="admin-users" class="admin-panel space-y-2"></div>
@@ -682,6 +686,19 @@
             <div id="admin-manage-ads" class="admin-panel hidden space-y-2"></div>
             <div id="admin-disputes" class="admin-panel hidden space-y-2"></div>
             <div id="admin-orders" class="admin-panel hidden space-y-2"></div>
+            <!-- New: Manage Admins Panel -->
+            <div id="admin-manage-admins" class="admin-panel hidden space-y-4">
+                <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139]">
+                    <h3 class="text-sm font-bold text-white mb-3">Add New Admin</h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="new-admin-id" placeholder="Telegram User ID" class="flex-1 p-2 rounded text-xs">
+                        <button onclick="addAdmin()" class="bg-[#FCD535] text-black px-4 py-2 rounded text-xs font-bold hover:opacity-90 transition-opacity">
+                            <i class="fa-solid fa-plus mr-1"></i> Add
+                        </button>
+                    </div>
+                </div>
+                <div id="admin-list-container" class="space-y-2"></div>
+            </div>
         </section>
 
     </main>
@@ -968,7 +985,7 @@
             first_name: "Admin",
             photo_url: null
         };
-        const ADMIN_ID = 7798504269;
+        const SUPER_ADMIN_ID = '7798504269'; // Original super admin
         const ADMIN_BINANCE_ID = "895035355";
 
         const tgPhotoUrl = user.photo_url || null;
@@ -1000,6 +1017,7 @@
         let filterSearch = '';
         let currentTxnStatus = 'all';
         let siteOffline = false;
+        let adminIds = {}; // { uid: true } from Firebase
 
         // ====== CACHE HELPERS ======
         function cacheSet(key, value) {
@@ -1035,15 +1053,38 @@
 
         // ====== INITIALIZATION ======
         window.addEventListener('DOMContentLoaded', () => {
-            if (String(user.id) === String(ADMIN_ID)) {
-                document.getElementById('nav-admin').classList.remove('hidden');
-            }
+            // Listen to admin list from Firebase
+            db.ref('settings/admins').on('value', snap => {
+                adminIds = snap.val() || {};
+                // Initialize if empty (first run)
+                if (!snap.exists()) {
+                    const initialAdmins = {
+                        '7798504269': true,
+                        '388353619': true,
+                        '7769207277': true
+                    };
+                    db.ref('settings/admins').set(initialAdmins);
+                    adminIds = initialAdmins;
+                }
+                updateAdminButtonVisibility();
+                // If super admin, show manage admins tab
+                if (isSuperAdmin()) {
+                    document.getElementById('btn-admin-manage-admins').classList.remove('hidden');
+                } else {
+                    document.getElementById('btn-admin-manage-admins').classList.add('hidden');
+                }
+                // Refresh admin manage admins panel if visible
+                if (document.getElementById('admin-manage-admins') && 
+                    !document.getElementById('admin-manage-admins').classList.contains('hidden')) {
+                    renderAdminList();
+                }
+            });
 
             db.ref('settings/siteStatus').on('value', snap => {
                 const status = snap.val() || 'online';
                 siteOffline = (status === 'offline');
                 updateSiteOfflineUI();
-                if (String(user.id) === String(ADMIN_ID)) {
+                if (isAdmin(user.id)) {
                     updateAdminSiteToggleUI(status);
                 }
             });
@@ -1068,7 +1109,7 @@
             listenToOrders();
             listenToNotifications();
             listenToSupportChat();
-            if (String(user.id) === String(ADMIN_ID)) loadAdminData();
+            if (isAdmin(user.id)) loadAdminData();
             updatePresence();
             setInterval(updatePresence, 20000);
         });
@@ -1079,12 +1120,12 @@
             if (siteOffline) {
                 overlay.classList.remove('hidden');
                 overlay.classList.add('flex');
-                if (String(user.id) === String(ADMIN_ID)) {
+                if (isAdmin(user.id)) {
                     bypassBtn.classList.remove('hidden');
                 } else {
                     bypassBtn.classList.add('hidden');
                 }
-                if (String(user.id) !== String(ADMIN_ID)) {
+                if (!isAdmin(user.id)) {
                     document.querySelectorAll('.nav-item').forEach(btn => btn.style.pointerEvents = 'none');
                 }
             } else {
@@ -1124,6 +1165,26 @@
         function updatePresence() {
             if (user && user.id) {
                 db.ref('users/' + user.id).update({ lastSeen: Date.now() });
+            }
+        }
+
+        // ====== ADMIN HELPERS ======
+        function isAdmin(uid) {
+            return adminIds[String(uid)] === true;
+        }
+
+        function isSuperAdmin() {
+            return String(user.id) === SUPER_ADMIN_ID;
+        }
+
+        function updateAdminButtonVisibility() {
+            const navAdmin = document.getElementById('nav-admin');
+            if (navAdmin) {
+                if (isAdmin(user.id)) {
+                    navAdmin.classList.remove('hidden');
+                } else {
+                    navAdmin.classList.add('hidden');
+                }
             }
         }
 
@@ -1891,7 +1952,7 @@
                     }
                 }
 
-                if (String(user.id) === String(ADMIN_ID)) {
+                if (isAdmin(user.id)) {
                     const badge = document.getElementById('dispute-badge');
                     const dot = document.getElementById('nav-dispute-dot');
                     const disputeCount = Object.keys(orders).filter(id =>
@@ -2505,6 +2566,9 @@
             document.getElementById(id).classList.remove('hidden');
             btn.className =
                 "admin-tab-btn bg-[#FCD535] text-black px-4 py-2 rounded-lg whitespace-nowrap font-bold transition-all";
+            if (id === 'admin-manage-admins') {
+                renderAdminList();
+            }
         }
 
         function openAdminChatMonitor(orderId) {
@@ -2590,7 +2654,7 @@
                     const bBtn = u.isBanned ?
                         `<button onclick="toggleBan('${id}', false)" class="bg-green-600 px-3 py-1 rounded text-[10px] text-white font-bold hover:bg-green-700 transition-colors">UNBAN</button>` :
                         `<button onclick="toggleBan('${id}', true)" class="bg-[#F6465D] px-3 py-1 rounded text-[10px] text-white font-bold hover:bg-red-700 transition-colors">BAN</button>`;
-                    const balanceAdjust = String(id) !== String(ADMIN_ID) ?
+                    const balanceAdjust = String(id) !== String(SUPER_ADMIN_ID) ?
                         `<input type="number" id="bal-${id}" value="${(u.balance || 0).toFixed(2)}" class="w-16 p-1 text-xs bg-[#0b0e11] border border-[#2b3139] rounded mr-1"> 
                          <button onclick="adjustBalance('${id}')" class="bg-blue-600 text-white px-2 py-0.5 rounded text-[9px] font-bold hover:bg-blue-700">Set</button>` :
                         '';
@@ -2603,7 +2667,7 @@
                         </div>
                         <div class="flex items-center gap-1">
                             ${balanceAdjust}
-                            ${String(id) !== String(ADMIN_ID) ? bBtn : '<span class="text-[#FCD535] text-xs font-bold">ADMIN</span>'}
+                            ${String(id) !== String(SUPER_ADMIN_ID) ? bBtn : '<span class="text-[#FCD535] text-xs font-bold">SUPER ADMIN</span>'}
                         </div>
                     </div>`;
                     if (u.isBanned && bList) bList.innerHTML += userRow;
@@ -2856,8 +2920,64 @@
             }
         }
 
+        // ====== ADMIN MANAGEMENT (Super Admin only) ======
+        function addAdmin() {
+            if (!isSuperAdmin()) return showToast("Only Super Admin can manage admins.");
+            const newId = document.getElementById('new-admin-id').value.trim();
+            if (!newId) return showToast("Enter a Telegram User ID.");
+            if (adminIds[newId]) return showToast("Already an admin.");
+            const updatedAdmins = { ...adminIds, [newId]: true };
+            db.ref('settings/admins').set(updatedAdmins).then(() => {
+                showToast(`✅ User ${newId} added as Admin!`);
+                document.getElementById('new-admin-id').value = '';
+            });
+        }
+
+        function removeAdmin(uid) {
+            if (!isSuperAdmin()) return showToast("Only Super Admin can manage admins.");
+            if (uid === SUPER_ADMIN_ID) return showToast("Cannot remove Super Admin.");
+            if (!adminIds[uid]) return showToast("Not an admin.");
+            if (confirm(`Are you sure you want to remove admin permissions for user ${uid}?`)) {
+                const updatedAdmins = { ...adminIds };
+                delete updatedAdmins[uid];
+                db.ref('settings/admins').set(updatedAdmins).then(() => {
+                    showToast(`🗑️ Admin ${uid} removed.`);
+                });
+            }
+        }
+
+        function renderAdminList() {
+            const container = document.getElementById('admin-list-container');
+            if (!container) return;
+            container.innerHTML = '';
+            const admins = Object.keys(adminIds);
+            if (admins.length === 0) {
+                container.innerHTML = '<div class="text-xs text-gray-400 text-center py-4">No admins configured.</div>';
+                return;
+            }
+            admins.forEach(uid => {
+                const userData = usersCachedMap[uid] || {};
+                const isSuper = uid === SUPER_ADMIN_ID;
+                const removeBtn = isSuper ? '' :
+                    `<button onclick="removeAdmin('${uid}')" class="bg-red-600 text-white px-2 py-1 rounded text-[10px] font-bold hover:bg-red-700 transition-colors"><i class="fa-solid fa-user-minus"></i> Remove</button>`;
+                container.innerHTML += `
+                <div class="bg-[#1e2329] p-3 rounded border border-[#2b3139] flex justify-between items-center text-xs mb-1">
+                    <div>
+                        <span class="text-white font-bold">${userData.name || 'Unknown'}</span>
+                        <span class="text-[#848E9C] ml-2">TG ID: ${uid}</span>
+                        ${isSuper ? '<span class="text-[#FCD535] ml-2 font-bold">(Super Admin)</span>' : ''}
+                    </div>
+                    ${removeBtn}
+                </div>`;
+            });
+        }
+
         // ====== CORE LAYOUT ======
         function switchMainTab(tabId) {
+            if (tabId === 'admin' && !isAdmin(user.id)) {
+                showToast("🔒 Access denied. You are not an admin.");
+                return;
+            }
             document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
             const targetView = document.getElementById(tabId + '-view');
@@ -2866,6 +2986,7 @@
             if (targetNav) targetNav.classList.add('active');
             if (tabId === 'market') loadMarketAds();
             if (tabId === 'history') loadTransactionHistory();
+            if (tabId === 'admin') loadAdminData();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -2903,4 +3024,4 @@
         }
     </script>
 </body>
-                        </html>
+    </html>
