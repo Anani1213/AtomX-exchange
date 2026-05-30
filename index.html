@@ -672,7 +672,7 @@
                     <span id="dispute-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center hidden font-bold">0</span>
                 </button>
                 <button onclick="switchAdminTab('admin-orders', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all">📊 Monitor</button>
-                <!-- New: Manage Admins (only super admin) -->
+                <!-- Super Admin only: Manage Admins tab -->
                 <button id="btn-admin-manage-admins" onclick="switchAdminTab('admin-manage-admins', this)" class="admin-tab-btn bg-[#1e2329] text-white px-4 py-2 rounded-lg border border-[#2b3139] whitespace-nowrap transition-all hidden">
                     👑 Admins
                 </button>
@@ -686,7 +686,7 @@
             <div id="admin-manage-ads" class="admin-panel hidden space-y-2"></div>
             <div id="admin-disputes" class="admin-panel hidden space-y-2"></div>
             <div id="admin-orders" class="admin-panel hidden space-y-2"></div>
-            <!-- New: Manage Admins Panel -->
+            <!-- Manage Admins Panel (Super Admin Only) -->
             <div id="admin-manage-admins" class="admin-panel hidden space-y-4">
                 <div class="bg-[#1e2329] p-4 rounded-xl border border-[#2b3139]">
                     <h3 class="text-sm font-bold text-white mb-3">Add New Admin</h3>
@@ -1067,7 +1067,7 @@
                     adminIds = initialAdmins;
                 }
                 updateAdminButtonVisibility();
-                // If super admin, show manage admins tab
+                // Only super admin sees the Manage Admins tab
                 if (isSuperAdmin()) {
                     document.getElementById('btn-admin-manage-admins').classList.remove('hidden');
                 } else {
@@ -2922,7 +2922,10 @@
 
         // ====== ADMIN MANAGEMENT (Super Admin only) ======
         function addAdmin() {
-            if (!isSuperAdmin()) return showToast("Only Super Admin can manage admins.");
+            if (!isSuperAdmin()) {
+                showToast("🔒 Only Super Admin can manage admins.");
+                return;
+            }
             const newId = document.getElementById('new-admin-id').value.trim();
             if (!newId) return showToast("Enter a Telegram User ID.");
             if (adminIds[newId]) return showToast("Already an admin.");
@@ -2934,7 +2937,10 @@
         }
 
         function removeAdmin(uid) {
-            if (!isSuperAdmin()) return showToast("Only Super Admin can manage admins.");
+            if (!isSuperAdmin()) {
+                showToast("🔒 Only Super Admin can manage admins.");
+                return;
+            }
             if (uid === SUPER_ADMIN_ID) return showToast("Cannot remove Super Admin.");
             if (!adminIds[uid]) return showToast("Not an admin.");
             if (confirm(`Are you sure you want to remove admin permissions for user ${uid}?`)) {
@@ -3024,4 +3030,4 @@
         }
     </script>
 </body>
-    </html>
+                                </html>
